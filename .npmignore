@@ -1,6 +1,4 @@
 tsconfig.json
-src/
-dist/
 tests/
 .vscode
 .husky
