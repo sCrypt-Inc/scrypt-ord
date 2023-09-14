@@ -92,6 +92,16 @@ export class OrdinalFT extends SmartContract {
     }
 
     @method()
+    static getInsciptionScript(scriptCode: ByteString): ByteString {
+        const inscriptLen = OrdinalFT.sizeOfOrdinal(scriptCode)
+        let ret = toByteString('')
+        if (inscriptLen > 0n) {
+            ret = slice(scriptCode, 0n, inscriptLen)
+        }
+        return ret
+    }
+
+    @method()
     static buildTransferOutput(
         address: Addr,
         tick: ByteString,
