@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "detail": "Build the project which includes `scrypt-ts` smart contracts.",
+      "type": "shell",
+      "command": "npx scrypt-cli@latest compile --watch",
+      "isBackground": true,
+      "problemMatcher": [
+        "$tsc",
+        "$tsc-watch",
+        {
+          "owner": "typescript", // the last problem may not be removed from problems view due to this bug: https://github.com/microsoft/vscode/issues/164751, restart the task is a temp solution.
+          "fileLocation": "autoDetect",
+          "pattern": {
+            "regexp": "^scrypt-ts (ERROR|WARNING) - (.*):(\\d+):(\\d+):(\\d+):(\\d+) -\\s+(.*)$",
+            "severity": 1,
+            "file": 2,
+            "line": 3,
+            "column": 4,
+            "endLine": 5,
+            "endColumn": 6,
+            "message": 7
+          }
+        }
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}

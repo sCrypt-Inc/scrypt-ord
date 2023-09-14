@@ -1,0 +1,7 @@
+{
+  "success": true,
+  "errors": [],
+  "scryptfile": "../src/contracts/ordinalNFT.scrypt",
+  "sourceMapFile": "../src/contracts/ordinalNFT.scrypt.map",
+  "ctxMethods": []
+}

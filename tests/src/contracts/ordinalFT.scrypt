@@ -1,0 +1,123 @@
+import "../../../node_modules/scrypt-ts-lib/artifacts/shift10.scrypt";
+
+contract OrdinalFT {
+  @state bool isOrdinalFT;
+  constructor() {
+    this.isOrdinalFT = true;
+  }
+  function buildFTStateOutput(bytes tick, int amt) : bytes {
+    bytes stateScript = OrdinalFT.createTransferInsciption(tick, amt) + OrdinalFT.removeInsciption(this.getStateScript());
+    return Utils.buildOutput(stateScript, 1);
+  }
+  static function skipBytes(bytes b) : int {
+    int len = 0;
+    int ret = 0;
+    int header = unpack(b[0 : 1]);
+    if(header < 0x4c) {
+        len = header;
+        ret = 1 + len;
+      } else if(header == 0x4c) {
+        len = Utils.fromLEUnsigned(b[1 : 2]);
+        ret = 1 + 1 + len;
+      } else if(header == 0x4d) {
+        len = Utils.fromLEUnsigned(b[1 : 3]);
+        ret = 1 + 2 + len;
+      } else if(header == 0x4e) {
+        len = Utils.fromLEUnsigned(b[1 : 5]);
+        ret = 1 + 4 + len;
+      } else {
+        ret = -1;
+      }
+    return ret;
+  }
+  static function isP2PKHOrdinal(bytes script) : bool {
+    return (len(script) > 25 && OrdinalFT.isP2PKH(script[0 : 25]) && OrdinalFT.sizeOfOrdinal(script[25 : len(script)]) > 0);
+  }
+  static function isP2PKH(bytes script) : bool {
+    return (len(script) == 25 && script[0 : 3] == b'76a914' && script[23 : len(script)] == b'88ac');
+  }
+  static function removeInsciption(bytes scriptCode) : bytes {
+    int inscriptLen = OrdinalFT.sizeOfOrdinal(scriptCode);
+    if(inscriptLen > 0) {
+        scriptCode = scriptCode[inscriptLen : len(scriptCode)];
+      }
+    return scriptCode;
+  }
+  static function buildTransferOutput(Ripemd160 address, bytes tick, int amt) : bytes {
+    bytes transferScript = Utils.buildPublicKeyHashScript(address) + OrdinalFT.createTransferInsciption(tick, amt);
+    return Utils.buildOutput(transferScript, 1);
+  }
+  static function sizeOfOrdinal(bytes script) : int {
+    int ret = -1;
+    int pos = 0;
+    if(len(script) >= 11 && script[pos : 7] == b'0063036f726451') {
+        pos += 7;
+        int contentTypeLen = OrdinalFT.skipBytes(script[pos : len(script)]);
+        if(contentTypeLen > 0) {
+          pos += contentTypeLen;
+          if(script[pos : pos + 1] == OpCode.OP_0) {
+            pos += 1;
+            int contentLen = OrdinalFT.skipBytes(script[pos : len(script)]);
+            if(contentLen > 0) {
+              pos += contentLen;
+              if(script[pos : pos + 1] == OpCode.OP_ENDIF) {
+                pos += 1;
+                ret = pos;
+              }
+            }
+          }
+        }
+      }
+    return ret;
+  }
+  static function createInsciption(bytes content, bytes contentType) : bytes {
+    return (OpCode.OP_FALSE + OpCode.OP_IF + VarIntWriter.writeBytes("ord") + OpCode.OP_1 + VarIntWriter.writeBytes(contentType) + OpCode.OP_FALSE + VarIntWriter.writeBytes(content) + OpCode.OP_ENDIF);
+  }
+  static function createMintInsciption(bytes tick, int amt) : bytes {
+    bytes amtByteString = OrdinalFT.int2Str(amt);
+    bytes mintJSON = "{\"p\":\"bsv-20\",\"op\":\"mint\",\"tick\":\"" + tick + "\",\"amt\":\"" + amtByteString + "\"}";
+    return OrdinalFT.createInsciption(mintJSON, "application/bsv-20");
+  }
+  static function createTransferInsciption(bytes tick, int amt) : bytes {
+    bytes amtByteString = OrdinalFT.int2Str(amt);
+    bytes transferJSON = "{\"p\":\"bsv-20\",\"op\":\"transfer\",\"tick\":\"" + tick + "\",\"amt\":\"" + amtByteString + "\"}";
+    return OrdinalFT.createInsciption(transferJSON, "application/bsv-20");
+  }
+  static function parseInt(bytes s) : int {
+    int n = 0;
+    int l = len(s);
+    loop (20) : i {
+        if(i < l) {
+          bytes char = s[i : i + 1];
+          int c = unpack(char);
+          require(c >= 48 && c <= 57);
+          n = n * 10 + (c - 48);
+        }
+      }
+    return n;
+  }
+  static function int2Str(int n) : bytes {
+    require(n < 18446744073709551616);
+    bytes res = b'';
+    bool done = false;
+    loop (20) : i {
+        if(!done) {
+          int denominator = Shift10.pow((i));
+          if(n < denominator) {
+            done = true;
+          } else {
+            int ithDigit = (n / denominator) % 10;
+            res = num2bin(48 + ithDigit, 1) + res;
+          }
+        }
+      }
+    return res;
+  }
+  public function hide() {
+    require(false);
+  }
+    function buildStateOutput(int amount): bytes {
+      bytes script = this.getStateScript();
+      return Utils.buildOutput(script, amount);
+    }
+}
