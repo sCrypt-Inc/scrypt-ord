@@ -5,22 +5,25 @@ import {
     MethodCallOptions,
     toByteString,
     bsv,
+    Addr,
 } from 'scrypt-ts'
 import { FtCounter } from '../contracts/ftCounter'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-describe('Test SmartContract `ScryptOrd`', () => {
+describe('Test SmartContract `FtCounter`', () => {
     let instance: FtCounter
     const tick = 'DOGE'
-    const totalSupply = 100000n
+    const max = 100000n
+    const lim = 100000n
+    const amt = 100000n
 
     before(async () => {
         await FtCounter.compile()
-        instance = new FtCounter(0n, toByteString(tick, true), totalSupply)
+        instance = new FtCounter(toByteString(tick, true), max, lim, amt, 0n)
         await instance.connect(getDefaultSigner())
-        await instance.mint(tick, totalSupply)
+        await instance.mint(amt)
     })
 
     it('should pass the public method unit test successfully.', async () => {
@@ -39,8 +42,7 @@ describe('Test SmartContract `ScryptOrd`', () => {
 
             // apply updates on the next instance off chain
             nextInstance.incCounter()
-            nextInstance.currentBalance -= 1n
-            nextInstance.setBalance(tick, nextInstance.currentBalance)
+            nextInstance.setAmt(nextInstance.amt - 1n)
             currentInstance.bindTxBuilder(
                 'inc',
                 async (
@@ -57,10 +59,12 @@ describe('Test SmartContract `ScryptOrd`', () => {
                             })
                         )
                         .addOutput(
-                            FtCounter.buildTransferOutputOffChain(
-                                receiver,
-                                tick,
-                                1n
+                            FtCounter.toOutput(
+                                FtCounter.buildTransferOutput(
+                                    Addr(receiver.toByteString()),
+                                    toByteString(tick, true),
+                                    1n
+                                )
                             )
                         )
                         .change(changeAddress)

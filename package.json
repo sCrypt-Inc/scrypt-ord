@@ -1,6 +1,6 @@
 {
   "name": "scrypt-ord",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "A demo sCrypt smart contract.",
   "main": "dist/index.js",
   "types": "src/index.ts",
@@ -9,13 +9,14 @@
     "build": "rimraf dist && tsc",
     "clean": "cd tests && rimraf scrypt.index.json && rimraf dist && rimraf artifacts",
     "precompile": "npm run clean",
-    "compile": "cd tests && npx scrypt-cli compile",
-    "pretest": "npm run compile",
+    "compile": "cd tests && npx scrypt-cli@latest compile",
+    "pretest": "npm run build && npm run compile",
     "test": "cd tests && cross-env NETWORK=local mocha",
-    "test:testnet": "cross-env NETWORK=testnet mocha --no-timeouts",
+    "test:testnet": "cd tests && cross-env NETWORK=testnet mocha --no-timeouts",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prepublish": "npm run build"
   },
   "lint-staged": {
     "**/*": [

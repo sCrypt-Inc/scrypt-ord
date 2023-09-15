@@ -5,7 +5,7 @@ import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-describe('Test SmartContract `ScryptOrd`', () => {
+describe('Test SmartContract `NFTCounter`', () => {
     let instance: NFTCounter
 
     before(async () => {

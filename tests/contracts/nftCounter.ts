@@ -1,8 +1,8 @@
 import { method, prop, assert, SigHash, hash256 } from 'scrypt-ts'
 
-import { OrdinalNFT } from '../scrypt-ord'
+import { OneSatNFT } from '../scrypt-ord'
 
-export class NFTCounter extends OrdinalNFT {
+export class NFTCounter extends OneSatNFT {
     @prop(true)
     counter: bigint
 
@@ -16,7 +16,7 @@ export class NFTCounter extends OrdinalNFT {
     public incOnchain() {
         this.incCounter()
 
-        const outputs = this.buildNFTStateOutput() + this.buildChangeOutput()
+        const outputs = this.build1SatStateOutput() + this.buildChangeOutput()
 
         assert(
             this.ctx.hashOutputs == hash256(outputs),

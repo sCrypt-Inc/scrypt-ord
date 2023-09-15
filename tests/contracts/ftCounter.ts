@@ -8,44 +8,37 @@ import {
     Addr,
 } from 'scrypt-ts'
 
-import { OrdinalFT } from '../scrypt-ord'
+import { BSV20V1 } from '../scrypt-ord'
 
-export class FtCounter extends OrdinalFT {
+export class FtCounter extends BSV20V1 {
     @prop(true)
     counter: bigint
 
-    @prop()
-    tick: ByteString
-
-    @prop()
-    totalSupply: bigint
-
-    @prop(true)
-    currentBalance: bigint
-
-    constructor(counter: bigint, tick: ByteString, totalSupply: bigint) {
-        super()
+    constructor(
+        tick: ByteString,
+        max: bigint,
+        lim: bigint,
+        amt: bigint,
+        counter: bigint
+    ) {
+        super(tick, max, lim, amt)
         this.setConstructor(...arguments)
         this.counter = counter
-        this.tick = tick
-        this.totalSupply = totalSupply
-        this.currentBalance = totalSupply
     }
 
     @method(SigHash.ANYONECANPAY_ALL)
     public inc(address: Addr) {
         this.incCounter()
 
-        this.currentBalance -= 1n
+        this.amt -= 1n
 
-        assert(this.currentBalance >= 0)
+        assert(this.amt >= 0)
 
         const outputs =
-            this.buildFTStateOutput(this.tick, this.currentBalance) +
-            OrdinalFT.buildTransferOutput(address, this.tick, 1n) +
+            this.build1SatStateOutput() +
+            BSV20V1.buildTransferOutput(address, this.tick, 1n) +
             this.buildChangeOutput()
 
-        this.debug.diffOutputs(outputs)
         assert(
             this.ctx.hashOutputs == hash256(outputs),
             'hashOutputs check failed'
