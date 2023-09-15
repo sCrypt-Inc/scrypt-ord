@@ -1,7 +1,0 @@
-{
-  "success": true,
-  "errors": [],
-  "scryptfile": "../src/contracts/ordinalFT.scrypt",
-  "sourceMapFile": "../src/contracts/ordinalFT.scrypt.map",
-  "ctxMethods": []
-}
