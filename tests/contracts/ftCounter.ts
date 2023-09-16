@@ -14,28 +14,18 @@ export class FtCounter extends BSV20V1 {
     @prop(true)
     counter: bigint
 
-    constructor(
-        tick: ByteString,
-        max: bigint,
-        lim: bigint,
-        amt: bigint,
-        counter: bigint
-    ) {
-        super(tick, max, lim, amt)
+    constructor(tick: ByteString, max: bigint, lim: bigint, counter: bigint) {
+        super(tick, max, lim)
         this.setConstructor(...arguments)
         this.counter = counter
     }
 
     @method(SigHash.ANYONECANPAY_ALL)
-    public inc(address: Addr) {
+    public inc(address: Addr, changeAmt: bigint) {
         this.incCounter()
 
-        this.amt -= 1n
-
-        assert(this.amt >= 0)
-
         const outputs =
-            this.build1SatStateOutput() +
+            this.build1SatStateOutput(changeAmt) +
             BSV20V1.buildTransferOutput(address, this.tick, 1n) +
             this.buildChangeOutput()
 

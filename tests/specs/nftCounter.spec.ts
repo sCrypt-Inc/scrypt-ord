@@ -9,7 +9,7 @@ describe('Test SmartContract `NFTCounter`', () => {
     let instance: NFTCounter
 
     before(async () => {
-        await NFTCounter.compile()
+        await NFTCounter.loadArtifact()
         instance = new NFTCounter(1n)
         await instance.connect(getDefaultSigner())
 
