@@ -34,13 +34,13 @@ export class BSV20V1 extends SmartContract {
     isBSV20V1: boolean
     /** Ticker: 4 letter identifier of the bsv-20 */
     @prop()
-    tick: ByteString
+    readonly tick: ByteString
 
     /** Max supply: set max supply of the bsv-20 */
-    max: bigint
+    readonly max: bigint
 
     /** Mint limit: If letting users mint to themselves, limit per ordinal. If ommitted or 0, mint amt us unlimited. */
-    lim: bigint
+    readonly lim: bigint
 
     constructor(tick: ByteString, max: bigint, lim: bigint) {
         super(...arguments)
