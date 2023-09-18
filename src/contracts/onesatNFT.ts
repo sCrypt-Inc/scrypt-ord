@@ -14,8 +14,12 @@ import {
     assert,
     prop,
     bsv,
+    MethodCallOptions,
+    ContractTransaction,
+    StatefulNext,
 } from 'scrypt-ts'
 import { Inscription } from '../inscription'
+import { Ordinal } from './ordinal'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)
@@ -28,7 +32,7 @@ export class OneSatNFT extends SmartContract {
 
     @method()
     build1SatStateOutput(): ByteString {
-        const stateScript = OneSatNFT.removeInsciption(this.getStateScript())
+        const stateScript = Ordinal.removeInsciption(this.getStateScript())
         return Utils.buildOutput(stateScript, 1n)
     }
 
@@ -38,119 +42,9 @@ export class OneSatNFT extends SmartContract {
         content: ByteString,
         contentType: ByteString
     ): ByteString {
-        const part1 = OneSatNFT.createInsciption(content, contentType)
-        const part2 = OneSatNFT.removeInsciption(script)
+        const part1 = Ordinal.createInsciption(content, contentType)
+        const part2 = Ordinal.removeInsciption(script)
         return Utils.buildOutput(part1 + part2, 1n)
-    }
-
-    @method()
-    static skipBytes(b: ByteString): bigint {
-        let len = 0n
-        let ret = 0n
-        const header: bigint = byteString2Int(slice(b, 0n, 1n))
-
-        if (header < 0x4cn) {
-            len = header
-            ret = 1n + len
-        } else if (header == 0x4cn) {
-            len = Utils.fromLEUnsigned(slice(b, 1n, 2n))
-            ret = 1n + 1n + len
-        } else if (header == 0x4dn) {
-            len = Utils.fromLEUnsigned(slice(b, 1n, 3n))
-            ret = 1n + 2n + len
-        } else if (header == 0x4en) {
-            len = Utils.fromLEUnsigned(slice(b, 1n, 5n))
-            ret = 1n + 4n + len
-        } else {
-            // shall not reach here
-            ret = -1n
-        }
-
-        return ret
-    }
-
-    @method()
-    static isP2PKHOrdinal(script: ByteString): boolean {
-        return (
-            len(script) > 25n &&
-            OneSatNFT.isP2PKH(slice(script, 0n, 25n)) &&
-            OneSatNFT.sizeOfOrdinal(slice(script, 25n)) > 0n
-        )
-    }
-
-    @method()
-    static isP2PKH(script: ByteString): boolean {
-        return (
-            len(script) === 25n &&
-            slice(script, 0n, 3n) === toByteString('76a914') &&
-            slice(script, 23n) === toByteString('88ac')
-        )
-    }
-
-    @method()
-    static removeInsciption(scriptCode: ByteString): ByteString {
-        const inscriptLen = OneSatNFT.sizeOfOrdinal(scriptCode)
-
-        if (inscriptLen > 0n) {
-            scriptCode = slice(scriptCode, inscriptLen)
-        }
-        return scriptCode
-    }
-
-    @method()
-    static getInsciptionScript(scriptCode: ByteString): ByteString {
-        const inscriptLen = OneSatNFT.sizeOfOrdinal(scriptCode)
-        let ret = toByteString('')
-        if (inscriptLen > 0n) {
-            ret = slice(scriptCode, 0n, inscriptLen)
-        }
-        return ret
-    }
-
-    @method()
-    static sizeOfOrdinal(script: ByteString): bigint {
-        let ret = -1n
-        let pos = 0n
-        if (
-            len(script) >= 11n &&
-            slice(script, pos, 7n) === toByteString('0063036f726451')
-        ) {
-            pos += 7n
-            const contentTypeLen = OneSatNFT.skipBytes(slice(script, pos))
-            if (contentTypeLen > 0n) {
-                pos += contentTypeLen
-                if (slice(script, pos, pos + 1n) === OpCode.OP_0) {
-                    pos += 1n
-                    const contentLen = OneSatNFT.skipBytes(slice(script, pos))
-
-                    if (contentLen > 0n) {
-                        pos += contentLen
-                        if (slice(script, pos, pos + 1n) === OpCode.OP_ENDIF) {
-                            pos += 1n
-                            ret = pos
-                        }
-                    }
-                }
-            }
-        }
-        return ret
-    }
-
-    @method()
-    static createInsciption(
-        content: ByteString,
-        contentType: ByteString
-    ): ByteString {
-        return (
-            OpCode.OP_FALSE +
-            OpCode.OP_IF +
-            VarIntWriter.writeBytes(toByteString('ord', true)) +
-            OpCode.OP_1 +
-            VarIntWriter.writeBytes(contentType) +
-            OpCode.OP_FALSE +
-            VarIntWriter.writeBytes(content) +
-            OpCode.OP_ENDIF
-        )
     }
 
     @method()
@@ -167,7 +61,7 @@ export class OneSatNFT extends SmartContract {
     }
 
     async mint(inscription: Inscription) {
-        this.setNOPScript(OneSatNFT.create(inscription))
+        this.prependNOPScript(OneSatNFT.create(inscription))
         return this.deploy(1)
     }
 
@@ -176,5 +70,52 @@ export class OneSatNFT extends SmartContract {
             content: text,
             contentType: 'text/plain',
         })
+    }
+
+    async transfer(receiver: OneSatNFT, methodName: string, ...args) {
+        const builder = this['_txBuilders'].has(methodName)
+
+        if (!builder) {
+            this.bindTxBuilder(
+                methodName,
+                async (
+                    current: OneSatNFT,
+                    options: MethodCallOptions<OneSatNFT>
+                ): Promise<ContractTransaction> => {
+                    const bsvChangeAddress =
+                        await this.signer.getDefaultAddress()
+
+                    const nexts: StatefulNext<OneSatNFT>[] = []
+                    const tx = new bsv.Transaction()
+
+                    tx.addInput(current.buildContractInput())
+
+                    await receiver.connect(this.signer)
+
+                    tx.addOutput(
+                        new bsv.Transaction.Output({
+                            script: receiver.lockingScript,
+                            satoshis: 1,
+                        })
+                    )
+
+                    nexts.push({
+                        instance: receiver,
+                        balance: 1,
+                        atOutputIndex: nexts.length,
+                    })
+
+                    tx.change(bsvChangeAddress)
+
+                    return Promise.resolve({
+                        tx,
+                        atInputIndex: 0,
+                        nexts: nexts,
+                    })
+                }
+            )
+        }
+
+        return this.methods[methodName](...args)
     }
 }

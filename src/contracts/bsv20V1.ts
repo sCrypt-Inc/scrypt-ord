@@ -21,8 +21,9 @@ import {
     StatefulNext,
     toHex,
 } from 'scrypt-ts'
-import { Shift10 } from 'scrypt-ts-lib'
+
 import { Inscription } from '../inscription'
+import { Ordinal } from './ordinal'
 
 function byteStringToStr(bs: ByteString): string {
     const encoder = new TextDecoder()
@@ -54,72 +55,8 @@ export class BSV20V1 extends SmartContract {
     build1SatStateOutput(amt: bigint): ByteString {
         const stateScript =
             BSV20V1.createTransferInsciption(this.tick, amt) +
-            BSV20V1.removeInsciption(this.getStateScript())
+            Ordinal.removeInsciption(this.getStateScript())
         return Utils.buildOutput(stateScript, 1n)
-    }
-
-    @method()
-    static skipBytes(b: ByteString): bigint {
-        let len = 0n
-        let ret = 0n
-        const header: bigint = byteString2Int(slice(b, 0n, 1n))
-
-        if (header < 0x4cn) {
-            len = header
-            ret = 1n + len
-        } else if (header == 0x4cn) {
-            len = Utils.fromLEUnsigned(slice(b, 1n, 2n))
-            ret = 1n + 1n + len
-        } else if (header == 0x4dn) {
-            len = Utils.fromLEUnsigned(slice(b, 1n, 3n))
-            ret = 1n + 2n + len
-        } else if (header == 0x4en) {
-            len = Utils.fromLEUnsigned(slice(b, 1n, 5n))
-            ret = 1n + 4n + len
-        } else {
-            // shall not reach here
-            ret = -1n
-        }
-
-        return ret
-    }
-
-    @method()
-    static isP2PKHOrdinal(script: ByteString): boolean {
-        return (
-            len(script) > 25n &&
-            BSV20V1.isP2PKH(slice(script, 0n, 25n)) &&
-            BSV20V1.sizeOfOrdinal(slice(script, 25n)) > 0n
-        )
-    }
-
-    @method()
-    static isP2PKH(script: ByteString): boolean {
-        return (
-            len(script) === 25n &&
-            slice(script, 0n, 3n) === toByteString('76a914') &&
-            slice(script, 23n) === toByteString('88ac')
-        )
-    }
-
-    @method()
-    static removeInsciption(scriptCode: ByteString): ByteString {
-        const inscriptLen = BSV20V1.sizeOfOrdinal(scriptCode)
-
-        if (inscriptLen > 0n) {
-            scriptCode = slice(scriptCode, inscriptLen)
-        }
-        return scriptCode
-    }
-
-    @method()
-    static getInsciptionScript(scriptCode: ByteString): ByteString {
-        const inscriptLen = BSV20V1.sizeOfOrdinal(scriptCode)
-        let ret = toByteString('')
-        if (inscriptLen > 0n) {
-            ret = slice(scriptCode, 0n, inscriptLen)
-        }
-        return ret
     }
 
     @method()
@@ -135,54 +72,8 @@ export class BSV20V1 extends SmartContract {
     }
 
     @method()
-    static sizeOfOrdinal(script: ByteString): bigint {
-        let ret = -1n
-        let pos = 0n
-        if (
-            len(script) >= 11n &&
-            slice(script, pos, 7n) === toByteString('0063036f726451')
-        ) {
-            pos += 7n
-            const contentTypeLen = BSV20V1.skipBytes(slice(script, pos))
-            if (contentTypeLen > 0n) {
-                pos += contentTypeLen
-                if (slice(script, pos, pos + 1n) === OpCode.OP_0) {
-                    pos += 1n
-                    const contentLen = BSV20V1.skipBytes(slice(script, pos))
-
-                    if (contentLen > 0n) {
-                        pos += contentLen
-                        if (slice(script, pos, pos + 1n) === OpCode.OP_ENDIF) {
-                            pos += 1n
-                            ret = pos
-                        }
-                    }
-                }
-            }
-        }
-        return ret
-    }
-
-    @method()
-    static createInsciption(
-        content: ByteString,
-        contentType: ByteString
-    ): ByteString {
-        return (
-            OpCode.OP_FALSE +
-            OpCode.OP_IF +
-            VarIntWriter.writeBytes(toByteString('ord', true)) +
-            OpCode.OP_1 +
-            VarIntWriter.writeBytes(contentType) +
-            OpCode.OP_FALSE +
-            VarIntWriter.writeBytes(content) +
-            OpCode.OP_ENDIF
-        )
-    }
-
-    @method()
     static createMintInsciption(tick: ByteString, amt: bigint): ByteString {
-        const amtByteString = BSV20V1.int2Str(amt)
+        const amtByteString = Ordinal.int2Str(amt)
 
         const mintJSON =
             toByteString('{"p":"bsv-20","op":"mint","tick":"', true) +
@@ -191,7 +82,7 @@ export class BSV20V1 extends SmartContract {
             amtByteString +
             toByteString('"}', true)
 
-        return BSV20V1.createInsciption(
+        return Ordinal.createInsciption(
             mintJSON,
             toByteString('application/bsv-20', true)
         )
@@ -199,7 +90,7 @@ export class BSV20V1 extends SmartContract {
 
     @method()
     static createTransferInsciption(tick: ByteString, amt: bigint): ByteString {
-        const amtByteString = BSV20V1.int2Str(amt)
+        const amtByteString = Ordinal.int2Str(amt)
 
         const transferJSON =
             toByteString('{"p":"bsv-20","op":"transfer","tick":"', true) +
@@ -207,57 +98,10 @@ export class BSV20V1 extends SmartContract {
             toByteString('","amt":"', true) +
             amtByteString +
             toByteString('"}', true)
-        return BSV20V1.createInsciption(
+        return Ordinal.createInsciption(
             transferJSON,
             toByteString('application/bsv-20', true)
         )
-    }
-
-    @method()
-    static parseInt(s: ByteString): bigint {
-        let n = 0n
-
-        const l = len(s)
-        for (let i = 0n; i < 20; i++) {
-            if (i < l) {
-                const char = slice(s, i, i + 1n)
-                const c = byteString2Int(char)
-                assert(c >= 48n && c <= 57n)
-                n = n * 10n + (c - 48n)
-            }
-        }
-
-        return n
-    }
-
-    // Converts integer to hex-encoded ASCII.
-    // 1000 -> '31303030'
-    // Input cannot be larger than 2^64-1.
-    @method()
-    static int2Str(n: bigint): ByteString {
-        // Max 2^64-1
-        assert(n < 18446744073709551616n, 'n is larger than 2^64-1')
-
-        let res = toByteString('')
-        let done = false
-
-        for (let i = 0; i < 20; i++) {
-            if (!done) {
-                // Get ith digit: n // 10^i % 10
-                const denominator = Shift10.pow(BigInt(i))
-
-                if (n < denominator) {
-                    done = true
-                } else {
-                    const ithDigit = (n / denominator) % 10n
-
-                    // Transform digit to ASCII (hex encoded) and prepend to result.
-                    res = int2ByteString(48n + ithDigit, 1n) + res
-                }
-            }
-        }
-
-        return res
     }
 
     @method()
@@ -326,7 +170,9 @@ export class BSV20V1 extends SmartContract {
             throw new Error(`amt should not be greater than "lim: ${this.lim}"`)
         }
 
-        this.setNOPScript(BSV20V1.createMint(byteStringToStr(this.tick), amt))
+        this.prependNOPScript(
+            BSV20V1.createMint(byteStringToStr(this.tick), amt)
+        )
         return this.deploy(1)
     }
 
@@ -392,19 +238,19 @@ export class BSV20V1 extends SmartContract {
     }
 
     setAmt(amt: bigint) {
-        this.setNOPScript(
+        this.prependNOPScript(
             BSV20V1.createTransfer(byteStringToStr(this.tick), amt)
         )
     }
 
     getAmt() {
-        const nop = this.getNOPScript()
+        const nopScript = this.getPrependNOPScript()
 
-        if (nop === null) {
+        if (nopScript === null) {
             throw new Error('no amt setted!')
         }
 
-        return BSV20V1.getAmt(byteStringToStr(this.tick), nop)
+        return BSV20V1.getAmt(byteStringToStr(this.tick), nopScript)
     }
 
     async transfer(
