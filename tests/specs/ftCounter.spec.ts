@@ -20,9 +20,10 @@ describe('Test SmartContract `FtCounter`', () => {
     const amt = 100000n
 
     before(async () => {
-        await FtCounter.compile()
-        instance = new FtCounter(toByteString(tick, true), max, lim, amt, 0n)
+        await FtCounter.loadArtifact()
+        instance = new FtCounter(toByteString(tick, true), max, lim, 0n)
         await instance.connect(getDefaultSigner())
+        await instance.deployToken()
         await instance.mint(amt)
     })
 
@@ -41,8 +42,11 @@ describe('Test SmartContract `FtCounter`', () => {
             const nextInstance = currentInstance.next()
 
             // apply updates on the next instance off chain
+
+            const amt = currentInstance.getAmt()
+            const changeAmt = amt - 1n
             nextInstance.incCounter()
-            nextInstance.setAmt(nextInstance.amt - 1n)
+            nextInstance.setAmt(changeAmt)
             currentInstance.bindTxBuilder(
                 'inc',
                 async (
@@ -87,10 +91,11 @@ describe('Test SmartContract `FtCounter`', () => {
             const callContract = async () => {
                 try {
                     const { tx: callTx } = await currentInstance.methods.inc(
-                        receiver.toByteString()
+                        receiver.toByteString(),
+                        changeAmt
                     )
 
-                    console.log('Contract OrdinalCounter called: ', callTx.id)
+                    console.log('Contract FtCounter called: ', callTx.id)
                 } catch (error) {
                     console.log('ee', error)
                 }

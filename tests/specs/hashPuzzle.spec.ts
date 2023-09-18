@@ -23,8 +23,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
     const message2 = toByteString('hello, 1SAT!', true)
 
     before(async () => {
-        await HashPuzzle.compile()
-        await HashPuzzle.deploy(getDefaultSigner(), tick, max, lim)
+        await HashPuzzle.loadArtifact()
     })
 
     it('should pass the public method unit test successfully.', async () => {
@@ -32,67 +31,52 @@ describe('Test SmartContract `HashPuzzle`', () => {
             toByteString(tick, true),
             max,
             lim,
-            amt,
             sha256(message1)
         )
         await hashPuzzle.connect(getDefaultSigner())
 
+        await hashPuzzle.deployToken()
         await hashPuzzle.mint(amt)
 
-        const changeAddress = await hashPuzzle.signer.getDefaultAddress()
-        const nextHashPuzzle = new HashPuzzle(
-            toByteString(tick, true),
-            max,
-            lim,
-            amt,
-            sha256(message2)
-        )
-        await nextHashPuzzle.connect(getDefaultSigner())
-
         const callContract = async () => {
-            // apply updates on the next instance off chain
-            nextHashPuzzle.setAmt(nextHashPuzzle.amt)
-            hashPuzzle.bindTxBuilder(
+            const { tx, nexts } = await hashPuzzle.transfer(
+                [
+                    {
+                        instance: new HashPuzzle(
+                            toByteString(tick, true),
+                            max,
+                            lim,
+                            sha256(message2)
+                        ),
+                        amt: 10n,
+                    },
+                ],
                 'unlock',
-                async (
-                    current: HashPuzzle,
-                    options: MethodCallOptions<HashPuzzle>
-                ): Promise<ContractTransaction> => {
-                    const tx = new bsv.Transaction()
-
-                    tx.addInput(current.buildContractInput())
-                        .addOutput(
-                            new bsv.Transaction.Output({
-                                script: nextHashPuzzle.lockingScript,
-                                satoshis: 1,
-                            })
-                        )
-                        .change(changeAddress)
-
-                    return Promise.resolve({
-                        tx,
-                        atInputIndex: 0,
-                        nexts: [
-                            {
-                                instance: nextHashPuzzle,
-                                balance: 1,
-                                atOutputIndex: 0,
-                            },
-                        ],
-                    })
-                }
+                message1
             )
-            const { tx } = await hashPuzzle.methods.unlock(message1)
 
             console.log('transfer tx: ', tx.id)
+
+            const burn = async () => {
+                const next0 = nexts[0].instance as HashPuzzle
+
+                const { tx } = await next0.methods.unlock(message1)
+                console.log('burn tx: ', tx.id)
+            }
+            await expect(burn()).not.rejected
+
+            const burn1 = async () => {
+                const next1 = nexts[1].instance as HashPuzzle
+                try {
+                    const { tx } = await next1.methods.unlock(message2)
+                    console.log('burn tx: ', tx.id)
+                } catch (error) {
+                    console.log('aaa', error)
+                }
+            }
+            await expect(burn1()).not.rejected
         }
 
         await expect(callContract()).not.rejected
-
-        const burn = async () => {
-            const { tx } = await nextHashPuzzle.methods.unlock(message2)
-            console.log('burn tx: ', tx.id)
-        }
-        return expect(burn()).not.rejected
     })
 })

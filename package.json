@@ -1,12 +1,12 @@
 {
   "name": "scrypt-ord",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A demo sCrypt smart contract.",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "author": "",
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc && npx scrypt-cli@latest compile",
     "clean": "cd tests && rimraf scrypt.index.json && rimraf dist && rimraf artifacts",
     "precompile": "npm run clean",
     "compile": "cd tests && npx scrypt-cli@latest compile",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "dotenv": "^16.0.3",
-    "scrypt-ts": "^1.3.9-test.2",
+    "scrypt-ts": "^1.3.9",
     "scrypt-ts-lib": "^0.1.23"
   },
   "devDependencies": {
