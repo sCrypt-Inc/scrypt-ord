@@ -1,16 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-useless-escape */
 import {
     ByteString,
-    len,
     method,
-    OpCode,
-    slice,
     SmartContract,
     toByteString,
     Utils,
-    byteString2Int,
-    VarIntWriter,
+    UTXO,
     assert,
     prop,
     bsv,
@@ -18,8 +15,9 @@ import {
     ContractTransaction,
     StatefulNext,
 } from 'scrypt-ts'
-import { Inscription } from '../inscription'
+import { Inscription } from '../types'
 import { Ordinal } from './ordinal'
+import { signTx } from 'scryptlib'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)
@@ -117,5 +115,97 @@ export class OneSatNFT extends SmartContract {
         }
 
         return this.methods[methodName](...args)
+    }
+
+    static send2Contract(
+        ordinalUtxo: UTXO,
+        ordPk: bsv.PrivateKey,
+        instance: SmartContract
+    ) {
+        instance.buildDeployTransaction = (
+            utxos: UTXO[],
+            amount: number,
+            changeAddress?: bsv.Address | string
+        ): Promise<bsv.Transaction> => {
+            const deployTx = new bsv.Transaction()
+
+            deployTx.from(ordinalUtxo).addOutput(
+                new bsv.Transaction.Output({
+                    script: instance.lockingScript,
+                    satoshis: amount,
+                })
+            )
+
+            if (changeAddress) {
+                deployTx.change(changeAddress)
+            }
+            const lockingScript = bsv.Script.fromHex(ordinalUtxo.script)
+
+            const sig = signTx(
+                deployTx,
+                ordPk,
+                lockingScript,
+                amount,
+                0,
+                bsv.crypto.Signature.ANYONECANPAY_SINGLE
+            )
+
+            deployTx.inputs[0].setScript(
+                bsv.Script.buildPublicKeyHashIn(
+                    ordPk.publicKey,
+                    bsv.crypto.Signature.fromTxFormat(Buffer.from(sig, 'hex')),
+                    bsv.crypto.Signature.ANYONECANPAY_SINGLE
+                )
+            )
+
+            return Promise.resolve(deployTx)
+        }
+        return instance.deploy(1)
+    }
+
+    public static async getLatestInstanceByOrigin<T extends SmartContract>(
+        clazz: new (...args: any) => T,
+        origin: string
+    ): Promise<T> {
+        const utxo = await Ordinal.fetchLatestUTXOByOrigin(origin)
+
+        if (utxo === null) {
+            throw new Error('no utxo found')
+        }
+
+        const insciptionScript = Ordinal.getInsciptionScript(utxo.script)
+
+        const instance = (
+            clazz as unknown as typeof SmartContract
+        ).fromLockingScript(
+            utxo.script,
+            {},
+            bsv.Script.fromHex(insciptionScript)
+        )
+        instance.from = utxo
+        return instance as T
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public static async getLatestInstanceById<T extends SmartContract>(
+        clazz: new (...args: any) => T,
+        id: bigint
+    ): Promise<T> {
+        const utxo = await Ordinal.fetchLatestUTXOById(id)
+
+        if (utxo === null) {
+            throw new Error('no utxo found')
+        }
+        const insciptionScript = Ordinal.getInsciptionScript(utxo.script)
+
+        const instance = (
+            clazz as unknown as typeof SmartContract
+        ).fromLockingScript(
+            utxo.script,
+            {},
+            bsv.Script.fromHex(insciptionScript)
+        )
+        instance.from = utxo
+        return instance as T
     }
 }

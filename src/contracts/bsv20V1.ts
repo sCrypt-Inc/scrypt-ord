@@ -2,17 +2,11 @@
 /* eslint-disable no-useless-escape */
 import {
     ByteString,
-    len,
     method,
-    OpCode,
-    slice,
     SmartContract,
     toByteString,
     Utils,
-    byteString2Int,
-    VarIntWriter,
     assert,
-    int2ByteString,
     Addr,
     prop,
     bsv,
@@ -20,10 +14,12 @@ import {
     ContractTransaction,
     StatefulNext,
     toHex,
+    UTXO,
 } from 'scrypt-ts'
 
-import { Inscription } from '../inscription'
+import { BSV20Protocol, Inscription } from '../types'
 import { Ordinal } from './ordinal'
+import { signTx } from 'scryptlib'
 
 function byteStringToStr(bs: ByteString): string {
     const encoder = new TextDecoder()
@@ -212,7 +208,7 @@ export class BSV20V1 extends SmartContract {
         )
     }
 
-    private static getAmt(tick: string, script: bsv.Script): bigint {
+    static getBsv20(script: bsv.Script): BSV20Protocol {
         if (BSV20V1.isOrdinalContract(script)) {
             const content = byteStringToStr(toHex(script.chunks[6].buf))
             const contentType = byteStringToStr(toHex(script.chunks[4].buf))
@@ -223,18 +219,30 @@ export class BSV20V1 extends SmartContract {
 
             const bsv20 = JSON.parse(content)
 
-            if (bsv20.tick !== tick) {
-                throw new Error(`invalid bsv20 tick, ${content}`)
-            }
-
-            if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
-                return BigInt(bsv20.amt)
+            if (
+                typeof bsv20.tick === 'string' &&
+                typeof bsv20.op === 'string' &&
+                typeof bsv20.amt === 'string'
+            ) {
+                return bsv20
             }
 
             throw new Error(`invalid bsv20 op, ${content}`)
         }
-
         throw new Error(`invalid 1sat ordinal`)
+    }
+
+    static getAmt(tick: string, script: bsv.Script): bigint {
+        const bsv20 = BSV20V1.getBsv20(script)
+        if (bsv20.tick !== tick) {
+            throw new Error(`invalid bsv20 tick, expected ${tick}`)
+        }
+
+        if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
+            return BigInt(bsv20.amt)
+        }
+
+        throw new Error(`invalid bsv20 op: ${bsv20.op}`)
     }
 
     setAmt(amt: bigint) {
@@ -337,5 +345,57 @@ export class BSV20V1 extends SmartContract {
         }
 
         return this.methods[methodName](...args)
+    }
+
+    static send2Contract(
+        utxo: UTXO,
+        ordPk: bsv.PrivateKey,
+        instance: SmartContract
+    ) {
+        instance.buildDeployTransaction = (
+            utxos: UTXO[],
+            amount: number,
+            changeAddress?: bsv.Address | string
+        ): Promise<bsv.Transaction> => {
+            const deployTx = new bsv.Transaction()
+
+            const bsv20 = BSV20V1.getBsv20(bsv.Script.fromHex(utxo.script))
+
+            instance.prependNOPScript(
+                BSV20V1.createTransfer(bsv20.tick, BigInt(bsv20.amt))
+            )
+
+            deployTx.from(utxo).addOutput(
+                new bsv.Transaction.Output({
+                    script: instance.lockingScript,
+                    satoshis: amount,
+                })
+            )
+
+            if (changeAddress) {
+                deployTx.change(changeAddress)
+            }
+            const lockingScript = bsv.Script.fromHex(utxo.script)
+
+            const sig = signTx(
+                deployTx,
+                ordPk,
+                lockingScript,
+                amount,
+                0,
+                bsv.crypto.Signature.ANYONECANPAY_SINGLE
+            )
+
+            deployTx.inputs[0].setScript(
+                bsv.Script.buildPublicKeyHashIn(
+                    ordPk.publicKey,
+                    bsv.crypto.Signature.fromTxFormat(Buffer.from(sig, 'hex')),
+                    bsv.crypto.Signature.ANYONECANPAY_SINGLE
+                )
+            )
+
+            return Promise.resolve(deployTx)
+        }
+        return instance.deploy(1)
     }
 }

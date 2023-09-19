@@ -11,8 +11,11 @@ import {
     assert,
     int2ByteString,
     SmartContractLib,
+    UTXO,
 } from 'scrypt-ts'
 import { Shift10 } from 'scrypt-ts-lib'
+import superagent from 'superagent'
+
 export class Ordinal extends SmartContractLib {
     @method()
     static skipBytes(b: ByteString): bigint {
@@ -169,5 +172,70 @@ export class Ordinal extends SmartContractLib {
         }
 
         return res
+    }
+
+    static fetchUTXOByOutpoint(outpoint: string): UTXO | null {
+        const url = `https://ordinals.gorillapool.io/api/inscriptions/outpoint/${outpoint}`
+
+        return superagent
+            .get(url)
+            .then(function (response) {
+                // handle success
+                const script = Buffer.from(
+                    response.body.script,
+                    'base64'
+                ).toString('hex')
+                return {
+                    txId: response.body.txid,
+                    outputIndex: response.body.vout,
+                    satoshis: 1,
+                    script,
+                }
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error)
+                return null
+            })
+    }
+
+    static async fetchLatestUTXOByOrigin(origin: string): Promise<UTXO | null> {
+        const url = `https://ordinals.gorillapool.io/api/inscriptions/origin/${origin}/latest`
+
+        const { outpoint, spend } = await superagent
+            .get(url)
+            .then(function (response) {
+                // handle success
+                return response.body
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error)
+                return null
+            })
+
+        if (spend) {
+            return null
+        }
+
+        return Ordinal.fetchUTXOByOutpoint(outpoint)
+    }
+
+    static async fetchLatestUTXOById(id: bigint): Promise<UTXO | null> {
+        const url = `https://ordinals.gorillapool.io/api/inscriptions/${id}`
+
+        const { origin } = await superagent
+            .get(url)
+            .then(function (response) {
+                // handle success
+                return response.body
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error)
+                return null
+            })
+
+        return Ordinal.fetchLatestUTXOByOrigin(origin)
     }
 }
