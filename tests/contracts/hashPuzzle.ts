@@ -8,7 +8,7 @@ export class HashPuzzle extends BSV20V1 {
 
     constructor(tick: ByteString, max: bigint, lim: bigint, hash: Sha256) {
         super(tick, max, lim)
-        this.setConstructor(...arguments)
+        this.init(...arguments)
         this.hash = hash
     }
 

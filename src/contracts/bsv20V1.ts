@@ -48,7 +48,7 @@ export class BSV20V1 extends SmartContract {
     }
 
     @method()
-    build1SatStateOutput(amt: bigint): ByteString {
+    buildStateOutputFT(amt: bigint): ByteString {
         const stateScript =
             BSV20V1.createTransferInsciption(this.tick, amt) +
             Ordinal.removeInsciption(this.getStateScript())
@@ -101,7 +101,7 @@ export class BSV20V1 extends SmartContract {
     }
 
     @method()
-    public __scrypt__unlock() {
+    public __scrypt_ts_base_unlock() {
         assert(false, 'should not reach here!')
     }
 
@@ -261,14 +261,37 @@ export class BSV20V1 extends SmartContract {
         return BSV20V1.getAmt(byteStringToStr(this.tick), nopScript)
     }
 
+    /**
+     * transfer bsv20 to receivers. First output is token change output.
+     * @param receivers
+     * @param methodName
+     * @param args
+     * @returns
+     */
     async transfer(
         receivers: Array<{
             instance: BSV20V1
             amt: bigint
         }>,
+        tokenChangeAddress: string | bsv.Address | bsv.PublicKey | BSV20V1,
         methodName: string,
         ...args
-    ) {
+    ): Promise<{
+        /** The method calling tx */
+        tx: bsv.Transaction
+        tokenChange: BSV20V1 | null
+        receivers: Array<BSV20V1>
+    }> {
+        let tokenChange: BSV20V1 | null = null
+        const changeTokenAmt =
+            this.getAmt() -
+            receivers.reduce((acc, receiver) => {
+                return (acc += receiver.amt)
+            }, 0n)
+        if (changeTokenAmt < 0n) {
+            throw new Error(`Not enough tokens`)
+        }
+
         const builder = this['_txBuilders'].has(methodName)
 
         if (!builder) {
@@ -281,37 +304,10 @@ export class BSV20V1 extends SmartContract {
                     const bsvChangeAddress =
                         await this.signer.getDefaultAddress()
 
-                    const changeAmt =
-                        this.getAmt() -
-                        receivers.reduce((acc, receiver) => {
-                            return (acc += receiver.amt)
-                        }, 0n)
-
-                    if (changeAmt < 0n) {
-                        throw new Error(`Not enough tokens`)
-                    }
-
                     const nexts: StatefulNext<BSV20V1>[] = []
                     const tx = new bsv.Transaction()
 
                     tx.addInput(current.buildContractInput())
-
-                    if (changeAmt > 0n) {
-                        const nextInstance = this.next()
-                        nextInstance.setAmt(changeAmt)
-                        tx.addOutput(
-                            new bsv.Transaction.Output({
-                                script: nextInstance.lockingScript,
-                                satoshis: 1,
-                            })
-                        )
-
-                        nexts.push({
-                            instance: nextInstance,
-                            balance: 1,
-                            atOutputIndex: 0,
-                        })
-                    }
 
                     for (let i = 0; i < receivers.length; i++) {
                         const receiver = receivers[i]
@@ -333,6 +329,37 @@ export class BSV20V1 extends SmartContract {
                         })
                     }
 
+                    if (changeTokenAmt > 0n) {
+                        // eslint-disable-next-line @typescript-eslint/no-var-requires
+                        const { BSV20P2PKH } = require('./bsv20P2PKH')
+
+                        const p2pkh =
+                            tokenChangeAddress instanceof BSV20V1
+                                ? tokenChangeAddress
+                                : BSV20P2PKH.fromAddress(
+                                      this.tick,
+                                      this.max,
+                                      this.lim,
+                                      tokenChangeAddress
+                                  )
+
+                        p2pkh.setAmt(changeTokenAmt)
+                        tx.addOutput(
+                            new bsv.Transaction.Output({
+                                script: p2pkh.lockingScript,
+                                satoshis: 1,
+                            })
+                        )
+
+                        nexts.push({
+                            instance: p2pkh,
+                            balance: 1,
+                            atOutputIndex: nexts.length,
+                        })
+
+                        tokenChange = p2pkh
+                    }
+
                     tx.change(bsvChangeAddress)
 
                     return Promise.resolve({
@@ -344,7 +371,52 @@ export class BSV20V1 extends SmartContract {
             )
         }
 
-        return this.methods[methodName](...args)
+        const { tx, nexts } = await this.methods[methodName](...args)
+
+        return Promise.resolve({
+            tx,
+            tokenChange,
+            receivers: nexts.slice(0, receivers.length).map((n) => n.instance),
+        })
+    }
+
+    /**
+     * burn bsv20V1 token
+     * @param methodName public method name to call
+     * @param args arguments to call the public method
+     * @returns
+     */
+    async burn(methodName: string, ...args): Promise<bsv.Transaction> {
+        const builder = this['_txBuilders'].has(methodName)
+
+        if (!builder) {
+            this.bindTxBuilder(
+                methodName,
+                async (
+                    current: BSV20V1,
+                    options: MethodCallOptions<BSV20V1>
+                ): Promise<ContractTransaction> => {
+                    const bsvChangeAddress =
+                        await this.signer.getDefaultAddress()
+
+                    const tx = new bsv.Transaction()
+
+                    tx.addInput(current.buildContractInput()).change(
+                        bsvChangeAddress
+                    )
+
+                    return Promise.resolve({
+                        tx,
+                        atInputIndex: 0,
+                        nexts: [],
+                    })
+                }
+            )
+        }
+
+        const { tx } = await this.methods[methodName](...args)
+
+        return tx
     }
 
     static send2Contract(

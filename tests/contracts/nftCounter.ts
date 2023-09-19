@@ -8,7 +8,7 @@ export class NFTCounter extends OneSatNFT {
 
     constructor(counter: bigint) {
         super()
-        this.setConstructor(counter)
+        this.init(counter)
         this.counter = counter
     }
 
@@ -16,7 +16,7 @@ export class NFTCounter extends OneSatNFT {
     public incOnchain() {
         this.incCounter()
 
-        const outputs = this.build1SatStateOutput() + this.buildChangeOutput()
+        const outputs = this.buildStateOutputNFT() + this.buildChangeOutput()
 
         assert(
             this.ctx.hashOutputs == hash256(outputs),

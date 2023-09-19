@@ -221,7 +221,7 @@ export class Ordinal extends SmartContractLib {
         return Ordinal.fetchUTXOByOutpoint(outpoint)
     }
 
-    static async fetchLatestUTXOById(id: bigint): Promise<UTXO | null> {
+    static async fetchOriginById(id: bigint): Promise<string | null> {
         const url = `https://ordinals.gorillapool.io/api/inscriptions/${id}`
 
         const { origin } = await superagent
@@ -236,6 +236,6 @@ export class Ordinal extends SmartContractLib {
                 return null
             })
 
-        return Ordinal.fetchLatestUTXOByOrigin(origin)
+        return origin
     }
 }

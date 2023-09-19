@@ -29,7 +29,7 @@ export class OneSatNFT extends SmartContract {
     }
 
     @method()
-    build1SatStateOutput(): ByteString {
+    buildStateOutputNFT(): ByteString {
         const stateScript = Ordinal.removeInsciption(this.getStateScript())
         return Utils.buildOutput(stateScript, 1n)
     }
@@ -46,7 +46,7 @@ export class OneSatNFT extends SmartContract {
     }
 
     @method()
-    public __scrypt__unlock() {
+    public __scrypt_ts_base_unlock() {
         assert(false, 'should not reach here!')
     }
 
@@ -175,37 +175,24 @@ export class OneSatNFT extends SmartContract {
 
         const insciptionScript = Ordinal.getInsciptionScript(utxo.script)
 
-        const instance = (
-            clazz as unknown as typeof SmartContract
-        ).fromLockingScript(
-            utxo.script,
+        const instance = (clazz as unknown as typeof SmartContract).fromUTXO(
+            utxo,
             {},
             bsv.Script.fromHex(insciptionScript)
         )
-        instance.from = utxo
         return instance as T
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static async getLatestInstanceById<T extends SmartContract>(
         clazz: new (...args: any) => T,
-        id: bigint
+        inscription_Number: bigint
     ): Promise<T> {
-        const utxo = await Ordinal.fetchLatestUTXOById(id)
+        const origin = await Ordinal.fetchOriginById(inscription_Number)
 
-        if (utxo === null) {
-            throw new Error('no utxo found')
+        if (origin === null) {
+            throw new Error('no origin found')
         }
-        const insciptionScript = Ordinal.getInsciptionScript(utxo.script)
-
-        const instance = (
-            clazz as unknown as typeof SmartContract
-        ).fromLockingScript(
-            utxo.script,
-            {},
-            bsv.Script.fromHex(insciptionScript)
-        )
-        instance.from = utxo
-        return instance as T
+        return OneSatNFT.getLatestInstanceByOrigin(clazz, origin)
     }
 }

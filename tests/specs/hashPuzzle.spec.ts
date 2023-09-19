@@ -6,28 +6,30 @@ import {
     sha256,
     toByteString,
     bsv,
+    findSig,
+    toHex,
+    PubKey,
 } from 'scrypt-ts'
 import { HashPuzzle } from '../contracts/hashPuzzle'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
+import { BSV20P2PKH } from '../../src/contracts/bsv20P2PKH'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzle`', () => {
     const tick = 'DOGE'
     const max = 100000n
-    const lim = 100000n
-    const amt = 100000n
+    const lim = max / 10n
+    const amt = lim
 
     const message1 = toByteString('hello, sCrypt!', true)
     const message2 = toByteString('hello, 1SAT!', true)
 
+    let hashPuzzle: HashPuzzle
     before(async () => {
         await HashPuzzle.loadArtifact()
-    })
-
-    it('should pass the public method unit test successfully.', async () => {
-        const hashPuzzle = new HashPuzzle(
+        hashPuzzle = new HashPuzzle(
             toByteString(tick, true),
             max,
             lim,
@@ -37,9 +39,14 @@ describe('Test SmartContract `HashPuzzle`', () => {
 
         await hashPuzzle.deployToken()
         await hashPuzzle.mint(amt)
+    })
+
+    it('should pass the public method unit test successfully.', async () => {
+        const tokenChangeAddress = await hashPuzzle.signer.getDefaultAddress()
+        const tokenChangePubkey = await hashPuzzle.signer.getDefaultPubKey()
 
         const callContract = async () => {
-            const { tx, nexts } = await hashPuzzle.transfer(
+            const { tx, tokenChange, receivers } = await hashPuzzle.transfer(
                 [
                     {
                         instance: new HashPuzzle(
@@ -51,28 +58,33 @@ describe('Test SmartContract `HashPuzzle`', () => {
                         amt: 10n,
                     },
                 ],
+                tokenChangeAddress,
                 'unlock',
                 message1
             )
 
             console.log('transfer tx: ', tx.id)
 
-            const burn = async () => {
-                const next0 = nexts[0].instance as HashPuzzle
-
-                const { tx } = await next0.methods.unlock(message1)
-                console.log('burn tx: ', tx.id)
+            if (tokenChange) {
+                await tokenChange.connect(getDefaultSigner())
+                const burn = async () => {
+                    const tx = await tokenChange.burn(
+                        'unlock',
+                        (sigResps) => findSig(sigResps, tokenChangePubkey),
+                        PubKey(toHex(tokenChangePubkey)),
+                        {
+                            pubKeyOrAddrToSign: tokenChangePubkey,
+                        } as MethodCallOptions<BSV20P2PKH>
+                    )
+                    console.log('burn tx: ', tx.id)
+                }
+                await expect(burn()).not.rejected
             }
-            await expect(burn()).not.rejected
 
             const burn1 = async () => {
-                const next1 = nexts[1].instance as HashPuzzle
-                try {
-                    const { tx } = await next1.methods.unlock(message2)
-                    console.log('burn tx: ', tx.id)
-                } catch (error) {
-                    console.log('aaa', error)
-                }
+                const receiver = receivers[0]
+                const tx = await receiver.burn('unlock', message2)
+                console.log('burn tx: ', tx.id)
             }
             await expect(burn1()).not.rejected
         }

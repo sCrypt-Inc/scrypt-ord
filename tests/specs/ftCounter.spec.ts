@@ -16,8 +16,8 @@ describe('Test SmartContract `FtCounter`', () => {
     let instance: FtCounter
     const tick = 'DOGE'
     const max = 100000n
-    const lim = 100000n
-    const amt = 100000n
+    const lim = max / 10n
+    const amt = lim
 
     before(async () => {
         await FtCounter.loadArtifact()
@@ -44,9 +44,9 @@ describe('Test SmartContract `FtCounter`', () => {
             // apply updates on the next instance off chain
 
             const amt = currentInstance.getAmt()
-            const changeAmt = amt - 1n
+            const tokenChangeAmt = amt - 100n
             nextInstance.incCounter()
-            nextInstance.setAmt(changeAmt)
+            nextInstance.setAmt(tokenChangeAmt)
             currentInstance.bindTxBuilder(
                 'inc',
                 async (
@@ -67,7 +67,7 @@ describe('Test SmartContract `FtCounter`', () => {
                                 FtCounter.buildTransferOutput(
                                     Addr(receiver.toByteString()),
                                     toByteString(tick, true),
-                                    1n
+                                    100n
                                 )
                             )
                         )
@@ -89,16 +89,12 @@ describe('Test SmartContract `FtCounter`', () => {
 
             // call the method of current instance to apply the updates on chain
             const callContract = async () => {
-                try {
-                    const { tx: callTx } = await currentInstance.methods.inc(
-                        receiver.toByteString(),
-                        changeAmt
-                    )
+                const { tx: callTx } = await currentInstance.methods.inc(
+                    receiver.toByteString(),
+                    tokenChangeAmt
+                )
 
-                    console.log('Contract FtCounter called: ', callTx.id)
-                } catch (error) {
-                    console.log('ee', error)
-                }
+                console.log('Contract FtCounter called: ', callTx.id)
             }
 
             await expect(callContract()).not.rejected
