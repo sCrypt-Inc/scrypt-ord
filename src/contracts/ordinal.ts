@@ -18,7 +18,7 @@ import {
 import { Shift10 } from 'scrypt-ts-lib'
 import superagent from 'superagent'
 import { BSV20Protocol, Inscription } from '../types'
-import { fromByteString } from '../utils'
+import { fromByteString, handlerApiError } from '../utils'
 
 export class Ordinal extends SmartContractLib {
     @method()
@@ -198,7 +198,7 @@ export class Ordinal extends SmartContractLib {
             })
             .catch(function (error) {
                 // handle error
-                console.log(error)
+                handlerApiError(error)
                 return null
             })
     }
@@ -214,7 +214,7 @@ export class Ordinal extends SmartContractLib {
             })
             .catch(function (error) {
                 // handle error
-                console.log(error)
+                handlerApiError(error)
                 return null
             })
 
@@ -236,7 +236,7 @@ export class Ordinal extends SmartContractLib {
             })
             .catch(function (error) {
                 // handle error
-                console.log(error)
+                handlerApiError(error)
                 return null
             })
 
@@ -270,8 +270,7 @@ export class Ordinal extends SmartContractLib {
                 return []
             })
             .catch(function (error) {
-                // handle error
-                console.log(error)
+                handlerApiError(error)
                 return []
             })
     }
