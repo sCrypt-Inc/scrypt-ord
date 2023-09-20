@@ -15,17 +15,20 @@ import {
     StatefulNext,
     toHex,
     UTXO,
+    findSig,
+    PubKey,
+    Signer,
+    SignatureHashType,
 } from 'scrypt-ts'
 
-import { BSV20Protocol, Inscription } from '../types'
 import { Ordinal } from './ordinal'
 import { signTx } from 'scryptlib'
+import { OrdP2PKH } from './ordP2PKH'
+import { fromByteString } from '../utils'
 
-function byteStringToStr(bs: ByteString): string {
-    const encoder = new TextDecoder()
-    return encoder.decode(Buffer.from(bs, 'hex'))
-}
-
+/**
+ * A base class implementing the bsv20 v1 protocol
+ */
 export class BSV20V1 extends SmartContract {
     @prop(true)
     isBSV20V1: boolean
@@ -105,69 +108,13 @@ export class BSV20V1 extends SmartContract {
         assert(false, 'should not reach here!')
     }
 
-    static toOutput(outputByteString: ByteString): bsv.Transaction.Output {
-        const reader = new bsv.encoding.BufferReader(
-            Buffer.from(outputByteString, 'hex')
-        )
-        return bsv.Transaction.Output.fromBufferReader(reader)
-    }
-
-    private static create(inscription: Inscription): bsv.Script {
-        const contentTypeBytes = toByteString(inscription.contentType, true)
-        const contentBytes = toByteString(inscription.content, true)
-        return bsv.Script.fromASM(
-            `OP_FALSE OP_IF 6f7264 OP_1 ${contentTypeBytes} OP_0 ${contentBytes} OP_ENDIF`
-        )
-    }
-
-    private static createMint(tick: string, amt: bigint): bsv.Script {
-        return BSV20V1.create({
-            content: JSON.stringify({
-                p: 'bsv-20',
-                op: 'mint',
-                tick,
-                amt: amt.toString().replace(/n/, ''),
-            }),
-            contentType: 'application/bsv-20',
-        })
-    }
-
-    private static createTransfer(tick: string, amt: bigint): bsv.Script {
-        return BSV20V1.create({
-            content: JSON.stringify({
-                p: 'bsv-20',
-                op: 'transfer',
-                tick,
-                amt: amt.toString().replace(/n/, ''),
-            }),
-            contentType: 'application/bsv-20',
-        })
-    }
-
-    private static createDeploy(
-        tick: string,
-        max: bigint,
-        lim: bigint
-    ): bsv.Script {
-        return BSV20V1.create({
-            content: JSON.stringify({
-                p: 'bsv-20',
-                op: 'deploy',
-                tick,
-                max: max.toString().replace(/n/, ''),
-                lim: lim.toString().replace(/n/, ''),
-            }),
-            contentType: 'application/bsv-20',
-        })
-    }
-
     async mint(amt: bigint) {
         if (amt > this.lim) {
             throw new Error(`amt should not be greater than "lim: ${this.lim}"`)
         }
 
         this.prependNOPScript(
-            BSV20V1.createMint(byteStringToStr(this.tick), amt)
+            Ordinal.createMint(fromByteString(this.tick), amt)
         )
         return this.deploy(1)
     }
@@ -182,7 +129,7 @@ export class BSV20V1 extends SmartContract {
             .addOutput(
                 new bsv.Transaction.Output({
                     script: bsv.Script.buildPublicKeyHashOut(address).add(
-                        BSV20V1.createDeploy(this.tick, this.max, this.lim)
+                        Ordinal.createDeploy(this.tick, this.max, this.lim)
                     ),
                     satoshis: 1,
                 })
@@ -192,63 +139,11 @@ export class BSV20V1 extends SmartContract {
         return this.signer.signAndsendTransaction(deployTx)
     }
 
-    private static isOrdinalContract(script: bsv.Script): boolean {
-        return (
-            script.chunks.length >= 8 &&
-            script.chunks[0].opcodenum === bsv.Opcode.OP_0 &&
-            script.chunks[1].opcodenum === bsv.Opcode.OP_IF &&
-            script.chunks[2].buf &&
-            script.chunks[2].buf.length === 3 &&
-            script.chunks[2].buf.toString('hex') === '6f7264' &&
-            script.chunks[3].opcodenum === bsv.Opcode.OP_1 &&
-            script.chunks[4].buf &&
-            script.chunks[5].opcodenum === bsv.Opcode.OP_0 &&
-            script.chunks[6].buf &&
-            script.chunks[7].opcodenum === bsv.Opcode.OP_ENDIF
-        )
-    }
-
-    static getBsv20(script: bsv.Script): BSV20Protocol {
-        if (BSV20V1.isOrdinalContract(script)) {
-            const content = byteStringToStr(toHex(script.chunks[6].buf))
-            const contentType = byteStringToStr(toHex(script.chunks[4].buf))
-
-            if (contentType !== 'application/bsv-20') {
-                throw new Error(`invalid bsv20 contentType: ${contentType}`)
-            }
-
-            const bsv20 = JSON.parse(content)
-
-            if (
-                typeof bsv20.tick === 'string' &&
-                typeof bsv20.op === 'string' &&
-                typeof bsv20.amt === 'string'
-            ) {
-                return bsv20
-            }
-
-            throw new Error(`invalid bsv20 op, ${content}`)
-        }
-        throw new Error(`invalid 1sat ordinal`)
-    }
-
-    static getAmt(tick: string, script: bsv.Script): bigint {
-        const bsv20 = BSV20V1.getBsv20(script)
-        if (bsv20.tick !== tick) {
-            throw new Error(`invalid bsv20 tick, expected ${tick}`)
-        }
-
-        if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
-            return BigInt(bsv20.amt)
-        }
-
-        throw new Error(`invalid bsv20 op: ${bsv20.op}`)
-    }
-
     setAmt(amt: bigint) {
         this.prependNOPScript(
-            BSV20V1.createTransfer(byteStringToStr(this.tick), amt)
+            Ordinal.createTransfer(fromByteString(this.tick), amt)
         )
+        return this
     }
 
     getAmt() {
@@ -258,11 +153,11 @@ export class BSV20V1 extends SmartContract {
             throw new Error('no amt setted!')
         }
 
-        return BSV20V1.getAmt(byteStringToStr(this.tick), nopScript)
+        return Ordinal.getAmt(nopScript, fromByteString(this.tick))
     }
 
     /**
-     * transfer bsv20 to receivers. First output is token change output.
+     * transfer bsv20 to receivers. Each output is a receiver.
      * @param receivers
      * @param methodName
      * @param args
@@ -270,25 +165,24 @@ export class BSV20V1 extends SmartContract {
      */
     async transfer(
         receivers: Array<{
-            instance: BSV20V1
+            instance: BSV20V1 | OrdP2PKH
             amt: bigint
         }>,
-        tokenChangeAddress: string | bsv.Address | bsv.PublicKey | BSV20V1,
         methodName: string,
         ...args
     ): Promise<{
         /** The method calling tx */
         tx: bsv.Transaction
-        tokenChange: BSV20V1 | null
+        tokenChangeP2PKH: OrdP2PKH | null
         receivers: Array<BSV20V1>
     }> {
-        let tokenChange: BSV20V1 | null = null
-        const changeTokenAmt =
+        let tokenChangeP2PKH: OrdP2PKH | null = null
+        const tokenChangeAmt =
             this.getAmt() -
             receivers.reduce((acc, receiver) => {
                 return (acc += receiver.amt)
             }, 0n)
-        if (changeTokenAmt < 0n) {
+        if (tokenChangeAmt < 0n) {
             throw new Error(`Not enough tokens`)
         }
 
@@ -301,10 +195,10 @@ export class BSV20V1 extends SmartContract {
                     current: BSV20V1,
                     options: MethodCallOptions<BSV20V1>
                 ): Promise<ContractTransaction> => {
-                    const bsvChangeAddress =
-                        await this.signer.getDefaultAddress()
+                    // bsv change address
+                    const changeAddress = await this.signer.getDefaultAddress()
 
-                    const nexts: StatefulNext<BSV20V1>[] = []
+                    const nexts: StatefulNext<SmartContract>[] = []
                     const tx = new bsv.Transaction()
 
                     tx.addInput(current.buildContractInput())
@@ -314,7 +208,17 @@ export class BSV20V1 extends SmartContract {
 
                         await receiver.instance.connect(this.signer)
 
-                        receiver.instance.setAmt(receiver.amt)
+                        if (receiver.instance instanceof BSV20V1) {
+                            receiver.instance.setAmt(receiver.amt)
+                        } else if (receiver.instance instanceof OrdP2PKH) {
+                            receiver.instance.setBSV20(
+                                fromByteString(this.tick),
+                                receiver.amt
+                            )
+                        } else {
+                            throw new Error('unsupport receiver!')
+                        }
+
                         tx.addOutput(
                             new bsv.Transaction.Output({
                                 script: receiver.instance.lockingScript,
@@ -329,21 +233,15 @@ export class BSV20V1 extends SmartContract {
                         })
                     }
 
-                    if (changeTokenAmt > 0n) {
-                        // eslint-disable-next-line @typescript-eslint/no-var-requires
-                        const { BSV20P2PKH } = require('./bsv20P2PKH')
+                    if (tokenChangeAmt > 0n) {
+                        const changeAddress =
+                            await this.signer.getDefaultAddress()
+                        const p2pkh = OrdP2PKH.fromAddress(changeAddress)
 
-                        const p2pkh =
-                            tokenChangeAddress instanceof BSV20V1
-                                ? tokenChangeAddress
-                                : BSV20P2PKH.fromAddress(
-                                      this.tick,
-                                      this.max,
-                                      this.lim,
-                                      tokenChangeAddress
-                                  )
-
-                        p2pkh.setAmt(changeTokenAmt)
+                        p2pkh.setBSV20(
+                            fromByteString(this.tick),
+                            tokenChangeAmt
+                        )
                         tx.addOutput(
                             new bsv.Transaction.Output({
                                 script: p2pkh.lockingScript,
@@ -357,10 +255,10 @@ export class BSV20V1 extends SmartContract {
                             atOutputIndex: nexts.length,
                         })
 
-                        tokenChange = p2pkh
+                        tokenChangeP2PKH = p2pkh
                     }
 
-                    tx.change(bsvChangeAddress)
+                    tx.change(changeAddress)
 
                     return Promise.resolve({
                         tx,
@@ -375,99 +273,128 @@ export class BSV20V1 extends SmartContract {
 
         return Promise.resolve({
             tx,
-            tokenChange,
+            tokenChangeP2PKH,
             receivers: nexts.slice(0, receivers.length).map((n) => n.instance),
         })
     }
 
-    /**
-     * burn bsv20V1 token
-     * @param methodName public method name to call
-     * @param args arguments to call the public method
-     * @returns
-     */
-    async burn(methodName: string, ...args): Promise<bsv.Transaction> {
-        const builder = this['_txBuilders'].has(methodName)
+    static async getOrdP2PKHs(
+        tick: string,
+        address: string
+    ): Promise<Array<OrdP2PKH>> {
+        const bsv20Utxos = await Ordinal.fetchBSV20Utxos(address, tick)
+        return bsv20Utxos.map((utxo) => OrdP2PKH.fromP2PKHUTXO(utxo))
+    }
+    static async send2Contract(
+        ordP2PKHs: Array<OrdP2PKH>,
+        ordSigner: Signer,
+        instance: BSV20V1,
+        tokenAmt: bigint
+    ): Promise<bsv.Transaction> {
+        const ordPubKey = await ordSigner.getDefaultPubKey()
 
-        if (!builder) {
-            this.bindTxBuilder(
-                methodName,
+        const totalTokenAmt = ordP2PKHs.reduce((acc, ordP2PKH) => {
+            acc += BigInt(ordP2PKH.getBSV20Amt())
+            return acc
+        }, 0n)
+
+        const tokenChangeAmt = totalTokenAmt - tokenAmt
+
+        if (tokenChangeAmt < 0n) {
+            throw new Error('Not enough token!')
+        }
+
+        const tx = new bsv.Transaction()
+
+        for (let i = 0; i < ordP2PKHs.length; i++) {
+            const p2pkh = ordP2PKHs[i]
+            p2pkh.bindTxBuilder(
+                'unlock',
                 async (
-                    current: BSV20V1,
-                    options: MethodCallOptions<BSV20V1>
+                    current: OrdP2PKH,
+                    options: MethodCallOptions<OrdP2PKH>
                 ): Promise<ContractTransaction> => {
-                    const bsvChangeAddress =
-                        await this.signer.getDefaultAddress()
+                    const tx = options.partialContractTx.tx
+                    tx.addInput(current.buildContractInput())
 
-                    const tx = new bsv.Transaction()
+                    const nexts: StatefulNext<SmartContract>[] = []
+                    if (i === ordP2PKHs.length - 1) {
+                        instance.prependNOPScript(
+                            Ordinal.createTransfer(
+                                fromByteString(instance.tick),
+                                tokenAmt
+                            )
+                        )
 
-                    tx.addInput(current.buildContractInput()).change(
-                        bsvChangeAddress
-                    )
+                        tx.addOutput(
+                            new bsv.Transaction.Output({
+                                script: instance.lockingScript,
+                                satoshis: 1,
+                            })
+                        )
 
+                        nexts.push({
+                            instance,
+                            balance: 1,
+                            atOutputIndex: 0,
+                        })
+
+                        if (tokenChangeAmt > 0n) {
+                            const p2pkh = OrdP2PKH.fromAddress(ordPubKey)
+
+                            p2pkh.setBSV20(
+                                fromByteString(instance.tick),
+                                tokenChangeAmt
+                            )
+
+                            tx.addOutput(
+                                new bsv.Transaction.Output({
+                                    script: p2pkh.lockingScript,
+                                    satoshis: 1,
+                                })
+                            )
+
+                            nexts.push({
+                                instance,
+                                balance: 1,
+                                atOutputIndex: 1,
+                            })
+                        }
+
+                        tx.change(ordPubKey.toAddress())
+                    }
                     return Promise.resolve({
-                        tx,
-                        atInputIndex: 0,
-                        nexts: [],
+                        tx: tx,
+                        atInputIndex: i,
+                        nexts: nexts,
                     })
                 }
             )
+
+            await p2pkh.methods.unlock(
+                (sigResps) => findSig(sigResps, ordPubKey),
+                PubKey(toHex(ordPubKey)),
+                {
+                    partialContractTx: {
+                        tx: tx,
+                        atInputIndex: 0,
+                        nexts: [],
+                    },
+                    pubKeyOrAddrToSign: ordPubKey,
+                    multiContractCall: true,
+                } as MethodCallOptions<OrdP2PKH>
+            )
         }
 
-        const { tx } = await this.methods[methodName](...args)
+        const { tx: callTx } = await SmartContract.multiContractCall(
+            {
+                tx: tx,
+                atInputIndex: 0,
+                nexts: [],
+            },
+            ordSigner
+        )
 
-        return tx
-    }
-
-    static send2Contract(
-        utxo: UTXO,
-        ordPk: bsv.PrivateKey,
-        instance: SmartContract
-    ) {
-        instance.buildDeployTransaction = (
-            utxos: UTXO[],
-            amount: number,
-            changeAddress?: bsv.Address | string
-        ): Promise<bsv.Transaction> => {
-            const deployTx = new bsv.Transaction()
-
-            const bsv20 = BSV20V1.getBsv20(bsv.Script.fromHex(utxo.script))
-
-            instance.prependNOPScript(
-                BSV20V1.createTransfer(bsv20.tick, BigInt(bsv20.amt))
-            )
-
-            deployTx.from(utxo).addOutput(
-                new bsv.Transaction.Output({
-                    script: instance.lockingScript,
-                    satoshis: amount,
-                })
-            )
-
-            if (changeAddress) {
-                deployTx.change(changeAddress)
-            }
-            const lockingScript = bsv.Script.fromHex(utxo.script)
-
-            const sig = signTx(
-                deployTx,
-                ordPk,
-                lockingScript,
-                amount,
-                0,
-                bsv.crypto.Signature.ANYONECANPAY_SINGLE
-            )
-
-            deployTx.inputs[0].setScript(
-                bsv.Script.buildPublicKeyHashIn(
-                    ordPk.publicKey,
-                    bsv.crypto.Signature.fromTxFormat(Buffer.from(sig, 'hex')),
-                    bsv.crypto.Signature.ANYONECANPAY_SINGLE
-                )
-            )
-
-            return Promise.resolve(deployTx)
-        }
-        return instance.deploy(1)
+        return callTx
     }
 }

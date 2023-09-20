@@ -10,6 +10,7 @@ import {
 import { FtCounter } from '../contracts/ftCounter'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
+import { Ordinal } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `FtCounter`', () => {
@@ -63,7 +64,7 @@ describe('Test SmartContract `FtCounter`', () => {
                             })
                         )
                         .addOutput(
-                            FtCounter.toOutput(
+                            Ordinal.toOutput(
                                 FtCounter.buildTransferOutput(
                                     Addr(receiver.toByteString()),
                                     toByteString(tick, true),

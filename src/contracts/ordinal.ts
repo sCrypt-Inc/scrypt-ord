@@ -12,9 +12,13 @@ import {
     int2ByteString,
     SmartContractLib,
     UTXO,
+    bsv,
+    toHex,
 } from 'scrypt-ts'
 import { Shift10 } from 'scrypt-ts-lib'
 import superagent from 'superagent'
+import { BSV20Protocol, Inscription } from '../types'
+import { fromByteString } from '../utils'
 
 export class Ordinal extends SmartContractLib {
     @method()
@@ -237,5 +241,227 @@ export class Ordinal extends SmartContractLib {
             })
 
         return origin
+    }
+
+    static fetchBSV20Utxos(
+        address: string,
+        tick: string
+    ): Promise<Array<UTXO>> {
+        const url = `https://ordinals.gorillapool.io/api/utxos/address/${address}/tick/${tick}`
+
+        return superagent
+            .get(url)
+            .then(function (response) {
+                // handle success
+                if (Array.isArray(response.body)) {
+                    return Promise.all(
+                        response.body.map(async (utxo) => {
+                            const inscription =
+                                await Ordinal.fetchUTXOByOutpoint(utxo.outpoint)
+                            return {
+                                txId: utxo.txid,
+                                outputIndex: utxo.vout,
+                                script: inscription.script,
+                                satoshis: 1,
+                            }
+                        })
+                    )
+                }
+                return []
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error)
+                return []
+            })
+    }
+
+    static toOutput(outputByteString: ByteString): bsv.Transaction.Output {
+        const reader = new bsv.encoding.BufferReader(
+            Buffer.from(outputByteString, 'hex')
+        )
+        return bsv.Transaction.Output.fromBufferReader(reader)
+    }
+
+    static create(inscription: Inscription): bsv.Script {
+        const contentTypeBytes = toByteString(inscription.contentType, true)
+        const contentBytes = toByteString(inscription.content, true)
+        return bsv.Script.fromASM(
+            `OP_FALSE OP_IF 6f7264 OP_1 ${contentTypeBytes} OP_0 ${contentBytes} OP_ENDIF`
+        )
+    }
+
+    static createMint(tick: string, amt: bigint): bsv.Script {
+        return Ordinal.create({
+            content: JSON.stringify({
+                p: 'bsv-20',
+                op: 'mint',
+                tick,
+                amt: amt.toString().replace(/n/, ''),
+            }),
+            contentType: 'application/bsv-20',
+        })
+    }
+
+    static createTransfer(tick: string, amt: bigint): bsv.Script {
+        return Ordinal.create({
+            content: JSON.stringify({
+                p: 'bsv-20',
+                op: 'transfer',
+                tick,
+                amt: amt.toString().replace(/n/, ''),
+            }),
+            contentType: 'application/bsv-20',
+        })
+    }
+
+    static createDeploy(tick: string, max: bigint, lim: bigint): bsv.Script {
+        return Ordinal.create({
+            content: JSON.stringify({
+                p: 'bsv-20',
+                op: 'deploy',
+                tick,
+                max: max.toString().replace(/n/, ''),
+                lim: lim.toString().replace(/n/, ''),
+            }),
+            contentType: 'application/bsv-20',
+        })
+    }
+
+    private static isOrdinalContract(script: bsv.Script): boolean {
+        return (
+            script.chunks.length >= 8 &&
+            script.chunks[0].opcodenum === bsv.Opcode.OP_0 &&
+            script.chunks[1].opcodenum === bsv.Opcode.OP_IF &&
+            script.chunks[2].buf &&
+            script.chunks[2].buf.length === 3 &&
+            script.chunks[2].buf.toString('hex') === '6f7264' &&
+            script.chunks[3].opcodenum === bsv.Opcode.OP_1 &&
+            script.chunks[4].buf &&
+            script.chunks[5].opcodenum === bsv.Opcode.OP_0 &&
+            script.chunks[6].buf &&
+            script.chunks[7].opcodenum === bsv.Opcode.OP_ENDIF
+        )
+    }
+
+    static isOrdinalP2PKHV1(script: bsv.Script): boolean {
+        return (
+            script.chunks.length === 13 &&
+            script.chunks[0].opcodenum === bsv.Opcode.OP_DUP &&
+            script.chunks[1].opcodenum === bsv.Opcode.OP_HASH160 &&
+            script.chunks[2].buf &&
+            script.chunks[2].buf.length === 20 &&
+            script.chunks[3].opcodenum === bsv.Opcode.OP_EQUALVERIFY &&
+            script.chunks[4].opcodenum === bsv.Opcode.OP_CHECKSIG &&
+            script.chunks[5].opcodenum === bsv.Opcode.OP_0 &&
+            script.chunks[6].opcodenum === bsv.Opcode.OP_IF &&
+            script.chunks[7].buf &&
+            script.chunks[7].buf.length === 3 &&
+            script.chunks[7].buf.toString('hex') === '6f7264' &&
+            script.chunks[8].opcodenum === bsv.Opcode.OP_1 &&
+            script.chunks[9].buf &&
+            script.chunks[10].opcodenum === bsv.Opcode.OP_0 &&
+            script.chunks[11].buf &&
+            script.chunks[12].opcodenum === bsv.Opcode.OP_ENDIF
+        )
+    }
+
+    static isOrdinalP2PKHV2(script: bsv.Script): boolean {
+        return (
+            script.chunks.length === 13 &&
+            script.chunks[0].opcodenum === bsv.Opcode.OP_0 &&
+            script.chunks[1].opcodenum === bsv.Opcode.OP_IF &&
+            script.chunks[2].buf &&
+            script.chunks[2].buf.length === 3 &&
+            script.chunks[2].buf.toString('hex') === '6f7264' &&
+            script.chunks[3].opcodenum === bsv.Opcode.OP_1 &&
+            script.chunks[4].buf &&
+            script.chunks[5].opcodenum === bsv.Opcode.OP_0 &&
+            script.chunks[6].buf &&
+            script.chunks[7].opcodenum === bsv.Opcode.OP_ENDIF &&
+            script.chunks[8].opcodenum === bsv.Opcode.OP_DUP &&
+            script.chunks[9].opcodenum === bsv.Opcode.OP_HASH160 &&
+            script.chunks[10].buf &&
+            script.chunks[10].buf.length === 20 &&
+            script.chunks[11].opcodenum === bsv.Opcode.OP_EQUALVERIFY &&
+            script.chunks[12].opcodenum === bsv.Opcode.OP_CHECKSIG
+        )
+    }
+
+    static isOrdinalP2PKH(script: bsv.Script): boolean {
+        return (
+            Ordinal.isOrdinalP2PKHV1(script) || Ordinal.isOrdinalP2PKHV2(script)
+        )
+    }
+
+    static getBsv20Json(content: string, contentType): BSV20Protocol {
+        if (contentType !== 'application/bsv-20') {
+            throw new Error(`invalid bsv20 contentType: ${contentType}`)
+        }
+
+        const bsv20 = JSON.parse(content)
+
+        if (
+            typeof bsv20.tick === 'string' &&
+            typeof bsv20.op === 'string' &&
+            typeof bsv20.amt === 'string'
+        ) {
+            return bsv20
+        }
+
+        throw new Error(`invalid bsv20 op, ${content}`)
+    }
+
+    static getBsv20(script: bsv.Script): BSV20Protocol {
+        if (Ordinal.isOrdinalContract(script)) {
+            const content = fromByteString(toHex(script.chunks[6].buf))
+            const contentType = fromByteString(toHex(script.chunks[4].buf))
+            return Ordinal.getBsv20Json(content, contentType)
+        }
+
+        if (Ordinal.isOrdinalP2PKH(script)) {
+            if (Ordinal.isOrdinalP2PKHV1(script)) {
+                const content = fromByteString(toHex(script.chunks[11].buf))
+                const contentType = fromByteString(toHex(script.chunks[9].buf))
+                return Ordinal.getBsv20Json(content, contentType)
+            } else {
+                const content = fromByteString(toHex(script.chunks[6].buf))
+                const contentType = fromByteString(toHex(script.chunks[4].buf))
+                return Ordinal.getBsv20Json(content, contentType)
+            }
+        }
+        throw new Error(`invalid 1sat ordinal`)
+    }
+
+    static getAmt(script: bsv.Script, tick?: string): bigint {
+        const bsv20 = Ordinal.getBsv20(script)
+        if (typeof tick === 'string' && bsv20.tick !== tick) {
+            throw new Error(`invalid bsv20 tick, expected ${tick}`)
+        }
+
+        if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
+            return BigInt(bsv20.amt)
+        }
+
+        throw new Error(`invalid bsv20 op: ${bsv20.op}`)
+    }
+
+    static getTick(script: bsv.Script): string {
+        const bsv20 = Ordinal.getBsv20(script)
+
+        if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
+            return bsv20.tick
+        }
+
+        throw new Error(`invalid bsv20 op: ${bsv20.op}`)
+    }
+
+    static getInsciption(nopScript: bsv.Script): Inscription {
+        const content = fromByteString(toHex(nopScript.chunks[6].buf))
+        const contentType = fromByteString(toHex(nopScript.chunks[4].buf))
+        return {
+            content,
+            contentType,
+        }
     }
 }

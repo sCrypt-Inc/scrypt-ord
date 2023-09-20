@@ -1,27 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-import {
-    ContractTransaction,
-    MethodCallOptions,
-    sha256,
-    toByteString,
-    bsv,
-    findSig,
-    toHex,
-    PubKey,
-} from 'scrypt-ts'
+import { sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzle } from '../contracts/hashPuzzle'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20P2PKH } from '../../src/contracts/bsv20P2PKH'
+import { OrdP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzle`', () => {
     const tick = 'DOGE'
     const max = 100000n
     const lim = max / 10n
-    const amt = lim
+    const amt = 1000n
 
     const message1 = toByteString('hello, sCrypt!', true)
     const message2 = toByteString('hello, 1SAT!', true)
@@ -41,52 +32,48 @@ describe('Test SmartContract `HashPuzzle`', () => {
         await hashPuzzle.mint(amt)
     })
 
-    it('should pass the public method unit test successfully.', async () => {
-        const tokenChangeAddress = await hashPuzzle.signer.getDefaultAddress()
-        const tokenChangePubkey = await hashPuzzle.signer.getDefaultPubKey()
-
+    it('transfer to an other hashPuzzle and withdraw.', async () => {
         const callContract = async () => {
-            const { tx, tokenChange, receivers } = await hashPuzzle.transfer(
-                [
-                    {
-                        instance: new HashPuzzle(
-                            toByteString(tick, true),
-                            max,
-                            lim,
-                            sha256(message2)
-                        ),
-                        amt: 10n,
-                    },
-                ],
-                tokenChangeAddress,
-                'unlock',
-                message1
-            )
+            const { tx, tokenChangeP2PKH, receivers } =
+                await hashPuzzle.transfer(
+                    [
+                        {
+                            instance: new HashPuzzle(
+                                toByteString(tick, true),
+                                max,
+                                lim,
+                                sha256(message2)
+                            ),
+                            amt: 10n,
+                        },
+                    ],
+                    'unlock',
+                    message1
+                )
+
+            expect(tokenChangeP2PKH).not.be.null
+            expect(tokenChangeP2PKH?.getBSV20Amt()).to.equal(990n)
 
             console.log('transfer tx: ', tx.id)
 
-            if (tokenChange) {
-                await tokenChange.connect(getDefaultSigner())
-                const burn = async () => {
-                    const tx = await tokenChange.burn(
-                        'unlock',
-                        (sigResps) => findSig(sigResps, tokenChangePubkey),
-                        PubKey(toHex(tokenChangePubkey)),
-                        {
-                            pubKeyOrAddrToSign: tokenChangePubkey,
-                        } as MethodCallOptions<BSV20P2PKH>
-                    )
-                    console.log('burn tx: ', tx.id)
-                }
-                await expect(burn()).not.rejected
-            }
-
-            const burn1 = async () => {
+            const withdraw = async () => {
                 const receiver = receivers[0]
-                const tx = await receiver.burn('unlock', message2)
-                console.log('burn tx: ', tx.id)
+                const address = await receiver.signer.getDefaultAddress()
+                const { tx, tokenChangeP2PKH } = await receiver.transfer(
+                    [
+                        {
+                            instance: OrdP2PKH.fromAddress(address),
+                            amt: receiver.getAmt(),
+                        },
+                    ],
+                    'unlock',
+                    message2
+                )
+
+                expect(tokenChangeP2PKH).to.be.null
+                console.log('withdraw tx: ', tx.id)
             }
-            await expect(burn1()).not.rejected
+            await expect(withdraw()).not.rejected
         }
 
         await expect(callContract()).not.rejected
