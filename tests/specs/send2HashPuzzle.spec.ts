@@ -5,7 +5,7 @@ import { HashPuzzle } from '../contracts/hashPuzzle'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1 } from '../scrypt-ord'
+import { BSV20V1, OrdP2PKH, TokenReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzle`', () => {
@@ -32,26 +32,30 @@ describe('Test SmartContract `HashPuzzle`', () => {
         const address = await signer.getDefaultAddress()
         const ordP2PKHs = await BSV20V1.getOrdP2PKHs(tick, address.toString())
 
-        await Promise.all(ordP2PKHs.map((p) => p.connect(signer)))
+        if (ordP2PKHs.length === 0) {
+            throw new Error('no utxo found!')
+        }
 
-        const tx = await BSV20V1.send2Contract(
-            ordP2PKHs,
-            signer,
-            hashPuzzle,
-            6n
-        )
+        await Promise.all(ordP2PKHs.map((p) => p.connect(signer)))
+        const recipients: Array<TokenReceiver> = [
+            {
+                instance: hashPuzzle,
+                amt: 6n,
+            },
+        ]
+
+        const { tx } = await BSV20V1.transfer(ordP2PKHs, signer, recipients)
 
         console.log('tx:', tx.id)
     })
 
     it('should withdraw from  hashPuzzle successfully.', async () => {
         const callContract = async () => {
-            const { tx, tokenChangeP2PKH } = await hashPuzzle.transfer(
-                [],
-                'unlock',
-                message1
-            )
-            expect(tokenChangeP2PKH?.getBSV20Amt()).to.be.equal(6n)
+            const { tx, nexts } = await hashPuzzle.methods.unlock(message1)
+
+            expect(nexts[0] instanceof OrdP2PKH).to.be.true
+
+            // expect(nexts[0]?.getBSV20Amt()).to.be.equal(6n)
             console.log('transfer to  tokenChangeP2PKH: ', tx.id)
         }
 

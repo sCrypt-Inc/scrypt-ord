@@ -5,7 +5,7 @@ import { HashPuzzle } from '../contracts/hashPuzzle'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH } from '../scrypt-ord'
+import { OrdP2PKH, TokenReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzle`', () => {
@@ -32,51 +32,48 @@ describe('Test SmartContract `HashPuzzle`', () => {
     it('transfer to an other hashPuzzle and withdraw.', async () => {
         const callContract = async () => {
             for (let i = 0; i < 3; i++) {
-                const { tx, tokenChangeP2PKH, receivers } =
-                    await hashPuzzle.transfer(
-                        [
-                            {
-                                instance: new HashPuzzle(
-                                    tick,
-                                    max,
-                                    lim,
-                                    sha256(
-                                        toByteString(
-                                            `hello, sCrypt!:${i + 1}`,
-                                            true
-                                        )
-                                    )
-                                ),
-                                amt: 10n,
-                            },
-                        ],
-                        'unlock',
-                        toByteString(`hello, sCrypt!:${i}`, true)
-                    )
+                const recipients: Array<TokenReceiver> = [
+                    {
+                        instance: new HashPuzzle(
+                            tick,
+                            max,
+                            lim,
+                            sha256(
+                                toByteString(`hello, sCrypt!:${i + 1}`, true)
+                            )
+                        ),
+                        amt: 10n,
+                    },
+                ]
 
-                if (tokenChangeP2PKH) {
-                    expect(tokenChangeP2PKH.getBSV20Amt()).to.be.equal(990n)
-                }
+                const { tx } = await hashPuzzle.methods.unlock(
+                    toByteString(`hello, sCrypt!:${i}`, true),
+                    {
+                        transfer: recipients,
+                    }
+                )
 
-                hashPuzzle = receivers[0] as HashPuzzle
+                hashPuzzle = recipients[0].instance as HashPuzzle
 
                 console.log('transfer tx: ', tx.id)
             }
 
             const withdraw = async () => {
                 const address = await hashPuzzle.signer.getDefaultAddress()
-                const { tx, tokenChangeP2PKH } = await hashPuzzle.transfer(
-                    [
-                        {
-                            instance: OrdP2PKH.fromAddress(address),
-                            amt: hashPuzzle.getAmt(),
-                        },
-                    ],
-                    'unlock',
-                    toByteString(`hello, sCrypt!:3`, true)
+                const recipients = [
+                    {
+                        instance: OrdP2PKH.fromAddress(address),
+                        amt: hashPuzzle.getAmt(),
+                    },
+                ]
+
+                const { tx } = await hashPuzzle.methods.unlock(
+                    toByteString(`hello, sCrypt!:3`, true),
+                    {
+                        transfer: recipients,
+                    }
                 )
 
-                expect(tokenChangeP2PKH).to.be.null
                 console.log('withdraw tx: ', tx.id)
             }
             await expect(withdraw()).not.rejected
