@@ -11,5 +11,5 @@ os:
   - windows
 
 script:
-  - echo "PRIVATE_KEY=$PRIVATE_KEY" > .env
+  - echo "PRIVATE_KEY=$PRIVATE_KEY" > ./tests/.env
   - npm t
