@@ -1,16 +1,16 @@
 import { expect, use } from 'chai'
 import { MethodCallOptions } from 'scrypt-ts'
-import { NFTCounter } from '../contracts/nftCounter'
+import { CounterNFT } from '../contracts/counterNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
 
-describe('Test SmartContract `NFTCounter`', () => {
-    let instance: NFTCounter
+describe('Test SmartContract `CounterNFT`', () => {
+    let instance: CounterNFT
 
     before(async () => {
-        await NFTCounter.loadArtifact()
-        instance = new NFTCounter(1n)
+        CounterNFT.loadArtifact()
+        instance = new CounterNFT(1n)
         await instance.connect(getDefaultSigner())
 
         await instance.mintTextNft('hello, world!')
@@ -35,10 +35,10 @@ describe('Test SmartContract `NFTCounter`', () => {
                             instance: nextInstance,
                             balance: 1,
                         },
-                    } as MethodCallOptions<NFTCounter>
+                    } as MethodCallOptions<CounterNFT>
                 )
 
-                console.log('Contract OrdinalCounter called: ', callTx.id)
+                console.log('Contract CounterNFT called: ', callTx.id)
             }
 
             await expect(callContract()).not.rejected

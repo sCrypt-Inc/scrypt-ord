@@ -26,15 +26,19 @@ export class Ordinal extends SmartContractLib {
         const header: bigint = byteString2Int(slice(b, 0n, 1n))
 
         if (header < 0x4cn) {
+            // Opcodes 1-75 simply push their value of bytes of data onto the stack
             len = header
             ret = 1n + len
         } else if (header == 0x4cn) {
+            // OP_PUSHDATA1 takes the next 1 byte as the number of bytes to push onto the stack
             len = Utils.fromLEUnsigned(slice(b, 1n, 2n))
             ret = 1n + 1n + len
         } else if (header == 0x4dn) {
+            // OP_PUSHDATA2 takes the next 2 bytes as the number of bytes to push onto the stack
             len = Utils.fromLEUnsigned(slice(b, 1n, 3n))
             ret = 1n + 2n + len
         } else if (header == 0x4en) {
+            // OP_PUSHDATA4 takes the next 4 bytes as the number of bytes to push onto the stack
             len = Utils.fromLEUnsigned(slice(b, 1n, 5n))
             ret = 1n + 4n + len
         } else {
@@ -47,6 +51,7 @@ export class Ordinal extends SmartContractLib {
 
     @method()
     static isP2PKHOrdinal(script: ByteString): boolean {
+        // P2PKH locking script (25 bytes) + Inscription
         return (
             len(script) > 25n &&
             Ordinal.isP2PKH(slice(script, 0n, 25n)) &&
@@ -89,6 +94,7 @@ export class Ordinal extends SmartContractLib {
         let pos = 0n
         if (
             len(script) >= 11n &&
+            // OP_FALSE OP_IF "ord" OP_1
             slice(script, pos, 7n) === toByteString('0063036f726451')
         ) {
             pos += 7n
@@ -245,6 +251,7 @@ export class Ordinal extends SmartContractLib {
     }
 
     static isOrdinalP2PKHV1(script: bsv.Script): boolean {
+        // P2PKH locking script + inscription
         return (
             script.chunks.length === 13 &&
             script.chunks[0].opcodenum === bsv.Opcode.OP_DUP &&
@@ -267,6 +274,7 @@ export class Ordinal extends SmartContractLib {
     }
 
     static isOrdinalP2PKHV2(script: bsv.Script): boolean {
+        // inscription + P2PKH locking script
         return (
             script.chunks.length === 13 &&
             script.chunks[0].opcodenum === bsv.Opcode.OP_0 &&
@@ -294,7 +302,7 @@ export class Ordinal extends SmartContractLib {
         )
     }
 
-    static getBsv20Json(content: string, contentType): BSV20Protocol {
+    static getBsv20Json(content: string, contentType: string): BSV20Protocol {
         if (contentType !== 'application/bsv-20') {
             throw new Error(`invalid bsv20 contentType: ${contentType}`)
         }

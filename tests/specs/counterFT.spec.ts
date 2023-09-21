@@ -7,22 +7,22 @@ import {
     bsv,
     Addr,
 } from 'scrypt-ts'
-import { FtCounter } from '../contracts/ftCounter'
+import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { Ordinal } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `FtCounter`', () => {
-    let instance: FtCounter
+describe('Test SmartContract `CounterFT`', () => {
+    let instance: CounterFT
     const tick = 'DOGE'
     const max = 100000n
     const lim = max / 10n
     const amt = lim
 
     before(async () => {
-        await FtCounter.loadArtifact()
-        instance = new FtCounter(toByteString(tick, true), max, lim, 0n)
+        CounterFT.loadArtifact()
+        instance = new CounterFT(toByteString(tick, true), max, lim, 0n)
         await instance.connect(getDefaultSigner())
         await instance.deployToken()
         await instance.mint(amt)
@@ -51,8 +51,8 @@ describe('Test SmartContract `FtCounter`', () => {
             currentInstance.bindTxBuilder(
                 'inc',
                 async (
-                    current: FtCounter,
-                    options: MethodCallOptions<FtCounter>
+                    current: CounterFT,
+                    options: MethodCallOptions<CounterFT>
                 ): Promise<ContractTransaction> => {
                     const tx = new bsv.Transaction()
 
@@ -65,7 +65,7 @@ describe('Test SmartContract `FtCounter`', () => {
                         )
                         .addOutput(
                             Ordinal.toOutput(
-                                FtCounter.buildTransferOutput(
+                                CounterFT.buildTransferOutput(
                                     Addr(receiver.toByteString()),
                                     toByteString(tick, true),
                                     100n
@@ -95,7 +95,7 @@ describe('Test SmartContract `FtCounter`', () => {
                     tokenChangeAmt
                 )
 
-                console.log('Contract FtCounter called: ', callTx.id)
+                console.log('Contract CounterFT called: ', callTx.id)
             }
 
             await expect(callContract()).not.rejected

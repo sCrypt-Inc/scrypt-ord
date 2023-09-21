@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import { sha256, toByteString } from 'scrypt-ts'
-import { HashPuzzle } from '../contracts/hashPuzzle'
+import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
@@ -19,10 +19,10 @@ describe('Test skipTokenChange', () => {
     const lim = max / 10n
     const amt = 1000n
 
-    let hashPuzzle: HashPuzzle
+    let hashPuzzle: HashPuzzleFT
     before(async () => {
-        await HashPuzzle.loadArtifact()
-        hashPuzzle = new HashPuzzle(
+        HashPuzzleFT.loadArtifact()
+        hashPuzzle = new HashPuzzleFT(
             tick,
             max,
             lim,
@@ -38,7 +38,7 @@ describe('Test skipTokenChange', () => {
         const callContract = async () => {
             const recipients: Array<TokenReceiver> = [
                 {
-                    instance: new HashPuzzle(
+                    instance: new HashPuzzleFT(
                         tick,
                         max,
                         lim,
@@ -52,7 +52,7 @@ describe('Test skipTokenChange', () => {
                 toByteString(`hello, sCrypt!`, true),
                 {
                     transfer: recipients,
-                } as OrdMethodCallOptions<HashPuzzle>
+                } as OrdMethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -71,7 +71,7 @@ describe('Test skipTokenChange', () => {
         const callContract = async () => {
             const recipients: Array<TokenReceiver> = [
                 {
-                    instance: new HashPuzzle(
+                    instance: new HashPuzzleFT(
                         tick,
                         max,
                         lim,
@@ -86,7 +86,7 @@ describe('Test skipTokenChange', () => {
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as OrdMethodCallOptions<HashPuzzle>
+                } as OrdMethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)

@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import { sha256, toByteString } from 'scrypt-ts'
-import { HashPuzzle } from '../contracts/hashPuzzle'
+import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH, TokenReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzle`', () => {
+describe('Test SmartContract `HashPuzzleFT`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
     const amt = 1000n
 
-    let hashPuzzle: HashPuzzle
+    let hashPuzzle: HashPuzzleFT
     before(async () => {
-        await HashPuzzle.loadArtifact()
-        hashPuzzle = new HashPuzzle(
+        HashPuzzleFT.loadArtifact()
+        hashPuzzle = new HashPuzzleFT(
             tick,
             max,
             lim,
@@ -34,7 +34,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
             for (let i = 0; i < 3; i++) {
                 const recipients: Array<TokenReceiver> = [
                     {
-                        instance: new HashPuzzle(
+                        instance: new HashPuzzleFT(
                             tick,
                             max,
                             lim,
@@ -53,7 +53,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
                     }
                 )
 
-                hashPuzzle = recipients[0].instance as HashPuzzle
+                hashPuzzle = recipients[0].instance as HashPuzzleFT
 
                 console.log('transfer tx: ', tx.id)
             }

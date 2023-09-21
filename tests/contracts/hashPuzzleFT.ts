@@ -2,7 +2,7 @@ import { method, prop, assert, ByteString, sha256, Sha256 } from 'scrypt-ts'
 
 import { BSV20V1 } from '../scrypt-ord'
 
-export class HashPuzzle extends BSV20V1 {
+export class HashPuzzleFT extends BSV20V1 {
     @prop()
     hash: Sha256
 
