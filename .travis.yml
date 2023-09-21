@@ -3,7 +3,8 @@ language: node_js
 node_js:
   - 16
 
-before_install:
+cache:
+  npm: false
 
 os:
   - linux
