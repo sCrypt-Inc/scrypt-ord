@@ -13,6 +13,7 @@
     "pretest": "npm run build && npm run compile",
     "test": "cd tests && cross-env NETWORK=local mocha",
     "test:testnet": "cd tests && cross-env NETWORK=testnet mocha --no-timeouts",
+    "test:mainnet": "cd tests && cross-env NETWORK=mainnet mocha --no-timeouts",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
     "prepare": "husky install",
@@ -28,7 +29,7 @@
   },
   "dependencies": {
     "dotenv": "^16.0.3",
-    "scrypt-ts": "^1.3.10",
+    "scrypt-ts": "^1.3.11",
     "scrypt-ts-lib": "^0.1.23"
   },
   "devDependencies": {
