@@ -6,7 +6,7 @@
   "types": "src/index.ts",
   "author": "",
   "scripts": {
-    "build": "rimraf dist && tsc && npx scrypt-cli@latest compile",
+    "build": "rimraf dist && tsc",
     "clean": "cd tests && rimraf scrypt.index.json && rimraf dist && rimraf artifacts",
     "precompile": "npm run clean",
     "compile": "cd tests && npx scrypt-cli@latest compile",
