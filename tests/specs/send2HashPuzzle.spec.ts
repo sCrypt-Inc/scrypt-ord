@@ -8,7 +8,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { BSV20V1, OrdP2PKH, TokenReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzle`', () => {
+describe('Test transfer ordP2PKHs to `HashPuzzle`', () => {
     const tick = 'LUNC'
     const max = 21000000n
     const lim = max

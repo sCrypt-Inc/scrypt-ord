@@ -13,7 +13,7 @@ import {
 } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzle`', () => {
+describe('Test skipTokenChange', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n

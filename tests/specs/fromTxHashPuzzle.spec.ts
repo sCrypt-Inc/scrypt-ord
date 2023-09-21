@@ -8,7 +8,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { OrdMethodCallOptions, OrdP2PKH, Ordinal } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzle`', () => {
+describe('Test BSV20 fromUTXO', () => {
     const message1 = toByteString('hello, sCrypt!', true)
 
     let hashPuzzle: HashPuzzle
