@@ -9,7 +9,7 @@
 // use(chaiAsPromised)
 
 // describe('Test transfer ordP2PKHs to `HashPuzzle`', () => {
-//     const tick = 'LUNC'
+//     const tick = 'OOO1'
 //     const max = 21000000n
 //     const lim = max
 
