@@ -16,6 +16,7 @@ import {
     findSig,
     ContractTransaction,
     MethodCallOptions,
+    pubKey2Addr,
 } from 'scrypt-ts'
 import { Inscription } from '../types'
 import { Ordinal } from './ordinal'
@@ -33,7 +34,10 @@ export class OrdP2PKH extends SmartContract {
     @method()
     public unlock(sig: Sig, pubkey: PubKey) {
         // Check if the passed public key belongs to the specified address.
-        assert(hash160(pubkey) == this.addr, 'public key hashes are not equal')
+        assert(
+            pubKey2Addr(pubkey) == this.addr,
+            'public key hashes are not equal'
+        )
         // Check signature validity.
         assert(this.checkSig(sig, pubkey), 'signature check failed')
     }

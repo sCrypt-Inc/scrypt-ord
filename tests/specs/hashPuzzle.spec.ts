@@ -9,22 +9,19 @@ import { OrdP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzle`', () => {
-    const tick = 'DOGE'
+    const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
     const amt = 1000n
-
-    const message1 = toByteString('hello, sCrypt!', true)
-    const message2 = toByteString('hello, 1SAT!', true)
 
     let hashPuzzle: HashPuzzle
     before(async () => {
         await HashPuzzle.loadArtifact()
         hashPuzzle = new HashPuzzle(
-            toByteString(tick, true),
+            tick,
             max,
             lim,
-            sha256(message1)
+            sha256(toByteString('hello, sCrypt!:0', true))
         )
         await hashPuzzle.connect(getDefaultSigner())
 
@@ -34,40 +31,49 @@ describe('Test SmartContract `HashPuzzle`', () => {
 
     it('transfer to an other hashPuzzle and withdraw.', async () => {
         const callContract = async () => {
-            const { tx, tokenChangeP2PKH, receivers } =
-                await hashPuzzle.transfer(
-                    [
-                        {
-                            instance: new HashPuzzle(
-                                toByteString(tick, true),
-                                max,
-                                lim,
-                                sha256(message2)
-                            ),
-                            amt: 10n,
-                        },
-                    ],
-                    'unlock',
-                    message1
-                )
+            for (let i = 0; i < 3; i++) {
+                const { tx, tokenChangeP2PKH, receivers } =
+                    await hashPuzzle.transfer(
+                        [
+                            {
+                                instance: new HashPuzzle(
+                                    tick,
+                                    max,
+                                    lim,
+                                    sha256(
+                                        toByteString(
+                                            `hello, sCrypt!:${i + 1}`,
+                                            true
+                                        )
+                                    )
+                                ),
+                                amt: 10n,
+                            },
+                        ],
+                        'unlock',
+                        toByteString(`hello, sCrypt!:${i}`, true)
+                    )
 
-            expect(tokenChangeP2PKH).not.be.null
-            expect(tokenChangeP2PKH?.getBSV20Amt()).to.equal(990n)
+                if (tokenChangeP2PKH) {
+                    expect(tokenChangeP2PKH.getBSV20Amt()).to.be.equal(990n)
+                }
 
-            console.log('transfer tx: ', tx.id)
+                hashPuzzle = receivers[0] as HashPuzzle
+
+                console.log('transfer tx: ', tx.id)
+            }
 
             const withdraw = async () => {
-                const receiver = receivers[0]
-                const address = await receiver.signer.getDefaultAddress()
-                const { tx, tokenChangeP2PKH } = await receiver.transfer(
+                const address = await hashPuzzle.signer.getDefaultAddress()
+                const { tx, tokenChangeP2PKH } = await hashPuzzle.transfer(
                     [
                         {
                             instance: OrdP2PKH.fromAddress(address),
-                            amt: receiver.getAmt(),
+                            amt: hashPuzzle.getAmt(),
                         },
                     ],
                     'unlock',
-                    message2
+                    toByteString(`hello, sCrypt!:3`, true)
                 )
 
                 expect(tokenChangeP2PKH).to.be.null
