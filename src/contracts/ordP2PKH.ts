@@ -128,12 +128,7 @@ export class OrdP2PKH extends SmartContract {
     async transferBsv20(
         receiver: string | bsv.Address | bsv.PublicKey,
         tokenAmt: bigint
-    ): Promise<{
-        /** The method calling tx */
-        tx: bsv.Transaction
-        tokenChangeP2PKH: OrdP2PKH | null
-        receiver: OrdP2PKH
-    }> {
+    ): Promise<ContractTransaction> {
         const ordPubKey = await this.signer.getDefaultPubKey()
         const tick = this.getBSV20Tick()
 
@@ -202,19 +197,13 @@ export class OrdP2PKH extends SmartContract {
             }
         )
 
-        const { tx } = await this.methods['unlock'](
+        return this.methods['unlock'](
             (sigResps) => findSig(sigResps, ordPubKey),
             PubKey(toHex(ordPubKey)),
             {
                 pubKeyOrAddrToSign: ordPubKey,
             }
         )
-
-        return Promise.resolve({
-            tx,
-            tokenChangeP2PKH,
-            receiver: receiverP2pkh,
-        })
     }
 
     async transferNFT(
