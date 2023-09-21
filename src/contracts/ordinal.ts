@@ -11,14 +11,12 @@ import {
     assert,
     int2ByteString,
     SmartContractLib,
-    UTXO,
     bsv,
     toHex,
 } from 'scrypt-ts'
 import { Shift10 } from 'scrypt-ts-lib'
-import superagent from 'superagent'
 import { BSV20Protocol, Inscription } from '../types'
-import { fromByteString, handlerApiError } from '../utils'
+import { fromByteString } from '../utils'
 
 export class Ordinal extends SmartContractLib {
     @method()
@@ -176,103 +174,6 @@ export class Ordinal extends SmartContractLib {
         }
 
         return res
-    }
-
-    static fetchUTXOByOutpoint(outpoint: string): UTXO | null {
-        const url = `https://ordinals.gorillapool.io/api/inscriptions/outpoint/${outpoint}`
-
-        return superagent
-            .get(url)
-            .then(function (response) {
-                // handle success
-                const script = Buffer.from(
-                    response.body.script,
-                    'base64'
-                ).toString('hex')
-                return {
-                    txId: response.body.txid,
-                    outputIndex: response.body.vout,
-                    satoshis: 1,
-                    script,
-                }
-            })
-            .catch(function (error) {
-                // handle error
-                handlerApiError(error)
-                return null
-            })
-    }
-
-    static async fetchLatestUTXOByOrigin(origin: string): Promise<UTXO | null> {
-        const url = `https://ordinals.gorillapool.io/api/inscriptions/origin/${origin}/latest`
-
-        const { outpoint, spend } = await superagent
-            .get(url)
-            .then(function (response) {
-                // handle success
-                return response.body
-            })
-            .catch(function (error) {
-                // handle error
-                handlerApiError(error)
-                return null
-            })
-
-        if (spend) {
-            return null
-        }
-
-        return Ordinal.fetchUTXOByOutpoint(outpoint)
-    }
-
-    static async fetchOriginById(id: bigint): Promise<string | null> {
-        const url = `https://ordinals.gorillapool.io/api/inscriptions/${id}`
-
-        const { origin } = await superagent
-            .get(url)
-            .then(function (response) {
-                // handle success
-                return response.body
-            })
-            .catch(function (error) {
-                // handle error
-                handlerApiError(error)
-                return null
-            })
-
-        return origin
-    }
-
-    static fetchBSV20Utxos(
-        address: string,
-        tick: string
-    ): Promise<Array<UTXO>> {
-        const url = `https://ordinals.gorillapool.io/api/utxos/address/${address}/tick/${tick}`
-
-        return superagent
-            .get(url)
-            .then(function (response) {
-                // handle success
-                if (Array.isArray(response.body)) {
-                    return Promise.all(
-                        response.body.map(async (utxo) => {
-                            const inscription =
-                                await Ordinal.fetchUTXOByOutpoint(utxo.outpoint)
-                            return {
-                                txId: utxo.txid,
-                                outputIndex: utxo.vout,
-                                script: inscription.script,
-                                satoshis: 1,
-                            }
-                        })
-                    )
-                }
-                return []
-            })
-            .catch(function (error) {
-                handlerApiError(error)
-                return []
-            })
     }
 
     static toOutput(outputByteString: ByteString): bsv.Transaction.Output {

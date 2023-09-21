@@ -20,6 +20,7 @@ import {
 } from 'scrypt-ts'
 import { Inscription } from '../types'
 import { Ordinal } from './ordinal'
+import { OneSatApis } from './1satApis'
 
 export class OrdP2PKH extends SmartContract {
     // Address of the recipient.
@@ -118,7 +119,7 @@ export class OrdP2PKH extends SmartContract {
     }
 
     static fromOutPoint(outPoint: string): OrdP2PKH {
-        const utxo = Ordinal.fetchUTXOByOutpoint(outPoint)
+        const utxo = OneSatApis.fetchUTXOByOutpoint(outPoint)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }

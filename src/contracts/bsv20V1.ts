@@ -25,6 +25,7 @@ import {
 import { Ordinal } from './ordinal'
 import { OrdP2PKH } from './ordP2PKH'
 import { fromByteString } from '../utils'
+import { OneSatApis } from './1satApis'
 
 export type TokenReceiver = {
     instance: BSV20V1 | OrdP2PKH
@@ -257,7 +258,7 @@ export class BSV20V1 extends SmartContract {
         tick: string,
         address: string
     ): Promise<Array<OrdP2PKH>> {
-        const bsv20Utxos = await Ordinal.fetchBSV20Utxos(address, tick)
+        const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
         return bsv20Utxos.map((utxo) => OrdP2PKH.fromP2PKHUTXO(utxo))
     }
 

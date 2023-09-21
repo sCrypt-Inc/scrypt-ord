@@ -18,6 +18,7 @@ import {
 import { Inscription } from '../types'
 import { Ordinal } from './ordinal'
 import { signTx } from 'scryptlib'
+import { OneSatApis } from './1satApis'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)
@@ -167,7 +168,7 @@ export class OneSatNFT extends SmartContract {
         clazz: new (...args: any) => T,
         origin: string
     ): Promise<T> {
-        const utxo = await Ordinal.fetchLatestUTXOByOrigin(origin)
+        const utxo = await OneSatApis.fetchLatestUTXOByOrigin(origin)
 
         if (utxo === null) {
             throw new Error('no utxo found')
@@ -181,18 +182,5 @@ export class OneSatNFT extends SmartContract {
             bsv.Script.fromHex(insciptionScript)
         )
         return instance as T
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static async getLatestInstanceById<T extends SmartContract>(
-        clazz: new (...args: any) => T,
-        inscription_Number: bigint
-    ): Promise<T> {
-        const origin = await Ordinal.fetchOriginById(inscription_Number)
-
-        if (origin === null) {
-            throw new Error('no origin found')
-        }
-        return OneSatNFT.getLatestInstanceByOrigin(clazz, origin)
     }
 }
