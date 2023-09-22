@@ -5,7 +5,7 @@ import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1, OrdP2PKH, FTReceiver, fromByteString } from '../scrypt-ord'
+import { OrdP2PKH, FTReceiver, fromByteString } from '../scrypt-ord'
 import { dummyAppendbsv20 } from './utils'
 use(chaiAsPromised)
 
@@ -36,7 +36,7 @@ describe('Test multi inputs and outputs', () => {
             },
         ]
 
-        const { tx, nexts } = await BSV20V1.transfer(
+        const { tx, nexts } = await OrdP2PKH.transfer(
             ordP2PKHs,
             signer,
             recipients
@@ -78,7 +78,7 @@ describe('Test multi inputs and outputs', () => {
             },
         ]
 
-        const { tx, nexts } = await BSV20V1.transfer(
+        const { tx, nexts } = await OrdP2PKH.transfer(
             ordP2PKHs,
             signer,
             recipients
