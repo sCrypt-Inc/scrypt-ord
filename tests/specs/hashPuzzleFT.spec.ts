@@ -32,7 +32,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
     it('transfer to an other hashPuzzle.', async () => {
         const callContract = async () => {
             for (let i = 0; i < 3; i++) {
-                const receiver = new HashPuzzle(
+                const receiver = new HashPuzzleFT(
                     tick,
                     max,
                     lim,
@@ -66,7 +66,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
 
     it('transfer to an other hashPuzzle with change.', async () => {
         const callContract = async () => {
-            const receiver = new HashPuzzle(
+            const receiver = new HashPuzzleFT(
                 tick,
                 max,
                 lim,
@@ -86,7 +86,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 toByteString(`hello, sCrypt!:3`, true),
                 {
                     transfer: recipients,
-                } as FTMethodCallOptions<HashPuzzle>
+                } as FTMethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -97,7 +97,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
 
             expect(p2pkh.getBSV20Amt()).to.be.equal(1n)
 
-            hashPuzzle = recipients[0].instance as HashPuzzle
+            hashPuzzle = recipients[0].instance as HashPuzzleFT
         }
 
         await expect(callContract()).not.rejected
@@ -105,7 +105,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
 
     it('transfer to an other hashPuzzle without change.', async () => {
         const callContract = async () => {
-            const receiver = new HashPuzzle(
+            const receiver = new HashPuzzleFT(
                 tick,
                 max,
                 lim,
@@ -126,7 +126,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as FTMethodCallOptions<HashPuzzle>
+                } as FTMethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)
