@@ -1,5 +1,9 @@
 # sCrypt 1Sat Ordinals SDK
 
+`scrypt-ord` is the official sCrypt 1Sat Ordinals SDK.
+
+Using it you can easily develop smart contracts integrated with 1Sat Ordinals, including non-fungible token (NFT) and fungible token (FT).
+
 ## Install
 
 ```sh
@@ -8,7 +12,38 @@ npm i scrypt-ord
 
 ## NFT
 
+If you want to lock `1sat` NFT via smart contract, make your smart contract integrated from `OneSatNFT`.
+
+```ts
+import { method, prop, assert, ByteString, sha256, Sha256 } from "scrypt-ts";
+
+import { OneSatNFT } from "scrypt-ord";
+
+export class HashPuzzleNFT extends OneSatNFT {
+  @prop()
+  hash: Sha256;
+
+  constructor(hash: Sha256) {
+    super();
+    // Note: must call `init`
+    this.init(...arguments);
+    this.hash = hash;
+  }
+
+  @method()
+  public unlock(message: ByteString) {
+    assert(this.hash == sha256(message), "hashes are not equal");
+  }
+}
+```
+
+:::note:::
+
+For constructor, `this.init(...arguments)` needs to be called after the `super()` statement.
+
 ### mint and transfer NFT
+
+you can mint a NFT in a contract:
 
 ```ts
 const text = "Hello sCrypt and 1Sat Ordinals";
@@ -30,7 +65,36 @@ const { tx: transferTx } = await instance.methods.unlock(message, {
 console.log("transfer NFT: ", transferTx.id);
 ```
 
+1. mint a text NFT
+
+```ts
+const mintTx = await instance.mintTextNft("hello world!");
+console.log("mint NFT: ", mintTx.id);
+```
+
+2. mint a image NFT
+
+```ts
+const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString(
+  "base64"
+);
+const tx = await instance.mintImageNft(bb, "image/png");
+console.log("mint tx: ", tx.id);
+```
+
+3. mint other type NFT
+
+```ts
+const tx = await instance.mint({
+  content: `your content in hex`,
+  contentType: `your contentType`,
+});
+console.log("mint tx: ", tx.id);
+```
+
 ### transfer exists NFT to a contract
+
+you can transfer exists NFT, which is usually held by a P2PKH, to a contract:
 
 ```ts
 const text = "Hello sCrypt and 1Sat Ordinals";
@@ -117,7 +181,7 @@ for (let i = 0; i < 3; i++) {
 }
 ```
 
-### transfer exists FT to a contract
+### transfer exists FT to a contract (one input)
 
 ```ts
 const text = "Hello sCrypt and 1Sat Ordinals";
@@ -147,6 +211,34 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
     pubKeyOrAddrToSign: `yourPubKey`,
   } as MethodCallOptions<OrdP2PKH>
 );
+
+console.log("transfer FT: ", transferTx.id);
+```
+
+### transfer exists FT to a contract (multi inputs)
+
+```ts
+const text = "Hello sCrypt and 1Sat Ordinals";
+const message = toByteString(text, true);
+const hash = sha256(message);
+
+HashPuzzleFT.loadArtifact();
+const recipient = new HashPuzzleFT(hash);
+await recipient.connect(getDefaultSigner());
+
+// create p2pkh from a utxo
+// NOTE: you can use OrdP2PKH.getLatestInstance for bsv20, it only works for NFT
+const ordP2PKHs = await OrdP2PKH.getBSV20("DOGE", `your ordinal address`);
+
+await Promise.all(ordP2PKHs.map((p) => p.connect(signer)));
+const recipients: Array<FTReceiver> = [
+  {
+    instance: new HashPuzzleFT(tick, max, lim, sha256(message)),
+    amt: 6n,
+  },
+];
+
+const { tx, nexts } = await OrdP2PKH.transfer(ordP2PKHs, signer, recipients);
 
 console.log("transfer FT: ", transferTx.id);
 ```
