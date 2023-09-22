@@ -53,7 +53,9 @@ export class OneSatNFT extends SmartContract {
 
     static create(inscription: Inscription): bsv.Script {
         const contentTypeBytes = toByteString(inscription.contentType, true)
-        const contentBytes = toByteString(inscription.content, true)
+        const contentBytes = inscription.contentType.includes('text')
+            ? toByteString(inscription.content, true)
+            : toByteString(inscription.content)
         return bsv.Script.fromASM(
             `OP_FALSE OP_IF 6f7264 OP_1 ${contentTypeBytes} OP_0 ${contentBytes} OP_ENDIF`
         )
@@ -68,6 +70,13 @@ export class OneSatNFT extends SmartContract {
         return this.mint({
             content: text,
             contentType: 'text/plain',
+        })
+    }
+
+    async mintImageNft(base64: string, contentType: string) {
+        return this.mint({
+            content: Buffer.from(base64, 'base64').toString('hex'),
+            contentType,
         })
     }
 
