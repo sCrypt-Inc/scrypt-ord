@@ -1,7 +1,7 @@
 import { UTXO, bsv } from 'scrypt-ts'
 
 import superagent from 'superagent'
-import { handlerApiError } from '../utils'
+import { handlerApiError } from './utils'
 
 export class OneSatApis {
     private network: bsv.Networks.Network = bsv.Networks.mainnet

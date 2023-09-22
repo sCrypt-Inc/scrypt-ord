@@ -20,7 +20,7 @@ import {
 } from 'scrypt-ts'
 import { Inscription } from '../types'
 import { Ordinal } from './ordinal'
-import { OneSatApis } from './1satApis'
+import { OneSatApis } from '../1satApis'
 
 export class OrdP2PKH extends SmartContract {
     // Address of the recipient.
@@ -77,8 +77,16 @@ export class OrdP2PKH extends SmartContract {
 
     static fromAddress(address: string | bsv.Address | bsv.PublicKey) {
         OrdP2PKH.loadArtifact(desc)
-        const s = bsv.Script.buildPublicKeyHashOut(address)
-        return new OrdP2PKH(Addr(toHex(s.chunks[2].buf)))
+        let addr: Addr
+
+        if (typeof address === 'string') {
+            addr = Addr(bsv.Address.fromString(address).toByteString())
+        } else if (address instanceof bsv.Address) {
+            addr = Addr(address.toByteString())
+        } else {
+            addr = Addr(bsv.Address.fromPublicKey(address).toByteString())
+        }
+        return new OrdP2PKH(addr)
     }
 
     static fromP2PKHUTXO(utxo: UTXO): OrdP2PKH {

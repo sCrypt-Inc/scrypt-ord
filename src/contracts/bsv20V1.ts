@@ -25,18 +25,8 @@ import {
 import { Ordinal } from './ordinal'
 import { OrdP2PKH } from './ordP2PKH'
 import { fromByteString } from '../utils'
-import { OneSatApis } from './1satApis'
-
-export type TokenReceiver = {
-    instance: BSV20V1 | OrdP2PKH
-    amt: bigint
-}
-
-export interface OrdMethodCallOptions<T> extends MethodCallOptions<T> {
-    transfer: Array<TokenReceiver>
-    tokenChangeAddress?: bsv.Address
-    skipTokenChange?: boolean
-}
+import { OneSatApis } from '../1satApis'
+import { FTMethodCallOptions, FTReceiver } from '../types'
 
 /**
  * A base class implementing the bsv20 v1 protocol
@@ -173,14 +163,15 @@ export class BSV20V1 extends SmartContract {
     ): MethodCallTxBuilder<BSV20V1> {
         return async function (
             current: BSV20V1,
-            options: OrdMethodCallOptions<BSV20V1>,
+            options: FTMethodCallOptions<BSV20V1>,
             ...args
         ): Promise<ContractTransaction> {
-            const tokenChangeAmt =
-                current.getAmt() -
-                options.transfer.reduce((acc, receiver) => {
-                    return (acc += receiver.amt)
-                }, 0n)
+            const tokenChangeAmt = Array.isArray(options.transfer)
+                ? current.getAmt() -
+                  options.transfer.reduce((acc, receiver) => {
+                      return (acc += receiver.amt)
+                  }, 0n)
+                : options.transfer.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
             }
@@ -193,11 +184,7 @@ export class BSV20V1 extends SmartContract {
 
             tx.addInput(current.buildContractInput())
 
-            for (let i = 0; i < options.transfer.length; i++) {
-                const receiver = options.transfer[i]
-
-                await receiver.instance.connect(current.signer)
-
+            function addReceiver(receiver: FTReceiver) {
                 if (receiver.instance instanceof BSV20V1) {
                     receiver.instance.setAmt(receiver.amt)
                 } else if (receiver.instance instanceof OrdP2PKH) {
@@ -221,6 +208,14 @@ export class BSV20V1 extends SmartContract {
                     balance: 1,
                     atOutputIndex: nexts.length,
                 })
+            }
+            if (Array.isArray(options.transfer)) {
+                for (let i = 0; i < options.transfer.length; i++) {
+                    const receiver = options.transfer[i]
+                    addReceiver(receiver)
+                }
+            } else {
+                addReceiver(options.transfer)
             }
 
             if (tokenChangeAmt > 0n && options.skipTokenChange !== true) {
@@ -265,7 +260,7 @@ export class BSV20V1 extends SmartContract {
     static async transfer(
         senders: Array<OrdP2PKH | BSV20V1>,
         signer: Signer,
-        receivers: Array<TokenReceiver>
+        receivers: Array<FTReceiver>
     ) {
         const ordPubKey = await signer.getDefaultPubKey()
 
@@ -302,8 +297,10 @@ export class BSV20V1 extends SmartContract {
 
             if (receiver.instance instanceof BSV20V1) {
                 receiver.instance.setAmt(receiver.amt)
-            } else {
+            } else if (receiver.instance instanceof OrdP2PKH) {
                 receiver.instance.setBSV20(tick, receiver.amt)
+            } else {
+                throw new Error('unsupport receiver, only BSV20V1 or OrdP2PKH!')
             }
 
             tx.addOutput(
