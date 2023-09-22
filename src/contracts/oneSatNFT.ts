@@ -18,6 +18,7 @@ import {
 import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
+import { OrdP2PKH } from './ordP2PKH'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)
@@ -128,11 +129,10 @@ export class OneSatNFT extends SmartContract {
         }
     }
 
-    public static async getLatestInstanceByOrigin<T extends OneSatNFT>(
-        clazz: new (...args: any) => T,
+    public static async getLatestInstance(
         origin: string
-    ): Promise<T> {
-        const utxo = await OneSatApis.fetchLatestUTXOByOrigin(origin)
+    ): Promise<SmartContract> {
+        const utxo = await OneSatApis.fetchUTXOByOrigin(origin)
 
         if (utxo === null) {
             throw new Error('no utxo found')
@@ -140,11 +140,11 @@ export class OneSatNFT extends SmartContract {
 
         const insciptionScript = Ordinal.getInsciptionScript(utxo.script)
 
-        const instance = (clazz as unknown as typeof OneSatNFT).fromUTXO(
+        const instance = this.fromUTXO(
             utxo,
             {},
             bsv.Script.fromHex(insciptionScript)
         )
-        return instance as T
+        return instance
     }
 }

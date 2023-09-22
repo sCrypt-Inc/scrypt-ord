@@ -271,7 +271,7 @@ export class BSV20V1 extends SmartContract {
         address: string
     ): Promise<Array<OrdP2PKH>> {
         const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
-        return bsv20Utxos.map((utxo) => OrdP2PKH.fromBsv20P2PKH(utxo))
+        return bsv20Utxos.map((utxo) => OrdP2PKH.fromP2PKH(utxo))
     }
 
     static async transfer(

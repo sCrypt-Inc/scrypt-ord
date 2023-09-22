@@ -6,7 +6,7 @@ import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH } from '../scrypt-ord'
 import { PubKey, findSig, toHex, Addr } from 'scrypt-ts'
-import { dummybsv20V1, dummybsv20V2 } from './utils'
+import { dummyAppendbsv20, dummyPrependbsv20 } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract `OrdP2PKH`', () => {
@@ -101,7 +101,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            ordP2PKH = OrdP2PKH.fromBsv20P2PKH(dummybsv20V1(addr, 'OOO1', 1n))
+            ordP2PKH = OrdP2PKH.fromP2PKH(dummyAppendbsv20(addr, 'OOO1', 1n))
 
             await ordP2PKH.connect(signer)
         })
@@ -144,7 +144,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            ordP2PKH = OrdP2PKH.fromBsv20P2PKH(dummybsv20V2(addr, 'OOO1', 6n))
+            ordP2PKH = OrdP2PKH.fromP2PKH(dummyPrependbsv20(addr, 'OOO1', 6n))
 
             await ordP2PKH.connect(signer)
         })

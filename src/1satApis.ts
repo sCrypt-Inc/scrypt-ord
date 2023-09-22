@@ -35,8 +35,8 @@ export class OneSatApis {
             })
     }
 
-    static async fetchLatestUTXOByOrigin(origin: string): Promise<UTXO | null> {
-        const url = `https://ordinals.gorillapool.io/api/inscriptions/origin/${origin}/latest`
+    static async fetchUTXOByOrigin(origin: string): Promise<UTXO | null> {
+        const url = `${this.apiBase}/api/inscriptions/${origin}/latest`
 
         const { outpoint, spend } = await superagent
             .get(url)

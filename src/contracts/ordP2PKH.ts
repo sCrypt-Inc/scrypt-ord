@@ -57,18 +57,29 @@ export class OrdP2PKH extends SmartContract {
 
     private getNopScript() {
         const ls = this.lockingScript
-        return bsv.Script.fromHex(
-            Ordinal.isOrdinalP2PKHV1(ls)
-                ? ls.toHex().slice(50)
-                : Ordinal.getInsciptionScript(toByteString(ls.toHex()))
-        )
+        if (Ordinal.isOrdinalP2PKHV1(ls)) {
+            const P2pkhScriptLen = 50
+            return bsv.Script.fromHex(ls.toHex().slice(P2pkhScriptLen))
+        }
+
+        if (Ordinal.isOrdinalP2PKHV2(ls)) {
+            return this.getPrependNOPScript()
+        }
+
+        return null
     }
     getBSV20Amt(): bigint {
+        if (!this.isBsv20()) {
+            throw new Error('No bsv20 json found!')
+        }
         const nopScript = this.getNopScript()
         return Ordinal.getAmt(nopScript)
     }
 
     getBSV20Tick(): string {
+        if (!this.isBsv20()) {
+            throw new Error('No bsv20 json found!')
+        }
         const nopScript = this.getNopScript()
         return Ordinal.getTick(nopScript)
     }
@@ -79,13 +90,15 @@ export class OrdP2PKH extends SmartContract {
 
     isBsv20(): boolean {
         const nopScript = this.getNopScript()
+        if (!nopScript) {
+            return false
+        }
         const ins = Ordinal.getInsciption(nopScript)
         return ins.contentType === 'application/bsv-20'
     }
 
     static fromAddress(address: string | bsv.Address | bsv.PublicKey) {
         let addr: Addr
-
         if (typeof address === 'string') {
             addr = Addr(bsv.Address.fromString(address).toByteString())
         } else if (address instanceof bsv.Address) {
@@ -93,11 +106,22 @@ export class OrdP2PKH extends SmartContract {
         } else {
             addr = Addr(bsv.Address.fromPublicKey(address).toByteString())
         }
+        OrdP2PKH.loadArtifact(desc)
         return new OrdP2PKH(addr)
     }
 
-    static fromBsv20P2PKH(utxo: UTXO): OrdP2PKH {
+    static fromP2PKH(utxo: UTXO): OrdP2PKH {
         const ls = bsv.Script.fromHex(utxo.script)
+
+        if (utxo.satoshis !== 1) {
+            throw new Error('invalid ordinal p2pkh utxo')
+        }
+
+        if (ls.isPublicKeyHashOut()) {
+            // may hold NFT
+            OrdP2PKH.loadArtifact(desc)
+            return OrdP2PKH.fromUTXO(utxo)
+        }
 
         if (!Ordinal.isOrdinalP2PKH(ls)) {
             throw new Error('invalid ordinal p2pkh utxo')
@@ -112,14 +136,18 @@ export class OrdP2PKH extends SmartContract {
                 })
             )
 
-            return this.fromUTXO(utxo)
+            const instance = OrdP2PKH.fromUTXO(utxo)
+
+            // must restore v2 desc
+            OrdP2PKH.loadArtifact(desc)
+            return instance
         } else {
             OrdP2PKH.loadArtifact(desc)
             const nopScript = Ordinal.getInsciptionScript(
                 toByteString(utxo.script)
             )
 
-            return this.fromUTXO(utxo, {}, bsv.Script.fromHex(nopScript))
+            return OrdP2PKH.fromUTXO(utxo, {}, bsv.Script.fromHex(nopScript))
         }
     }
 
@@ -128,7 +156,7 @@ export class OrdP2PKH extends SmartContract {
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
-        return OrdP2PKH.fromBsv20P2PKH(utxo)
+        return OrdP2PKH.fromP2PKH(utxo)
     }
 
     private getBSV20DefaultTxBuilder(
@@ -310,127 +338,16 @@ export class OrdP2PKH extends SmartContract {
         }
     }
 
-    async transferBsv20(
-        receiver: string | bsv.Address | bsv.PublicKey,
-        tokenAmt: bigint
-    ): Promise<ContractTransaction> {
-        const ordPubKey = await this.signer.getDefaultPubKey()
-        const tick = this.getBSV20Tick()
+    public static async getLatestInstance(
+        origin: string
+    ): Promise<SmartContract> {
+        const utxo = await OneSatApis.fetchUTXOByOrigin(origin)
 
-        const totalTokenAmt = this.getBSV20Amt()
-        const tokenChangeAmt = totalTokenAmt - tokenAmt
-        if (tokenChangeAmt < 0n) {
-            throw new Error('Not enough token!')
+        if (utxo === null) {
+            throw new Error('no utxo found')
         }
 
-        const receiverP2pkh = OrdP2PKH.fromAddress(receiver)
-        let tokenChangeP2PKH: OrdP2PKH | null = null
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        this.bindTxBuilder(
-            'unlock',
-            async (
-                current: OrdP2PKH,
-                options: MethodCallOptions<OrdP2PKH>
-            ): Promise<ContractTransaction> => {
-                const tx = new bsv.Transaction()
-
-                tx.addInput(current.buildContractInput())
-
-                const nexts: StatefulNext<SmartContract>[] = []
-
-                receiverP2pkh.setBSV20(tick, tokenAmt)
-
-                tx.addOutput(
-                    new bsv.Transaction.Output({
-                        script: receiverP2pkh.lockingScript,
-                        satoshis: 1,
-                    })
-                )
-
-                nexts.push({
-                    instance: receiverP2pkh,
-                    balance: 1,
-                    atOutputIndex: 0,
-                })
-
-                if (tokenChangeAmt > 0n) {
-                    tokenChangeP2PKH = OrdP2PKH.fromAddress(ordPubKey)
-                    tokenChangeP2PKH.setBSV20(tick, tokenChangeAmt)
-
-                    tx.addOutput(
-                        new bsv.Transaction.Output({
-                            script: tokenChangeP2PKH.lockingScript,
-                            satoshis: 1,
-                        })
-                    )
-
-                    nexts.push({
-                        instance: tokenChangeP2PKH,
-                        balance: 1,
-                        atOutputIndex: 1,
-                    })
-                }
-
-                tx.change(ordPubKey.toAddress())
-
-                return Promise.resolve({
-                    tx: tx,
-                    atInputIndex: 0,
-                    nexts: nexts,
-                })
-            }
-        )
-
-        return this.methods['unlock'](
-            (sigResps) => findSig(sigResps, ordPubKey),
-            PubKey(toHex(ordPubKey)),
-            {
-                pubKeyOrAddrToSign: ordPubKey,
-            }
-        )
-    }
-
-    async transferNFT(
-        receiver: string | bsv.Address | bsv.PublicKey
-    ): Promise<bsv.Transaction> {
-        const ordPubKey = await this.signer.getDefaultPubKey()
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        this.bindTxBuilder(
-            'unlock',
-            async (
-                current: OrdP2PKH,
-                options: MethodCallOptions<OrdP2PKH>
-            ): Promise<ContractTransaction> => {
-                const tx = new bsv.Transaction()
-
-                tx.addInput(current.buildContractInput()).addOutput(
-                    new bsv.Transaction.Output({
-                        script: bsv.Script.buildPublicKeyHashOut(receiver),
-                        satoshis: 1,
-                    })
-                )
-
-                tx.change(ordPubKey.toAddress())
-
-                return Promise.resolve({
-                    tx: tx,
-                    atInputIndex: 0,
-                    nexts: [],
-                })
-            }
-        )
-
-        const { tx } = await this.methods['unlock'](
-            (sigResps) => findSig(sigResps, ordPubKey),
-            PubKey(toHex(ordPubKey)),
-            {
-                pubKeyOrAddrToSign: ordPubKey,
-            }
-        )
-
-        return Promise.resolve(tx)
+        return this.fromP2PKH(utxo)
     }
 }
 
