@@ -5,7 +5,7 @@ import { HashPuzzle } from '../contracts/hashPuzzle'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { OrdMethodCallOptions, OrdP2PKH, Ordinal } from '../scrypt-ord'
+import { FTMethodCallOptions, OrdP2PKH, Ordinal } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test BSV20 fromUTXO', () => {
@@ -51,7 +51,7 @@ describe('Test BSV20 fromUTXO', () => {
                         amt: 6n,
                     },
                 ],
-            } as OrdMethodCallOptions<HashPuzzle>)
+            } as FTMethodCallOptions<HashPuzzle>)
 
             console.log('withdraw bsv20 to p2pkh: ', tx.id)
         }

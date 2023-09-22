@@ -5,7 +5,7 @@ import { HashPuzzle } from '../contracts/hashPuzzle'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH, TokenReceiver } from '../scrypt-ord'
+import { FTMethodCallOptions, OrdP2PKH, FTReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzle`', () => {
@@ -29,19 +29,21 @@ describe('Test SmartContract `HashPuzzle`', () => {
         await hashPuzzle.mint(amt)
     })
 
-    it('transfer to an other hashPuzzle and withdraw.', async () => {
+    it('transfer to an other hashPuzzle.', async () => {
         const callContract = async () => {
             for (let i = 0; i < 3; i++) {
-                const recipients: Array<TokenReceiver> = [
+                const receiver = new HashPuzzle(
+                    tick,
+                    max,
+                    lim,
+                    sha256(toByteString(`hello, sCrypt!:${i + 1}`, true))
+                )
+
+                await receiver.connect(getDefaultSigner())
+
+                const recipients: Array<FTReceiver> = [
                     {
-                        instance: new HashPuzzle(
-                            tick,
-                            max,
-                            lim,
-                            sha256(
-                                toByteString(`hello, sCrypt!:${i + 1}`, true)
-                            )
-                        ),
+                        instance: receiver,
                         amt: 10n,
                     },
                 ]
@@ -57,26 +59,79 @@ describe('Test SmartContract `HashPuzzle`', () => {
 
                 console.log('transfer tx: ', tx.id)
             }
+        }
 
-            const withdraw = async () => {
-                const address = await hashPuzzle.signer.getDefaultAddress()
-                const recipients = [
-                    {
-                        instance: OrdP2PKH.fromAddress(address),
-                        amt: hashPuzzle.getAmt(),
-                    },
-                ]
+        await expect(callContract()).not.rejected
+    })
 
-                const { tx } = await hashPuzzle.methods.unlock(
-                    toByteString(`hello, sCrypt!:3`, true),
-                    {
-                        transfer: recipients,
-                    }
-                )
+    it('transfer to an other hashPuzzle with change.', async () => {
+        const callContract = async () => {
+            const receiver = new HashPuzzle(
+                tick,
+                max,
+                lim,
+                sha256(toByteString(`hello, sCrypt!`, true))
+            )
 
-                console.log('withdraw tx: ', tx.id)
-            }
-            await expect(withdraw()).not.rejected
+            await receiver.connect(getDefaultSigner())
+
+            const recipients: Array<FTReceiver> = [
+                {
+                    instance: receiver,
+                    amt: 9n,
+                },
+            ]
+
+            const { tx, nexts } = await hashPuzzle.methods.unlock(
+                toByteString(`hello, sCrypt!:3`, true),
+                {
+                    transfer: recipients,
+                } as FTMethodCallOptions<HashPuzzle>
+            )
+
+            console.log('transfer tx: ', tx.id)
+
+            expect(nexts.length === 2).to.be.true
+
+            const p2pkh = nexts[1].instance as OrdP2PKH
+
+            expect(p2pkh.getBSV20Amt()).to.be.equal(1n)
+
+            hashPuzzle = recipients[0].instance as HashPuzzle
+        }
+
+        await expect(callContract()).not.rejected
+    })
+
+    it('transfer to an other hashPuzzle without change.', async () => {
+        const callContract = async () => {
+            const receiver = new HashPuzzle(
+                tick,
+                max,
+                lim,
+                sha256(toByteString(`hello, sCrypt!`, true))
+            )
+
+            await receiver.connect(getDefaultSigner())
+
+            const recipients: Array<FTReceiver> = [
+                {
+                    instance: receiver,
+                    amt: 9n,
+                },
+            ]
+
+            const { tx, nexts } = await hashPuzzle.methods.unlock(
+                toByteString(`hello, sCrypt!`, true),
+                {
+                    transfer: recipients,
+                    skipTokenChange: true,
+                } as FTMethodCallOptions<HashPuzzle>
+            )
+
+            console.log('transfer tx: ', tx.id)
+
+            expect(nexts.length === 1).to.be.true
         }
 
         await expect(callContract()).not.rejected
