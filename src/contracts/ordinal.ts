@@ -221,7 +221,7 @@ export class Ordinal extends SmartContractLib {
         })
     }
 
-    static createDeploy(tick: string, max: bigint, lim: bigint): bsv.Script {
+    static createDeploy(tick: string, max: bigint, lim: bigint, dec: bigint): bsv.Script {
         return Ordinal.create({
             content: JSON.stringify({
                 p: 'bsv-20',
@@ -229,6 +229,7 @@ export class Ordinal extends SmartContractLib {
                 tick,
                 max: max.toString().replace(/n/, ''),
                 lim: lim.toString().replace(/n/, ''),
+                dec: dec.toString().replace(/n/, ''),
             }),
             contentType: 'application/bsv-20',
         })
