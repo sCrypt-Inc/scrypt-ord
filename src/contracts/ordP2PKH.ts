@@ -30,6 +30,8 @@ import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { BSV20V1 } from './bsv20V1'
 
+const P2PKHScriptLen = 50
+
 export class OrdP2PKH extends SmartContract {
     // Address of the recipient.
     @prop()
@@ -58,8 +60,7 @@ export class OrdP2PKH extends SmartContract {
     private getNopScript() {
         const ls = this.lockingScript
         if (Ordinal.isOrdinalP2PKHV1(ls)) {
-            const P2pkhScriptLen = 50
-            return bsv.Script.fromHex(ls.toHex().slice(P2pkhScriptLen))
+            return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
         }
 
         if (Ordinal.isOrdinalP2PKHV2(ls)) {
@@ -128,7 +129,9 @@ export class OrdP2PKH extends SmartContract {
         }
 
         if (Ordinal.isOrdinalP2PKHV1(ls)) {
-            const nopScript = bsv.Script.fromHex(utxo.script.slice(50))
+            const nopScript = bsv.Script.fromHex(
+                utxo.script.slice(P2PKHScriptLen)
+            )
 
             OrdP2PKH.loadArtifact(
                 Object.assign({}, desc, {
