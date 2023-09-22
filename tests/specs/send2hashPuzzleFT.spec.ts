@@ -44,7 +44,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
 
             await p2pkh.connect(signer)
 
-            const { tx: transferTx } = await p2pkh.methods.unlock(
+            const { tx: transferTx, nexts } = await p2pkh.methods.unlock(
                 (sigResps) => findSig(sigResps, pubkey),
                 PubKey(pubkey.toByteString()),
                 {
@@ -59,12 +59,19 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             )
 
             console.log('transfer FT: ', transferTx.id)
+            expect(nexts.length).to.equal(2)
+
+            expect(recipient.getAmt()).to.equal(15n)
+
+            const changeToken = nexts[1].instance as OrdP2PKH
+
+            expect(changeToken.getBSV20Amt()).to.equal(85n)
         })
 
-        it('should pass when transfer FT', async () => {
+        it('transfer FT to a OrdP2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
-            const call = async () =>
-                await recipient.methods.unlock(message, {
+            const call = async () => {
+                const { tx, nexts } = await recipient.methods.unlock(message, {
                     transfer: [
                         {
                             instance: new OrdP2PKH(
@@ -74,6 +81,16 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                         },
                     ],
                 })
+
+                console.log('transfer FT: ', tx.id)
+                // no token change
+                expect(nexts.length).to.equal(1)
+
+                const p2pkh = nexts[0].instance as OrdP2PKH
+
+                expect(p2pkh.getBSV20Amt()).to.equal(15n)
+            }
+
             await expect(call()).not.to.be.rejected
         })
     })
@@ -96,7 +113,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             await recipient.connect(signer)
         })
 
-        it('transfer exist NFT to a HashPuzzle', async () => {
+        it('transfer exist FT to a HashPuzzle', async () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
@@ -120,10 +137,10 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                 } as MethodCallOptions<OrdP2PKH>
             )
 
-            console.log('transfer NFT: ', transferTx.id)
+            console.log('transfer FT: ', transferTx.id)
         })
 
-        it('should pass when transfer NFT', async () => {
+        it('transfer FT to a OrdP2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
