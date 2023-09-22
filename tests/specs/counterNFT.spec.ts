@@ -31,10 +31,7 @@ describe('Test SmartContract `CounterNFT`', () => {
             const callContract = async () => {
                 const { tx: callTx } = await currentInstance.methods.incOnchain(
                     {
-                        next: {
-                            instance: nextInstance,
-                            balance: 1,
-                        },
+                        transfer: nextInstance,
                     } as MethodCallOptions<CounterNFT>
                 )
 

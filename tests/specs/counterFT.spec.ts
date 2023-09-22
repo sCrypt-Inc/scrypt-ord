@@ -10,7 +10,7 @@ import {
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { Ordinal } from '../scrypt-ord'
+import { OrdP2PKH, Ordinal } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
@@ -47,52 +47,26 @@ describe('Test SmartContract `CounterFT`', () => {
             const amt = currentInstance.getAmt()
             const tokenChangeAmt = amt - 100n
             nextInstance.incCounter()
-            nextInstance.setAmt(tokenChangeAmt)
-            currentInstance.bindTxBuilder(
-                'inc',
-                async (
-                    current: CounterFT,
-                    options: MethodCallOptions<CounterFT>
-                ): Promise<ContractTransaction> => {
-                    const tx = new bsv.Transaction()
-
-                    tx.addInput(current.buildContractInput())
-                        .addOutput(
-                            new bsv.Transaction.Output({
-                                script: nextInstance.lockingScript,
-                                satoshis: 1,
-                            })
-                        )
-                        .addOutput(
-                            Ordinal.toOutput(
-                                CounterFT.buildTransferOutput(
-                                    Addr(receiver.toByteString()),
-                                    toByteString(tick, true),
-                                    100n
-                                )
-                            )
-                        )
-                        .change(changeAddress)
-
-                    return Promise.resolve({
-                        tx,
-                        atInputIndex: 0,
-                        nexts: [
-                            {
-                                instance: nextInstance,
-                                balance: 1,
-                                atOutputIndex: 0,
-                            },
-                        ],
-                    })
-                }
-            )
 
             // call the method of current instance to apply the updates on chain
             const callContract = async () => {
                 const { tx: callTx } = await currentInstance.methods.inc(
                     receiver.toByteString(),
-                    tokenChangeAmt
+                    tokenChangeAmt,
+                    {
+                        transfer: [
+                            {
+                                instance: nextInstance,
+                                amt: tokenChangeAmt,
+                            },
+                            {
+                                instance: new OrdP2PKH(
+                                    Addr(receiver.toByteString())
+                                ),
+                                amt: 100n,
+                            },
+                        ],
+                    }
                 )
 
                 console.log('Contract CounterFT called: ', callTx.id)

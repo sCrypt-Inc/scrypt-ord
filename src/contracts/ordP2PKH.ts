@@ -252,8 +252,6 @@ export class OrdP2PKH extends SmartContract {
             ...args
         ): Promise<ContractTransaction> {
             const options = options_ as ORDMethodCallOptions<OrdP2PKH>
-            const recipient = options.transfer as NFTReceiver
-
             // bsv change address
             const changeAddress = await current.signer.getDefaultAddress()
 
@@ -262,18 +260,22 @@ export class OrdP2PKH extends SmartContract {
 
             tx.addInput(current.buildContractInput())
 
-            tx.addOutput(
-                new bsv.Transaction.Output({
-                    script: recipient.lockingScript,
-                    satoshis: 1,
-                })
-            )
+            const recipient = options.transfer as NFTReceiver
 
-            nexts.push({
-                instance: recipient,
-                balance: 1,
-                atOutputIndex: nexts.length,
-            })
+            if (recipient instanceof SmartContract) {
+                tx.addOutput(
+                    new bsv.Transaction.Output({
+                        script: recipient.lockingScript,
+                        satoshis: 1,
+                    })
+                )
+
+                nexts.push({
+                    instance: recipient,
+                    balance: 1,
+                    atOutputIndex: nexts.length,
+                })
+            }
 
             tx.change(changeAddress)
 

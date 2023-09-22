@@ -1,8 +1,9 @@
 import { expect, use } from 'chai'
-import { sha256, toByteString } from 'scrypt-ts'
+import { Addr, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
+import { OrdP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzleNFT`', () => {
@@ -19,7 +20,16 @@ describe('Test SmartContract `HashPuzzleNFT`', () => {
         await instance.mintTextNft(text)
     })
 
-    it('should pass when calling `unlock`', async () => {
+    it('should pass when transfer NFT', async () => {
+        const ordAddress = await instance.signer.getDefaultAddress()
+        const call = async () =>
+            await instance.methods.unlock(message, {
+                transfer: new OrdP2PKH(Addr(ordAddress.toByteString())),
+            })
+        await expect(call()).not.to.be.rejected
+    })
+
+    it('should pass when calling `unlock`, this will burn the NFT', async () => {
         const call = async () => await instance.methods.unlock(message)
         await expect(call()).not.to.be.rejected
     })

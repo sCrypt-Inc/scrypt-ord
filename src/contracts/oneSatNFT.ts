@@ -10,8 +10,12 @@ import {
     assert,
     prop,
     bsv,
+    MethodCallTxBuilder,
+    MethodCallOptions,
+    ContractTransaction,
+    StatefulNext,
 } from 'scrypt-ts'
-import { Inscription } from '../types'
+import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 
@@ -64,6 +68,64 @@ export class OneSatNFT extends SmartContract {
             content: text,
             contentType: 'text/plain',
         })
+    }
+
+    protected override getDefaultTxBuilder(
+        methodName: string
+    ): MethodCallTxBuilder<this> {
+        return async function (
+            current: OneSatNFT,
+            options_: MethodCallOptions<OneSatNFT>,
+            ...args
+        ): Promise<ContractTransaction> {
+            const options = options_ as ORDMethodCallOptions<OneSatNFT>
+
+            // bsv change address
+            const changeAddress = await current.signer.getDefaultAddress()
+
+            const nexts: StatefulNext<SmartContract>[] = []
+            const tx = new bsv.Transaction()
+
+            tx.addInput(current.buildContractInput())
+
+            const recipient = options.transfer as NFTReceiver
+
+            if (recipient instanceof SmartContract) {
+                tx.addOutput(
+                    new bsv.Transaction.Output({
+                        script: recipient.lockingScript,
+                        satoshis: 1,
+                    })
+                )
+
+                nexts.push({
+                    instance: recipient,
+                    balance: 1,
+                    atOutputIndex: nexts.length,
+                })
+            }
+
+            tx.change(changeAddress)
+
+            if (options.sequence !== undefined) {
+                tx.setInputSequence(0, options.sequence)
+            }
+
+            if (options.lockTime) {
+                const _sequence =
+                    options.sequence !== undefined
+                        ? options.sequence
+                        : 0xfffffffe
+                tx.setInputSequence(0, _sequence) // activate locktime interlock
+                tx.setLockTime(options.lockTime)
+            }
+
+            return Promise.resolve({
+                tx,
+                atInputIndex: 0,
+                nexts: nexts,
+            })
+        }
     }
 
     public static async getLatestInstanceByOrigin<T extends OneSatNFT>(

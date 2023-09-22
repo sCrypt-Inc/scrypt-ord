@@ -67,8 +67,8 @@ export class BSV20V1 extends SmartContract {
         amt: bigint
     ): ByteString {
         const transferScript =
-            Utils.buildPublicKeyHashScript(address) +
-            BSV20V1.createTransferInsciption(tick, amt)
+            BSV20V1.createTransferInsciption(tick, amt) +
+            Utils.buildPublicKeyHashScript(address)
         return Utils.buildOutput(transferScript, 1n)
     }
 
