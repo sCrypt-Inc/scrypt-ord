@@ -39,8 +39,6 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                     sha256(toByteString(`hello, sCrypt!:${i + 1}`, true))
                 )
 
-                await receiver.connect(getDefaultSigner())
-
                 const recipients: Array<FTReceiver> = [
                     {
                         instance: receiver,
@@ -56,6 +54,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 )
 
                 hashPuzzle = recipients[0].instance as HashPuzzleFT
+                await hashPuzzle.connect(getDefaultSigner())
 
                 console.log('transfer tx: ', tx.id)
             }
@@ -72,8 +71,6 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 lim,
                 sha256(toByteString(`hello, sCrypt!`, true))
             )
-
-            await receiver.connect(getDefaultSigner())
 
             const recipients: Array<FTReceiver> = [
                 {
@@ -98,6 +95,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
             expect(p2pkh.getBSV20Amt()).to.be.equal(1n)
 
             hashPuzzle = recipients[0].instance as HashPuzzleFT
+            await hashPuzzle.connect(getDefaultSigner())
         }
 
         await expect(callContract()).not.rejected
@@ -111,8 +109,6 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 lim,
                 sha256(toByteString(`hello, sCrypt!`, true))
             )
-
-            await receiver.connect(getDefaultSigner())
 
             const recipients: Array<FTReceiver> = [
                 {
