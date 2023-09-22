@@ -26,7 +26,7 @@ import { Ordinal } from './ordinal'
 import { OrdP2PKH } from './ordP2PKH'
 import { fromByteString } from '../utils'
 import { OneSatApis } from '../1satApis'
-import { FTMethodCallOptions, FTReceiver } from '../types'
+import { ORDMethodCallOptions, FTReceiver } from '../types'
 
 /**
  * A base class implementing the bsv20 v1 protocol
@@ -158,20 +158,24 @@ export class BSV20V1 extends SmartContract {
         return Ordinal.getAmt(nopScript, fromByteString(this.tick))
     }
 
-    protected getDefaultTxBuilder(
+    protected override getDefaultTxBuilder(
         methodName: string
-    ): MethodCallTxBuilder<BSV20V1> {
+    ): MethodCallTxBuilder<this> {
         return async function (
             current: BSV20V1,
-            options: FTMethodCallOptions<BSV20V1>,
+            options_: MethodCallOptions<BSV20V1>,
             ...args
         ): Promise<ContractTransaction> {
-            const tokenChangeAmt = Array.isArray(options.transfer)
+            const options = options_ as ORDMethodCallOptions<BSV20V1>
+            const recipients = options.transfer as
+                | Array<FTReceiver>
+                | FTReceiver
+            const tokenChangeAmt = Array.isArray(recipients)
                 ? current.getAmt() -
-                  options.transfer.reduce((acc, receiver) => {
+                  recipients.reduce((acc, receiver) => {
                       return (acc += receiver.amt)
                   }, 0n)
-                : options.transfer.amt
+                : recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
             }
@@ -209,13 +213,13 @@ export class BSV20V1 extends SmartContract {
                     atOutputIndex: nexts.length,
                 })
             }
-            if (Array.isArray(options.transfer)) {
-                for (let i = 0; i < options.transfer.length; i++) {
-                    const receiver = options.transfer[i]
+            if (Array.isArray(recipients)) {
+                for (let i = 0; i < recipients.length; i++) {
+                    const receiver = recipients[i]
                     addReceiver(receiver)
                 }
             } else {
-                addReceiver(options.transfer)
+                addReceiver(recipients)
             }
 
             if (tokenChangeAmt > 0n && options.skipTokenChange !== true) {
@@ -241,6 +245,19 @@ export class BSV20V1 extends SmartContract {
 
             tx.change(changeAddress)
 
+            if (options.sequence !== undefined) {
+                tx.setInputSequence(0, options.sequence)
+            }
+
+            if (options.lockTime) {
+                const _sequence =
+                    options.sequence !== undefined
+                        ? options.sequence
+                        : 0xfffffffe
+                tx.setInputSequence(0, _sequence) // activate locktime interlock
+                tx.setLockTime(options.lockTime)
+            }
+
             return Promise.resolve({
                 tx,
                 atInputIndex: 0,
@@ -254,7 +271,7 @@ export class BSV20V1 extends SmartContract {
         address: string
     ): Promise<Array<OrdP2PKH>> {
         const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
-        return bsv20Utxos.map((utxo) => OrdP2PKH.fromP2PKHUTXO(utxo))
+        return bsv20Utxos.map((utxo) => OrdP2PKH.fromBsv20P2PKH(utxo))
     }
 
     static async transfer(

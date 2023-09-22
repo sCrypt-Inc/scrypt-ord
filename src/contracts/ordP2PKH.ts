@@ -17,17 +17,25 @@ import {
     ContractTransaction,
     MethodCallOptions,
     pubKey2Addr,
+    fromByteString,
+    MethodCallTxBuilder,
 } from 'scrypt-ts'
-import { Inscription } from '../types'
+import {
+    ORDMethodCallOptions,
+    FTReceiver,
+    Inscription,
+    NFTReceiver,
+} from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
+import { BSV20V1 } from './bsv20V1'
 
 export class OrdP2PKH extends SmartContract {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
 
-    private constructor(addr: Addr) {
+    constructor(addr: Addr) {
         super(...arguments)
         this.addr = addr
     }
@@ -76,7 +84,6 @@ export class OrdP2PKH extends SmartContract {
     }
 
     static fromAddress(address: string | bsv.Address | bsv.PublicKey) {
-        OrdP2PKH.loadArtifact(desc)
         let addr: Addr
 
         if (typeof address === 'string') {
@@ -89,7 +96,7 @@ export class OrdP2PKH extends SmartContract {
         return new OrdP2PKH(addr)
     }
 
-    static fromP2PKHUTXO(utxo: UTXO): OrdP2PKH {
+    static fromBsv20P2PKH(utxo: UTXO): OrdP2PKH {
         const ls = bsv.Script.fromHex(utxo.script)
 
         if (!Ordinal.isOrdinalP2PKH(ls)) {
@@ -104,25 +111,15 @@ export class OrdP2PKH extends SmartContract {
                     hex: desc.hex + nopScript.toHex(),
                 })
             )
-            const instance = (
-                this as unknown as typeof SmartContract
-            ).fromLockingScript(utxo.script) as OrdP2PKH
-            instance.from = utxo
-            return instance
+
+            return this.fromUTXO(utxo)
         } else {
             OrdP2PKH.loadArtifact(desc)
             const nopScript = Ordinal.getInsciptionScript(
                 toByteString(utxo.script)
             )
-            const instance = (
-                this as unknown as typeof SmartContract
-            ).fromLockingScript(
-                utxo.script,
-                {},
-                bsv.Script.fromHex(nopScript)
-            ) as OrdP2PKH
-            instance.from = utxo
-            return instance
+
+            return this.fromUTXO(utxo, {}, bsv.Script.fromHex(nopScript))
         }
     }
 
@@ -131,7 +128,184 @@ export class OrdP2PKH extends SmartContract {
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
-        return OrdP2PKH.fromP2PKHUTXO(utxo)
+        return OrdP2PKH.fromBsv20P2PKH(utxo)
+    }
+
+    private getBSV20DefaultTxBuilder(
+        methodName: string
+    ): MethodCallTxBuilder<this> {
+        return async function (
+            current: OrdP2PKH,
+            options_: MethodCallOptions<OrdP2PKH>,
+            ...args
+        ): Promise<ContractTransaction> {
+            const options = options_ as ORDMethodCallOptions<OrdP2PKH>
+
+            const recipients = options.transfer as
+                | Array<FTReceiver>
+                | FTReceiver
+            const tokenChangeAmt = Array.isArray(recipients)
+                ? current.getBSV20Amt() -
+                  recipients.reduce((acc, receiver) => {
+                      return (acc += receiver.amt)
+                  }, 0n)
+                : recipients.amt
+            if (tokenChangeAmt < 0n) {
+                throw new Error(`Not enough tokens`)
+            }
+
+            // bsv change address
+            const changeAddress = await current.signer.getDefaultAddress()
+
+            const nexts: StatefulNext<SmartContract>[] = []
+            const tx = new bsv.Transaction()
+
+            tx.addInput(current.buildContractInput())
+
+            function addReceiver(receiver: FTReceiver) {
+                if (receiver.instance instanceof BSV20V1) {
+                    receiver.instance.setAmt(receiver.amt)
+                } else if (receiver.instance instanceof OrdP2PKH) {
+                    receiver.instance.setBSV20(
+                        current.getBSV20Tick(),
+                        receiver.amt
+                    )
+                } else {
+                    throw new Error('unsupport receiver!')
+                }
+
+                tx.addOutput(
+                    new bsv.Transaction.Output({
+                        script: receiver.instance.lockingScript,
+                        satoshis: 1,
+                    })
+                )
+
+                nexts.push({
+                    instance: receiver.instance,
+                    balance: 1,
+                    atOutputIndex: nexts.length,
+                })
+            }
+            if (Array.isArray(recipients)) {
+                for (let i = 0; i < recipients.length; i++) {
+                    const receiver = recipients[i]
+                    addReceiver(receiver)
+                }
+            } else {
+                addReceiver(recipients)
+            }
+
+            if (tokenChangeAmt > 0n && options.skipTokenChange !== true) {
+                const tokenChangeAddress = options.tokenChangeAddress
+                    ? options.tokenChangeAddress
+                    : await current.signer.getDefaultAddress()
+                const p2pkh = OrdP2PKH.fromAddress(tokenChangeAddress)
+
+                p2pkh.setBSV20(
+                    fromByteString(current.getBSV20Tick()),
+                    tokenChangeAmt
+                )
+                tx.addOutput(
+                    new bsv.Transaction.Output({
+                        script: p2pkh.lockingScript,
+                        satoshis: 1,
+                    })
+                )
+
+                nexts.push({
+                    instance: p2pkh,
+                    balance: 1,
+                    atOutputIndex: nexts.length,
+                })
+            }
+
+            tx.change(changeAddress)
+
+            if (options.sequence !== undefined) {
+                tx.setInputSequence(0, options.sequence)
+            }
+
+            if (options.lockTime) {
+                const _sequence =
+                    options.sequence !== undefined
+                        ? options.sequence
+                        : 0xfffffffe
+                tx.setInputSequence(0, _sequence) // activate locktime interlock
+                tx.setLockTime(options.lockTime)
+            }
+
+            return Promise.resolve({
+                tx,
+                atInputIndex: 0,
+                nexts: nexts,
+            })
+        }
+    }
+
+    private getNFTDefaultTxBuilder(
+        methodName: string
+    ): MethodCallTxBuilder<this> {
+        return async function (
+            current: OrdP2PKH,
+            options_: MethodCallOptions<OrdP2PKH>,
+            ...args
+        ): Promise<ContractTransaction> {
+            const options = options_ as ORDMethodCallOptions<OrdP2PKH>
+            const recipient = options.transfer as NFTReceiver
+
+            // bsv change address
+            const changeAddress = await current.signer.getDefaultAddress()
+
+            const nexts: StatefulNext<SmartContract>[] = []
+            const tx = new bsv.Transaction()
+
+            tx.addInput(current.buildContractInput())
+
+            tx.addOutput(
+                new bsv.Transaction.Output({
+                    script: recipient.lockingScript,
+                    satoshis: 1,
+                })
+            )
+
+            nexts.push({
+                instance: recipient,
+                balance: 1,
+                atOutputIndex: nexts.length,
+            })
+
+            tx.change(changeAddress)
+
+            if (options.sequence !== undefined) {
+                tx.setInputSequence(0, options.sequence)
+            }
+
+            if (options.lockTime) {
+                const _sequence =
+                    options.sequence !== undefined
+                        ? options.sequence
+                        : 0xfffffffe
+                tx.setInputSequence(0, _sequence) // activate locktime interlock
+                tx.setLockTime(options.lockTime)
+            }
+
+            return Promise.resolve({
+                tx,
+                atInputIndex: 0,
+                nexts: nexts,
+            })
+        }
+    }
+
+    protected override getDefaultTxBuilder(
+        methodName: string
+    ): MethodCallTxBuilder<this> {
+        if (this.isBsv20()) {
+            return this.getBSV20DefaultTxBuilder(methodName)
+        } else {
+            return this.getNFTDefaultTxBuilder(methodName)
+        }
     }
 
     async transferBsv20(
@@ -298,3 +472,5 @@ const desc = {
     hex: '76a9<addr>88ac',
     sourceMapFile: '',
 }
+
+OrdP2PKH.loadArtifact(desc)

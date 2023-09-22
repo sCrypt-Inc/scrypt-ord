@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-import { toByteString, bsv } from 'scrypt-ts'
+import { toByteString, bsv, MethodCallOptions } from 'scrypt-ts'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { FTMethodCallOptions, OrdP2PKH, Ordinal } from '../scrypt-ord'
+import { OrdP2PKH, Ordinal } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test BSV20 fromUTXO', () => {
@@ -51,7 +51,7 @@ describe('Test BSV20 fromUTXO', () => {
                         amt: 6n,
                     },
                 ],
-            } as FTMethodCallOptions<HashPuzzleFT>)
+            } as MethodCallOptions<HashPuzzleFT>)
 
             console.log('withdraw bsv20 to p2pkh: ', tx.id)
         }

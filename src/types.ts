@@ -19,8 +19,10 @@ export type FTReceiver = {
     amt: bigint
 }
 
-export interface FTMethodCallOptions<T> extends MethodCallOptions<T> {
-    transfer: Array<FTReceiver> | FTReceiver
+export type NFTReceiver = SmartContract
+
+export interface ORDMethodCallOptions<T> extends MethodCallOptions<T> {
+    transfer: Array<FTReceiver> | FTReceiver | NFTReceiver
     tokenChangeAddress?: bsv.Address
     skipTokenChange?: boolean
 }

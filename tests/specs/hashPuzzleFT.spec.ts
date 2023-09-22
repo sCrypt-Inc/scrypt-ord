@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-import { sha256, toByteString } from 'scrypt-ts'
+import { sha256, toByteString, MethodCallOptions } from 'scrypt-ts'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { FTMethodCallOptions, OrdP2PKH, FTReceiver } from '../scrypt-ord'
+import { OrdP2PKH, FTReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzleFT`', () => {
@@ -86,7 +86,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 toByteString(`hello, sCrypt!:3`, true),
                 {
                     transfer: recipients,
-                } as FTMethodCallOptions<HashPuzzleFT>
+                } as MethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -126,7 +126,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as FTMethodCallOptions<HashPuzzleFT>
+                } as MethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)
