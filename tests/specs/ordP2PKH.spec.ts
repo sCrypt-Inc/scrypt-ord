@@ -5,7 +5,7 @@ import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH } from '../scrypt-ord'
-import { PubKey, findSig, toHex } from 'scrypt-ts'
+import { PubKey, findSig, toHex, Addr } from 'scrypt-ts'
 import { dummybsv20V1, dummybsv20V2 } from './utils'
 use(chaiAsPromised)
 
@@ -17,7 +17,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const address = await signer.getDefaultAddress()
-            ordP2PKH = OrdP2PKH.fromAddress(address)
+            ordP2PKH = new OrdP2PKH(Addr(address.toByteString()))
             ordP2PKH.setBSV20(tick, 1000n)
             await ordP2PKH.connect(getDefaultSigner())
             await ordP2PKH.deploy(1)
@@ -34,7 +34,9 @@ describe('Test SmartContract `OrdP2PKH`', () => {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: [
                             {
-                                instance: OrdP2PKH.fromAddress(address),
+                                instance: new OrdP2PKH(
+                                    Addr(address.toByteString())
+                                ),
                                 amt: 100n,
                             },
                         ],
@@ -65,7 +67,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const address = await signer.getDefaultAddress()
-            ordP2PKH = OrdP2PKH.fromAddress(address)
+            ordP2PKH = new OrdP2PKH(Addr(address.toByteString()))
             ordP2PKH.setNFT({
                 content: 'hello, sCrypt!',
                 contentType: 'text/plain',
@@ -84,7 +86,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
                     PubKey(toHex(ordPubKey)),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: OrdP2PKH.fromAddress(address),
+                        transfer: new OrdP2PKH(Addr(address.toByteString())),
                     }
                 )
 
@@ -116,7 +118,9 @@ describe('Test SmartContract `OrdP2PKH`', () => {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: [
                             {
-                                instance: OrdP2PKH.fromAddress(address),
+                                instance: new OrdP2PKH(
+                                    Addr(address.toByteString())
+                                ),
                                 amt: 1n,
                             },
                         ],
@@ -140,7 +144,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            ordP2PKH = OrdP2PKH.fromBsv20P2PKH(dummybsv20V1(addr, 'OOO1', 6n))
+            ordP2PKH = OrdP2PKH.fromBsv20P2PKH(dummybsv20V2(addr, 'OOO1', 6n))
 
             await ordP2PKH.connect(signer)
         })
