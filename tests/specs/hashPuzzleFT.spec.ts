@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import { sha256, toByteString } from 'scrypt-ts'
-import { HashPuzzle } from '../contracts/hashPuzzle'
+import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
 import { FTMethodCallOptions, OrdP2PKH, FTReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzle`', () => {
+describe('Test SmartContract `HashPuzzleFT`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
     const amt = 1000n
 
-    let hashPuzzle: HashPuzzle
+    let hashPuzzle: HashPuzzleFT
     before(async () => {
-        await HashPuzzle.loadArtifact()
-        hashPuzzle = new HashPuzzle(
+        HashPuzzleFT.loadArtifact()
+        hashPuzzle = new HashPuzzleFT(
             tick,
             max,
             lim,
@@ -32,7 +32,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
     it('transfer to an other hashPuzzle.', async () => {
         const callContract = async () => {
             for (let i = 0; i < 3; i++) {
-                const receiver = new HashPuzzle(
+                const receiver = new HashPuzzleFT(
                     tick,
                     max,
                     lim,
@@ -55,7 +55,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
                     }
                 )
 
-                hashPuzzle = recipients[0].instance as HashPuzzle
+                hashPuzzle = recipients[0].instance as HashPuzzleFT
 
                 console.log('transfer tx: ', tx.id)
             }
@@ -66,7 +66,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
 
     it('transfer to an other hashPuzzle with change.', async () => {
         const callContract = async () => {
-            const receiver = new HashPuzzle(
+            const receiver = new HashPuzzleFT(
                 tick,
                 max,
                 lim,
@@ -86,7 +86,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
                 toByteString(`hello, sCrypt!:3`, true),
                 {
                     transfer: recipients,
-                } as FTMethodCallOptions<HashPuzzle>
+                } as FTMethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -97,7 +97,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
 
             expect(p2pkh.getBSV20Amt()).to.be.equal(1n)
 
-            hashPuzzle = recipients[0].instance as HashPuzzle
+            hashPuzzle = recipients[0].instance as HashPuzzleFT
         }
 
         await expect(callContract()).not.rejected
@@ -105,7 +105,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
 
     it('transfer to an other hashPuzzle without change.', async () => {
         const callContract = async () => {
-            const receiver = new HashPuzzle(
+            const receiver = new HashPuzzleFT(
                 tick,
                 max,
                 lim,
@@ -126,7 +126,7 @@ describe('Test SmartContract `HashPuzzle`', () => {
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as FTMethodCallOptions<HashPuzzle>
+                } as FTMethodCallOptions<HashPuzzleFT>
             )
 
             console.log('transfer tx: ', tx.id)

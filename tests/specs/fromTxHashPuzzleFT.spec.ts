@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import { toByteString, bsv } from 'scrypt-ts'
-import { HashPuzzle } from '../contracts/hashPuzzle'
+import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
@@ -11,10 +11,10 @@ use(chaiAsPromised)
 describe('Test BSV20 fromUTXO', () => {
     const message1 = toByteString('hello, sCrypt!', true)
 
-    let hashPuzzle: HashPuzzle
+    let hashPuzzle: HashPuzzleFT
 
     before(async () => {
-        HashPuzzle.loadArtifact()
+        HashPuzzleFT.loadArtifact()
 
         // const utxo = await Ordinal.fetchUTXOByOutpoint(
         //     '1f3a40d41b775380c9d84ab89d9e21bebd2eb6f50676de004048285892512715_0'
@@ -31,7 +31,7 @@ describe('Test BSV20 fromUTXO', () => {
             outputIndex: 0,
         }
 
-        hashPuzzle = HashPuzzle.fromUTXO(
+        hashPuzzle = HashPuzzleFT.fromUTXO(
             utxo,
             {},
             bsv.Script.fromHex(Ordinal.getInsciptionScript(utxo.script))
@@ -51,7 +51,7 @@ describe('Test BSV20 fromUTXO', () => {
                         amt: 6n,
                     },
                 ],
-            } as FTMethodCallOptions<HashPuzzle>)
+            } as FTMethodCallOptions<HashPuzzleFT>)
 
             console.log('withdraw bsv20 to p2pkh: ', tx.id)
         }

@@ -10,7 +10,7 @@ import {
 
 import { BSV20V1 } from '../scrypt-ord'
 
-export class FtCounter extends BSV20V1 {
+export class CounterFT extends BSV20V1 {
     @prop(true)
     counter: bigint
 

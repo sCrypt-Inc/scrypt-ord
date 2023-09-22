@@ -2,7 +2,7 @@ import { method, prop, assert, SigHash, hash256 } from 'scrypt-ts'
 
 import { OneSatNFT } from '../scrypt-ord'
 
-export class NFTCounter extends OneSatNFT {
+export class CounterNFT extends OneSatNFT {
     @prop(true)
     counter: bigint
 
