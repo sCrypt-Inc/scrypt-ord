@@ -58,13 +58,15 @@ export class BSV20P2PKH extends BSV20V1 {
     }
 
     private getNopScript() {
-        const ls = this.lockingScript
+        const ls = bsv.Script.fromHex(this.utxo.script)
         if (Ordinal.isOrdinalP2PKHV1(ls)) {
             return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
         }
 
         if (Ordinal.isOrdinalP2PKHV2(ls)) {
-            return this.getPrependNOPScript()
+            return bsv.Script.fromHex(
+                Ordinal.getInsciptionScript(this.utxo.script)
+            )
         }
 
         return null
@@ -75,34 +77,22 @@ export class BSV20P2PKH extends BSV20V1 {
         return Ordinal.getAmt(nop, fromByteString(this.tick))
     }
 
-    static override fromLockingScript(
-        script: string,
-        offchainValues?: Record<string, any>,
-        nopScript?: bsv.Script
-    ): SmartContract {
+    static override fromLockingScript(script: string): SmartContract {
         const ls = bsv.Script.fromHex(script)
-
-        if (!Ordinal.isOrdinalP2PKH(ls)) {
-            throw new Error('invalid ordinal p2pkh utxo')
-        }
 
         if (!this.DelegateClazz) {
             throw new Error('no DelegateClazz found!')
         }
 
-        let delegateInstance: AbstractContract
+        let rawP2PKH = ''
 
-        if (nopScript) {
-            if (!script.startsWith(nopScript.toHex())) {
-                throw new Error(`script doesn't start with nopScript`)
-            }
-
-            const contractScript = script.slice(nopScript.toHex().length)
-
-            delegateInstance = this.DelegateClazz.fromHex(contractScript)
+        if (Ordinal.isOrdinalP2PKHV1(ls)) {
+            rawP2PKH = script.slice(0, P2PKHScriptLen)
         } else {
-            delegateInstance = this.DelegateClazz.fromHex(script)
+            rawP2PKH = script.slice(Number(Ordinal.sizeOfOrdinal(script)) * 2)
         }
+
+        const delegateInstance = this.DelegateClazz.fromHex(rawP2PKH)
 
         const bsv20 = Ordinal.getBsv20(bsv.Script.fromHex(script))
 
@@ -119,9 +109,7 @@ export class BSV20P2PKH extends BSV20V1 {
             Addr(args[0] as ByteString)
         )
         instance.delegateInstance = delegateInstance
-        instance.prependNOPScript(nopScript || null)
 
-        // all good here
         return instance
     }
 
@@ -129,42 +117,18 @@ export class BSV20P2PKH extends BSV20V1 {
         this: new (...args: any[]) => T,
         utxo: UTXO
     ): T {
-        const ls = bsv.Script.fromHex(utxo.script)
-
         if (utxo.satoshis !== 1) {
             throw new Error('invalid ordinal p2pkh utxo')
         }
+        const ls = bsv.Script.fromHex(utxo.script)
 
-        if (Ordinal.isOrdinalP2PKHV1(ls)) {
-            const nopScript = bsv.Script.fromHex(
-                utxo.script.slice(P2PKHScriptLen)
-            )
-
-            BSV20P2PKH.loadArtifact(
-                Object.assign({}, desc, {
-                    hex: desc.hex + nopScript.toHex(),
-                })
-            )
-
-            const instance = BSV20P2PKH.fromLockingScript(utxo.script) as T
-            instance.from = utxo
-            // must restore v2 desc
-            BSV20P2PKH.loadArtifact(desc)
-            return instance
-        } else {
-            BSV20P2PKH.loadArtifact(desc)
-            const nopScript = bsv.Script.fromHex(
-                Ordinal.getInsciptionScript(toByteString(utxo.script))
-            )
-
-            const instance = BSV20P2PKH.fromLockingScript(
-                utxo.script,
-                {},
-                nopScript
-            ) as T
-            instance.from = utxo
-            return instance
+        if (!Ordinal.isOrdinalP2PKH(ls)) {
+            throw new Error('invalid ordinal p2pkh utxo')
         }
+
+        const instance = BSV20P2PKH.fromLockingScript(utxo.script) as T
+        instance.from = utxo
+        return instance
     }
 
     static fromOutPoint(outPoint: string): BSV20P2PKH {
