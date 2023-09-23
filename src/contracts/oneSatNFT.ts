@@ -18,7 +18,6 @@ import {
 import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
-import { OrdP2PKH } from './ordP2PKH'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)

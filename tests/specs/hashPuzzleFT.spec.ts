@@ -5,7 +5,7 @@ import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH, FTReceiver } from '../scrypt-ord'
+import { BSV20P2PKH, FTReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzleFT`', () => {
@@ -90,9 +90,9 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
 
             expect(nexts.length === 2).to.be.true
 
-            const p2pkh = nexts[1].instance as OrdP2PKH
+            const p2pkh = nexts[1].instance as BSV20P2PKH
 
-            expect(p2pkh.getBSV20Amt()).to.be.equal(1n)
+            expect(p2pkh.getAmt()).to.be.equal(1n)
 
             hashPuzzle = recipients[0].instance as HashPuzzleFT
             await hashPuzzle.connect(getDefaultSigner())

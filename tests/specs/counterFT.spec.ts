@@ -10,19 +10,19 @@ import {
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH, Ordinal } from '../scrypt-ord'
+import { BSV20P2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
     let instance: CounterFT
-    const tick = 'DOGE'
+    const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
     const amt = lim
 
     before(async () => {
         CounterFT.loadArtifact()
-        instance = new CounterFT(toByteString(tick, true), max, lim, 0n)
+        instance = new CounterFT(tick, max, lim, 0n)
         await instance.connect(getDefaultSigner())
         await instance.deployToken()
         await instance.mint(amt)
@@ -60,7 +60,10 @@ describe('Test SmartContract `CounterFT`', () => {
                                 amt: tokenChangeAmt,
                             },
                             {
-                                instance: new OrdP2PKH(
+                                instance: new BSV20P2PKH(
+                                    tick,
+                                    max,
+                                    lim,
                                     Addr(receiver.toByteString())
                                 ),
                                 amt: 100n,
