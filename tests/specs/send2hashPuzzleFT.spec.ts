@@ -10,7 +10,7 @@ import {
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH, fromByteString } from '../scrypt-ord'
-import { dummyAppendbsv20, dummyPrependbsv20 } from './utils'
+import { dummybsv20 } from './utils'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 use(chaiAsPromised)
 
@@ -39,7 +39,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
             const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyAppendbsv20(address, fromByteString(tick), 100n)
+                dummybsv20(address, fromByteString(tick), 100n)
             )
 
             await p2pkh.connect(signer)
@@ -166,7 +166,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
             const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyPrependbsv20(address, fromByteString(tick), 100n)
+                dummybsv20(address, fromByteString(tick), 100n)
             )
 
             await p2pkh.connect(signer)
