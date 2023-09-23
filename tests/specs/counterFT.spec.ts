@@ -3,20 +3,19 @@ import { toByteString, MethodCallOptions } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH } from '../scrypt-ord'
+import { BSV20P2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
     let instance: CounterFT
+    const tick = toByteString('DOGE', true)
+    const max = 100000n
+    const lim = max / 10n
+    const amt = lim
 
     before(async () => {
         CounterFT.loadArtifact()
-
-        const tick = 'DOGE'
-        const max = 100000n
-        const lim = max / 10n
-        const amt = lim
-        instance = new CounterFT(toByteString(tick, true), max, lim, 0n)
+        instance = new CounterFT(tick, max, lim, 0n)
         await instance.connect(getDefaultSigner())
 
         await instance.deployToken()
@@ -41,11 +40,22 @@ describe('Test SmartContract `CounterFT`', () => {
                 const { tx, nexts } = await currentInstance.methods.inc(
                     transferAmount,
                     {
-                        transfer: {
-                            instance: nextInstance,
-                            amt: transferAmount,
-                        },
-                    } as MethodCallOptions<CounterFT>
+                        transfer: [
+                            {
+                                instance: nextInstance,
+                                amt: tokenChangeAmt,
+                            },
+                            {
+                                instance: new BSV20P2PKH(
+                                    tick,
+                                    max,
+                                    lim,
+                                    Addr(receiver.toByteString())
+                                ),
+                                amt: 100n,
+                            },
+                        ],
+                    }
                 )
                 console.log('Contract CounterFT called: ', tx.id)
                 expect(nexts.length).to.equal(2)

@@ -1,0 +1,355 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+    assert,
+    method,
+    prop,
+    PubKey,
+    Sig,
+    bsv,
+    Addr,
+    SmartContract,
+    UTXO,
+    toByteString,
+    pubKey2Addr,
+    ByteString,
+    fromByteString,
+    MethodCallOptions,
+    findSig,
+    ContractTransaction,
+    StatefulNext,
+    Signer,
+    toHex,
+} from 'scrypt-ts'
+
+import { AbstractContract } from 'scryptlib'
+import { Ordinal } from './ordinal'
+import { OneSatApis } from '../1satApis'
+import { BSV20V1 } from './bsv20V1'
+import { FTReceiver } from '../types'
+
+const P2PKHScriptLen = 50
+
+export class BSV20P2PKH extends BSV20V1 {
+    // Address of the recipient.
+    @prop()
+    readonly addr: Addr
+
+    constructor(tick: ByteString, max: bigint, lim: bigint, addr: Addr) {
+        super(tick, max, lim)
+        this.init(...arguments)
+        this.addr = addr
+    }
+
+    @method()
+    public unlock(sig: Sig, pubkey: PubKey) {
+        // Check if the passed public key belongs to the specified address.
+        assert(
+            pubKey2Addr(pubkey) == this.addr,
+            'public key hashes are not equal'
+        )
+        // Check signature validity.
+        assert(this.checkSig(sig, pubkey), 'signature check failed')
+    }
+
+    override init(...args: any[]) {
+        const [_, __, ___, addr] = args
+        super.init(addr)
+    }
+
+    private getNopScript() {
+        const ls = this.lockingScript
+        if (Ordinal.isOrdinalP2PKHV1(ls)) {
+            return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
+        }
+
+        if (Ordinal.isOrdinalP2PKHV2(ls)) {
+            return this.getPrependNOPScript()
+        }
+
+        return null
+    }
+
+    override getAmt() {
+        const nop = this.getNopScript()
+        return Ordinal.getAmt(nop, fromByteString(this.tick))
+    }
+
+    static override fromLockingScript(
+        script: string,
+        offchainValues?: Record<string, any>,
+        nopScript?: bsv.Script
+    ): SmartContract {
+        const ls = bsv.Script.fromHex(script)
+
+        if (!Ordinal.isOrdinalP2PKH(ls)) {
+            throw new Error('invalid ordinal p2pkh utxo')
+        }
+
+        if (!this.DelegateClazz) {
+            throw new Error('no DelegateClazz found!')
+        }
+
+        let delegateInstance: AbstractContract
+
+        if (nopScript) {
+            if (!script.startsWith(nopScript.toHex())) {
+                throw new Error(`script doesn't start with nopScript`)
+            }
+
+            const contractScript = script.slice(nopScript.toHex().length)
+
+            delegateInstance = this.DelegateClazz.fromHex(contractScript)
+        } else {
+            delegateInstance = this.DelegateClazz.fromHex(script)
+        }
+
+        const bsv20 = Ordinal.getBsv20(bsv.Script.fromHex(script))
+
+        // recreate instance
+        const args = delegateInstance.ctorArgs().map((arg) => {
+            return arg.value
+        })
+
+        // we can't  get max, and lim from the bsv20 insciption script.
+        const instance = new this(
+            toByteString(bsv20.tick, true),
+            -1n,
+            -1n,
+            Addr(args[0] as ByteString)
+        )
+        instance.delegateInstance = delegateInstance
+        instance.prependNOPScript(nopScript || null)
+
+        // all good here
+        return instance
+    }
+
+    static override fromUTXO<T extends SmartContract>(
+        this: new (...args: any[]) => T,
+        utxo: UTXO
+    ): T {
+        const ls = bsv.Script.fromHex(utxo.script)
+
+        if (utxo.satoshis !== 1) {
+            throw new Error('invalid ordinal p2pkh utxo')
+        }
+
+        if (Ordinal.isOrdinalP2PKHV1(ls)) {
+            const nopScript = bsv.Script.fromHex(
+                utxo.script.slice(P2PKHScriptLen)
+            )
+
+            BSV20P2PKH.loadArtifact(
+                Object.assign({}, desc, {
+                    hex: desc.hex + nopScript.toHex(),
+                })
+            )
+
+            const instance = BSV20P2PKH.fromLockingScript(utxo.script) as T
+            instance.from = utxo
+            // must restore v2 desc
+            BSV20P2PKH.loadArtifact(desc)
+            return instance
+        } else {
+            BSV20P2PKH.loadArtifact(desc)
+            const nopScript = bsv.Script.fromHex(
+                Ordinal.getInsciptionScript(toByteString(utxo.script))
+            )
+
+            const instance = BSV20P2PKH.fromLockingScript(
+                utxo.script,
+                {},
+                nopScript
+            ) as T
+            instance.from = utxo
+            return instance
+        }
+    }
+
+    static fromOutPoint(outPoint: string): BSV20P2PKH {
+        const utxo = OneSatApis.fetchUTXOByOutpoint(outPoint)
+        if (utxo === null) {
+            throw new Error(`no utxo found for outPoint: ${outPoint}`)
+        }
+        return BSV20P2PKH.fromUTXO(utxo)
+    }
+
+    /**
+     * Get all unspent bsv20 p2pkh of a address by tick
+     * @param tick
+     * @param address
+     * @returns
+     */
+    static async getBSV20(
+        tick: string,
+        address: string
+    ): Promise<Array<BSV20P2PKH>> {
+        const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
+        return bsv20Utxos.map((utxo) => BSV20P2PKH.fromUTXO(utxo))
+    }
+
+    static async transfer(
+        senders: Array<BSV20P2PKH>,
+        signer: Signer,
+        receivers: Array<FTReceiver>
+    ) {
+        const ordPubKey = await signer.getDefaultPubKey()
+
+        const totalTokenAmt = senders.reduce((acc, sender) => {
+            acc += BigInt(sender.getAmt())
+            return acc
+        }, 0n)
+
+        const tokenAmt = receivers.reduce((acc, receiver) => {
+            acc += receiver.amt
+            return acc
+        }, 0n)
+
+        const tokenChangeAmt = totalTokenAmt - tokenAmt
+
+        if (tokenChangeAmt < 0n) {
+            throw new Error('Not enough token!')
+        }
+
+        const tx = new bsv.Transaction()
+        const nexts: StatefulNext<SmartContract>[] = []
+
+        const tick = senders[0].tick
+
+        for (let i = 0; i < receivers.length; i++) {
+            const receiver = receivers[i]
+
+            if (receiver.instance instanceof BSV20V1) {
+                receiver.instance.setAmt(receiver.amt)
+            } else {
+                throw new Error('unsupport receiver, only BSV20!')
+            }
+
+            tx.addOutput(
+                new bsv.Transaction.Output({
+                    script: receiver.instance.lockingScript,
+                    satoshis: 1,
+                })
+            )
+
+            nexts.push({
+                instance: receiver.instance,
+                balance: 1,
+                atOutputIndex: i,
+            })
+        }
+
+        if (tokenChangeAmt > 0n) {
+            const p2pkh = new BSV20P2PKH(
+                tick,
+                senders[0].max,
+                senders[0].lim,
+                Addr(ordPubKey.toAddress().toByteString())
+            )
+
+            p2pkh.setAmt(tokenChangeAmt)
+
+            tx.addOutput(
+                new bsv.Transaction.Output({
+                    script: p2pkh.lockingScript,
+                    satoshis: 1,
+                })
+            )
+
+            nexts.push({
+                instance: p2pkh,
+                balance: 1,
+                atOutputIndex: nexts.length,
+            })
+        }
+
+        tx.change(ordPubKey.toAddress())
+
+        for (let i = 0; i < senders.length; i++) {
+            const p2pkh = senders[i]
+            p2pkh.bindTxBuilder(
+                'unlock',
+                async (
+                    current: BSV20P2PKH,
+                    options: MethodCallOptions<BSV20P2PKH>
+                ): Promise<ContractTransaction> => {
+                    const tx = options.partialContractTx.tx
+                    tx.addInput(current.buildContractInput())
+
+                    return Promise.resolve({
+                        tx: tx,
+                        atInputIndex: i,
+                        nexts,
+                    })
+                }
+            )
+
+            await p2pkh.methods.unlock(
+                (sigResps) => findSig(sigResps, ordPubKey),
+                PubKey(toHex(ordPubKey)),
+                {
+                    partialContractTx: {
+                        tx: tx,
+                        atInputIndex: 0,
+                        nexts: [],
+                    },
+                    pubKeyOrAddrToSign: ordPubKey,
+                    multiContractCall: true,
+                } as MethodCallOptions<BSV20P2PKH>
+            )
+        }
+
+        return SmartContract.multiContractCall(
+            {
+                tx: tx,
+                atInputIndex: 0,
+                nexts: nexts,
+            },
+            signer
+        )
+    }
+}
+
+const desc = {
+    version: 9,
+    compilerVersion: '1.19.0+commit.72eaeba',
+    contract: 'BSV20P2PKH',
+    md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
+    structs: [],
+    library: [],
+    alias: [],
+    abi: [
+        {
+            type: 'function',
+            name: 'unlock',
+            index: 0,
+            params: [
+                {
+                    name: 'sig',
+                    type: 'Sig',
+                },
+                {
+                    name: 'pubkey',
+                    type: 'PubKey',
+                },
+            ],
+        },
+        {
+            type: 'constructor',
+            params: [
+                {
+                    name: 'addr',
+                    type: 'Ripemd160',
+                },
+            ],
+        },
+    ],
+    stateProps: [],
+    buildType: 'release',
+    file: '',
+    hex: '76a9<addr>88ac',
+    sourceMapFile: '',
+}
+
+BSV20P2PKH.loadArtifact(desc)

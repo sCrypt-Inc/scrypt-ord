@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import {
+    Addr,
     ContractTransaction,
     MethodCallOptions,
     PubKey,
@@ -16,7 +17,7 @@ import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH, FTReceiver, fromByteString } from '../scrypt-ord'
+import { BSV20P2PKH, FTReceiver, fromByteString, BSV20V1 } from '../scrypt-ord'
 import { dummybsv20 } from './utils'
 use(chaiAsPromised)
 
@@ -30,12 +31,13 @@ describe('Test multi inputs and outputs', () => {
     })
 
     it('should transfer 2 ordp2pkh to 1 hashPuzzle successfully.', async () => {
-        const signer = getDefaultSigner()
-        const address = await signer.getDefaultAddress()
-        const ordP2PKHs = [
-            dummybsv20(address, fromByteString(tick), 4n),
-            dummybsv20(address, fromByteString(tick), 5n),
-        ].map((utxo) => OrdP2PKH.fromP2PKH(utxo))
+        const transferBSV20 = async () => {
+            const signer = getDefaultSigner()
+            const address = await signer.getDefaultAddress()
+            const ordP2PKHs = [
+                dummybsv20(address, fromByteString(tick), 4n),
+                dummybsv20(address, fromByteString(tick), 5n),
+            ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)
 
@@ -47,7 +49,7 @@ describe('Test multi inputs and outputs', () => {
                 },
             ]
 
-            const { tx } = await OrdP2PKH.transfer(
+            const { tx } = await BSV20P2PKH.transfer(
                 ordP2PKHs,
                 signer,
                 recipients
@@ -60,12 +62,13 @@ describe('Test multi inputs and outputs', () => {
     })
 
     it('should transfer 2 ordp2pkh to 2 hashPuzzle successfully.', async () => {
-        const signer = getDefaultSigner()
-        const address = await signer.getDefaultAddress()
-        const ordP2PKHs = [
-            dummybsv20(address, fromByteString(tick), 4n),
-            dummybsv20(address, fromByteString(tick), 5n),
-        ].map((utxo) => OrdP2PKH.fromP2PKH(utxo))
+        const transferBSV20 = async () => {
+            const signer = getDefaultSigner()
+            const address = await signer.getDefaultAddress()
+            const ordP2PKHs = [
+                dummybsv20(address, fromByteString(tick), 4n),
+                dummybsv20(address, fromByteString(tick), 5n),
+            ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
 
             await Promise.all(ordP2PKHs.map((p) => p.connect(signer)))
 
@@ -93,7 +96,7 @@ describe('Test multi inputs and outputs', () => {
                 },
             ]
 
-            const { tx } = await OrdP2PKH.transfer(
+            const { tx } = await BSV20P2PKH.transfer(
                 ordP2PKHs,
                 signer,
                 recipients
@@ -112,7 +115,7 @@ describe('Test multi inputs and outputs', () => {
 
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
-            const sender0: OrdP2PKH = OrdP2PKH.fromP2PKH(
+            const sender0: BSV20P2PKH = BSV20P2PKH.fromUTXO(
                 dummybsv20(address, fromByteString(tick), 4n)
             )
 
@@ -143,7 +146,7 @@ describe('Test multi inputs and outputs', () => {
                 },
             ]
 
-            const totalTokenAmt = sender0.getBSV20Amt() + sender1.getAmt()
+            const totalTokenAmt = sender0.getAmt() + sender1.getAmt()
 
             const tokenAmt = recipients.reduce((acc, receiver) => {
                 acc += receiver.amt
@@ -160,8 +163,8 @@ describe('Test multi inputs and outputs', () => {
             sender0.bindTxBuilder(
                 'unlock',
                 async (
-                    current: OrdP2PKH,
-                    options: MethodCallOptions<OrdP2PKH>
+                    current: BSV20P2PKH,
+                    options: MethodCallOptions<BSV20P2PKH>
                 ): Promise<ContractTransaction> => {
                     const tx = new bsv.Transaction()
                     const nexts: StatefulNext<SmartContract>[] = []
@@ -171,12 +174,8 @@ describe('Test multi inputs and outputs', () => {
 
                         if (receiver.instance instanceof BSV20V1) {
                             receiver.instance.setAmt(receiver.amt)
-                        } else if (receiver.instance instanceof OrdP2PKH) {
-                            receiver.instance.setBSV20(tick, receiver.amt)
                         } else {
-                            throw new Error(
-                                'unsupport receiver, only BSV20V1 or OrdP2PKH!'
-                            )
+                            throw new Error('unsupport receiver, only BSV20!')
                         }
 
                         tx.addOutput(
@@ -194,9 +193,14 @@ describe('Test multi inputs and outputs', () => {
                     }
 
                     if (tokenChangeAmt > 0n) {
-                        const p2pkh = OrdP2PKH.fromAddress(ordPubKey)
+                        const p2pkh = new BSV20P2PKH(
+                            tick,
+                            max,
+                            lim,
+                            Addr(ordPubKey.toAddress().toByteString())
+                        )
 
-                        p2pkh.setBSV20(fromByteString(tick), tokenChangeAmt)
+                        p2pkh.setAmt(tokenChangeAmt)
 
                         tx.addOutput(
                             new bsv.Transaction.Output({
@@ -230,7 +234,7 @@ describe('Test multi inputs and outputs', () => {
                 {
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<OrdP2PKH>
+                } as MethodCallOptions<BSV20P2PKH>
             )
 
             sender1.bindTxBuilder(
@@ -259,7 +263,7 @@ describe('Test multi inputs and outputs', () => {
                 transfer: recipients,
                 pubKeyOrAddrToSign: ordPubKey,
                 multiContractCall: true,
-            } as MethodCallOptions<OrdP2PKH>)
+            } as MethodCallOptions<BSV20P2PKH>)
 
             const { tx } = await SmartContract.multiContractCall(
                 partialContractTx,
