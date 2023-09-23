@@ -7,3 +7,4 @@ artifacts/
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
+**/tsconfig-scryptTS.json
