@@ -173,9 +173,8 @@ export class OrdP2PKH extends SmartContract {
         ): Promise<ContractTransaction> {
             const options = options_ as ORDMethodCallOptions<OrdP2PKH>
 
-            const recipients = options.transfer as
-                | Array<FTReceiver>
-                | FTReceiver
+            const recipients =
+                (options.transfer as Array<FTReceiver> | FTReceiver) || []
             const tokenChangeAmt = Array.isArray(recipients)
                 ? current.getBSV20Amt() -
                   recipients.reduce((acc, receiver) => {
@@ -332,6 +331,31 @@ export class OrdP2PKH extends SmartContract {
         }
     }
 
+    async mint(tick: string, amt: bigint) {
+        this.setBSV20(tick, amt)
+        return this.deploy(1)
+    }
+
+    async deployToken(tick: string, max: bigint, lim: bigint) {
+        const address = await this.signer.getDefaultAddress()
+
+        const utxos = await this.signer.listUnspent(address)
+
+        const deployTx = new bsv.Transaction()
+            .from(utxos)
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.buildPublicKeyHashOut(address).add(
+                        Ordinal.createDeploy(tick, max, lim)
+                    ),
+                    satoshis: 1,
+                })
+            )
+            .change(address)
+
+        return this.signer.signAndsendTransaction(deployTx)
+    }
+
     protected override getDefaultTxBuilder(
         methodName: string
     ): MethodCallTxBuilder<this> {
@@ -369,18 +393,14 @@ export class OrdP2PKH extends SmartContract {
     }
 
     static async transfer(
-        senders: Array<OrdP2PKH | BSV20V1>,
+        senders: Array<OrdP2PKH>,
         signer: Signer,
         receivers: Array<FTReceiver>
     ) {
         const ordPubKey = await signer.getDefaultPubKey()
 
         const totalTokenAmt = senders.reduce((acc, sender) => {
-            if (sender instanceof BSV20V1) {
-                acc += sender.getAmt()
-            } else {
-                acc += BigInt(sender.getBSV20Amt())
-            }
+            acc += BigInt(sender.getBSV20Amt())
             return acc
         }, 0n)
 
@@ -398,10 +418,7 @@ export class OrdP2PKH extends SmartContract {
         const tx = new bsv.Transaction()
         const nexts: StatefulNext<SmartContract>[] = []
 
-        const tick =
-            senders[0] instanceof BSV20V1
-                ? fromByteString(senders[0].tick)
-                : senders[0].getBSV20Tick()
+        const tick = senders[0].getBSV20Tick()
 
         for (let i = 0; i < receivers.length; i++) {
             const receiver = receivers[i]
@@ -454,8 +471,8 @@ export class OrdP2PKH extends SmartContract {
             p2pkh.bindTxBuilder(
                 'unlock',
                 async (
-                    current: OrdP2PKH | BSV20V1,
-                    options: MethodCallOptions<OrdP2PKH | BSV20V1>
+                    current: OrdP2PKH,
+                    options: MethodCallOptions<OrdP2PKH>
                 ): Promise<ContractTransaction> => {
                     const tx = options.partialContractTx.tx
                     tx.addInput(current.buildContractInput())
@@ -479,7 +496,7 @@ export class OrdP2PKH extends SmartContract {
                     },
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<OrdP2PKH | BSV20V1>
+                } as MethodCallOptions<OrdP2PKH>
             )
         }
 

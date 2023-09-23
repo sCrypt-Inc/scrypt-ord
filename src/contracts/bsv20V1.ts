@@ -263,4 +263,22 @@ export class BSV20V1 extends SmartContract {
             })
         }
     }
+
+    static fromBsv20(utxo: UTXO): BSV20V1 {
+        const ls = bsv.Script.fromHex(utxo.script)
+
+        if (utxo.satoshis !== 1) {
+            throw new Error('invalid ordinal bsv20 utxo')
+        }
+
+        const ins = Ordinal.getInsciptionScript(utxo.script)
+
+        if (!ins) {
+            throw new Error('invalid ordinal bsv20 utxo')
+        }
+
+        const nopScript = bsv.Script.fromHex(ins)
+
+        return this.fromUTXO(utxo, {}, nopScript)
+    }
 }
