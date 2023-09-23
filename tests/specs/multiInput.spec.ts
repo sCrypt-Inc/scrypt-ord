@@ -6,7 +6,7 @@ import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH, FTReceiver, fromByteString } from '../scrypt-ord'
-import { dummyAppendbsv20 } from './utils'
+import { dummybsv20 } from './utils'
 use(chaiAsPromised)
 
 describe('Test multi inputs and outputs', () => {
@@ -18,12 +18,12 @@ describe('Test multi inputs and outputs', () => {
         HashPuzzleFT.loadArtifact()
     })
 
-    it('should transfer 2 ordp2kh to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 2 ordp2pkh to 1 hashPuzzle successfully.', async () => {
         const signer = getDefaultSigner()
         const address = await signer.getDefaultAddress()
         const ordP2PKHs = [
-            dummyAppendbsv20(address, fromByteString(tick), 4n),
-            dummyAppendbsv20(address, fromByteString(tick), 5n),
+            dummybsv20(address, fromByteString(tick), 4n),
+            dummybsv20(address, fromByteString(tick), 5n),
         ].map((utxo) => OrdP2PKH.fromP2PKH(utxo))
 
         const message = toByteString('hello, sCrypt!', true)
@@ -54,12 +54,12 @@ describe('Test multi inputs and outputs', () => {
         expect(tokenchange.getBSV20Amt()).to.be.equal(3n)
     })
 
-    it('should transfer 2 ordp2kh to 2 hashPuzzle successfully.', async () => {
+    it('should transfer 2 ordp2pkh to 2 hashPuzzle successfully.', async () => {
         const signer = getDefaultSigner()
         const address = await signer.getDefaultAddress()
         const ordP2PKHs = [
-            dummyAppendbsv20(address, fromByteString(tick), 4n),
-            dummyAppendbsv20(address, fromByteString(tick), 5n),
+            dummybsv20(address, fromByteString(tick), 4n),
+            dummybsv20(address, fromByteString(tick), 5n),
         ].map((utxo) => OrdP2PKH.fromP2PKH(utxo))
 
         await Promise.all(ordP2PKHs.map((p) => p.connect(signer)))

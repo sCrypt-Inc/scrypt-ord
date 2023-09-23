@@ -11,7 +11,7 @@ import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH } from '../scrypt-ord'
-import { dummyP2PKH, dummyAppendNFT, dummyPrependNFT } from './utils'
+import { dummyP2PKH, dummyNFT } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
@@ -34,9 +34,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyAppendNFT(address, 'hello world')
-            )
+            const p2pkh = OrdP2PKH.fromP2PKH(dummyNFT(address, 'hello world'))
             // or create p2pkh from origin
             // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
 
@@ -83,9 +81,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyPrependNFT(address, 'hello world')
-            )
+            const p2pkh = OrdP2PKH.fromP2PKH(dummyNFT(address, 'hello world'))
             // or create p2pkh from origin
             // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
 
