@@ -1,16 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-import {
-    ContractTransaction,
-    MethodCallOptions,
-    toByteString,
-    bsv,
-    Addr,
-} from 'scrypt-ts'
+import { toByteString, bsv, Addr } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH, Ordinal } from '../scrypt-ord'
+import { OrdP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
@@ -31,8 +25,6 @@ describe('Test SmartContract `CounterFT`', () => {
     it('should pass the public method unit test successfully.', async () => {
         let currentInstance = instance
 
-        const changeAddress = await instance.signer.getDefaultAddress()
-
         const receiver = bsv.PrivateKey.fromRandom(
             bsv.Networks.testnet
         ).toAddress()
@@ -45,7 +37,7 @@ describe('Test SmartContract `CounterFT`', () => {
             // apply updates on the next instance off chain
 
             const amt = currentInstance.getAmt()
-            const tokenChangeAmt = amt - 100n
+            const tokenChangeAmt = amt - CounterFT.AMOUNT
             nextInstance.incCounter()
 
             // call the method of current instance to apply the updates on chain
@@ -63,7 +55,7 @@ describe('Test SmartContract `CounterFT`', () => {
                                 instance: new OrdP2PKH(
                                     Addr(receiver.toByteString())
                                 ),
-                                amt: 100n,
+                                amt: CounterFT.AMOUNT,
                             },
                         ],
                     }

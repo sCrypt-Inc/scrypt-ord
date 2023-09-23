@@ -7,10 +7,11 @@ import {
     ByteString,
     Addr,
 } from 'scrypt-ts'
-
 import { BSV20V1 } from '../scrypt-ord'
 
 export class CounterFT extends BSV20V1 {
+    static readonly AMOUNT = 100n
+
     @prop(true)
     counter: bigint
 
@@ -26,7 +27,7 @@ export class CounterFT extends BSV20V1 {
 
         const outputs =
             this.buildStateOutputFT(changeTokenAmt) +
-            BSV20V1.buildTransferOutput(address, this.tick, 100n) +
+            BSV20V1.buildTransferOutput(address, this.tick, CounterFT.AMOUNT) +
             this.buildChangeOutput()
 
         assert(
@@ -36,8 +37,7 @@ export class CounterFT extends BSV20V1 {
     }
 
     @method()
-    incCounter(): boolean {
+    incCounter(): void {
         this.counter++
-        return true
     }
 }
