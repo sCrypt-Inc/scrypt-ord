@@ -7,7 +7,7 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
-import { getDefaultSigner } from '../utils/txHelper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdP2PKH, fromByteString } from '../scrypt-ord'
 import { dummyAppendbsv20, dummyPrependbsv20 } from './utils'
@@ -68,6 +68,35 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             expect(changeToken.getBSV20Amt()).to.equal(85n)
         })
 
+        it('should fail when passing incorrect signature', async () => {
+            const [wrongPrivKey, wrongPubKey, ,] = randomPrivateKey()
+
+            const address = await getDefaultSigner().getDefaultAddress()
+            const pubkey = await getDefaultSigner().getDefaultPubKey()
+            const p2pkh = OrdP2PKH.fromP2PKH(
+                dummyAppendbsv20(address, fromByteString(tick), 100n)
+            )
+
+            signer.addPrivateKey(wrongPrivKey)
+            await p2pkh.connect(signer)
+
+            const call = async () =>
+                await p2pkh.methods.unlock(
+                    (sigResps) => findSig(sigResps, wrongPubKey),
+                    PubKey(pubkey.toByteString()),
+                    {
+                        transfer: [
+                            {
+                                instance: recipient,
+                                amt: 15n,
+                            },
+                        ],
+                        pubKeyOrAddrToSign: wrongPubKey,
+                    } as MethodCallOptions<OrdP2PKH>
+                )
+            await expect(call()).to.be.rejectedWith(/signature check failed/)
+        })
+
         it('transfer FT to a OrdP2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () => {
@@ -92,6 +121,25 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             }
 
             await expect(call()).not.to.be.rejected
+        })
+
+        it('should fail when passing incorrect message', async () => {
+            const ordAddress = await recipient.signer.getDefaultAddress()
+            const call = async () =>
+                await recipient.methods.unlock(
+                    toByteString('incorrect message', true),
+                    {
+                        transfer: [
+                            {
+                                instance: new OrdP2PKH(
+                                    Addr(ordAddress.toByteString())
+                                ),
+                                amt: 15n,
+                            },
+                        ],
+                    }
+                )
+            await expect(call()).to.be.rejectedWith(/hashes are not equal/)
         })
     })
 
