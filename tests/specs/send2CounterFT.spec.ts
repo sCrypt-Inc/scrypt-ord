@@ -22,6 +22,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
 
     const tokenInP2PKH = 1000n
     const tokenToCounter = 400n
+    const tokenToP2PKH = 250n
 
     before(async () => {
         CounterFT.loadArtifact()
@@ -55,42 +56,43 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
         // output #0, token receiver, counter instance
         expect(counter.getAmt()).to.equal(transferAmount)
         // output #1, token change, ordP2PKH instance
-        const tokenChangeNext = nexts[1].instance as OrdP2PKH
-        expect(tokenChangeNext.getBSV20Amt()).to.equal(changeAmount)
+        const tokenChange = nexts[1].instance as OrdP2PKH
+        expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
 
         return counter
     }
 
     async function counterTransfer(counter: CounterFT) {
         const totalAmount = tokenToCounter
-        const transferAmount = CounterFT.AMOUNT
-        const changeAmount = totalAmount - transferAmount
+        const counterAmount = 10n
+        const p2pkhAmount = tokenToP2PKH
+        const changeAmount = totalAmount - counterAmount - p2pkhAmount
 
         const nextInstance = counter.next()
         nextInstance.incCounter()
 
-        const receiver = new OrdP2PKH(Addr(myAddress.toByteString()))
+        const p2pkh = new OrdP2PKH(Addr(myAddress.toByteString()))
 
-        const { tx } = await counter.methods.inc(
-            myAddress.toByteString(),
-            changeAmount,
-            {
-                transfer: [
-                    {
-                        instance: nextInstance,
-                        amt: changeAmount,
-                    },
-                    {
-                        instance: receiver,
-                        amt: transferAmount,
-                    },
-                ],
-            } as MethodCallOptions<CounterFT>
-        )
+        const { tx, nexts } = await counter.methods.inc(counterAmount, {
+            transfer: [
+                {
+                    instance: nextInstance,
+                    amt: counterAmount,
+                },
+                {
+                    instance: p2pkh,
+                    amt: p2pkhAmount,
+                },
+            ],
+        } as MethodCallOptions<CounterFT>)
         console.log('transfer FT: ', tx.id)
 
-        expect(receiver.getBSV20Amt()).to.eq(100n)
-        expect(nextInstance.getAmt()).to.equal(300n)
+        expect(nexts.length).to.equal(3)
+        expect(nextInstance.getAmt()).to.equal(counterAmount)
+        expect(p2pkh.getBSV20Amt()).to.eq(p2pkhAmount)
+
+        const tokenChange = nexts[2].instance as OrdP2PKH
+        expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
     }
 
     it('P2PKH with inscription appended', async () => {
