@@ -57,6 +57,16 @@ export class BSV20P2PKH extends BSV20V1 {
         super.init(addr)
     }
 
+    override get lockingScript() {
+        const nop = this.getPrependNOPScript()
+
+        if (nop) {
+            return super.lockingScript.clone().add(nop)
+        }
+
+        return bsv.Script.fromHex(this.utxo.script)
+    }
+
     private getNopScript() {
         const ls = bsv.Script.fromHex(this.utxo.script)
         if (Ordinal.isOrdinalP2PKHV1(ls)) {
@@ -69,7 +79,7 @@ export class BSV20P2PKH extends BSV20V1 {
             )
         }
 
-        return null
+        return this.getPrependNOPScript()
     }
 
     override getAmt() {

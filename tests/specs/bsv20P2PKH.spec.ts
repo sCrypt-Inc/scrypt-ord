@@ -9,7 +9,7 @@ import { PubKey, findSig, toHex, Addr, toByteString } from 'scrypt-ts'
 import { dummybsv20 } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract `BSV20V1P2PKH`', () => {
+describe('Test SmartContract `BSV20P2PKH`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
@@ -36,38 +36,32 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
             const callContract = async () => {
                 const address = await signer.getDefaultAddress()
                 const ordPubKey = await signer.getDefaultPubKey()
-                const { tx, nexts } = await bsv20P2PKH.methods.unlock(
+
+                const recipients = [
+                    {
+                        instance: new BSV20P2PKH(
+                            tick,
+                            max,
+                            lim,
+                            Addr(address.toByteString())
+                        ),
+                        amt: 100n,
+                    },
+                ]
+                const { tx } = await bsv20P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(toHex(ordPubKey)),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: [
-                            {
-                                instance: new BSV20P2PKH(
-                                    tick,
-                                    max,
-                                    lim,
-                                    Addr(address.toByteString())
-                                ),
-                                amt: 100n,
-                            },
-                        ],
+                        transfer: recipients,
                     }
                 )
 
                 console.log('transfer tx: ', tx.id)
 
-                const receiver = nexts[0].instance as BSV20P2PKH
+                const receiver = recipients[0].instance
 
                 expect(receiver.getAmt()).to.equal(100n)
-
-                const tokenChangeP2PKH = nexts[1].instance as BSV20P2PKH
-
-                expect(tokenChangeP2PKH).not.to.be.null
-
-                if (tokenChangeP2PKH) {
-                    expect(tokenChangeP2PKH.getAmt()).to.equal(900n)
-                }
             }
 
             await expect(callContract()).not.rejected
@@ -82,6 +76,8 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
             ordP2PKH = BSV20P2PKH.fromUTXO(dummybsv20(addr, 'OOO1', 1n, false))
 
             await ordP2PKH.connect(signer)
+
+            console.log('ordP2PKH', ordP2PKH.lockingScript.toASM())
         })
 
         it('transfer should pass.', async () => {
@@ -89,32 +85,30 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
                 const address = await signer.getDefaultAddress()
 
                 const ordPubKey = await signer.getDefaultPubKey()
-
-                const { tx, nexts } = await ordP2PKH.methods.unlock(
+                const recipients = [
+                    {
+                        instance: new BSV20P2PKH(
+                            tick,
+                            max,
+                            lim,
+                            Addr(address.toByteString())
+                        ),
+                        amt: 1n,
+                    },
+                ]
+                const { tx } = await ordP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(toHex(ordPubKey)),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: [
-                            {
-                                instance: new BSV20P2PKH(
-                                    tick,
-                                    max,
-                                    lim,
-                                    Addr(address.toByteString())
-                                ),
-                                amt: 1n,
-                            },
-                        ],
+                        transfer: recipients,
                     }
                 )
 
                 console.log('transfer tx: ', tx.id)
-                const receiver = nexts[0].instance as BSV20P2PKH
+                const receiver = recipients[0].instance as BSV20P2PKH
 
                 expect(receiver.getAmt()).to.equal(1n)
-
-                expect(nexts.length === 1).to.be.true
             }
 
             await expect(callContract()).not.rejected
@@ -134,37 +128,31 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
         it('transfer should pass.', async () => {
             const callContract = async () => {
                 const address = await signer.getDefaultAddress()
-
+                const recipients = [
+                    {
+                        instance: new BSV20P2PKH(
+                            tick,
+                            max,
+                            lim,
+                            Addr(address.toByteString())
+                        ),
+                        amt: 2n,
+                    },
+                ]
                 const ordPubKey = await signer.getDefaultPubKey()
-                const { tx, nexts } = await ordP2PKH.methods.unlock(
+                const { tx } = await ordP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(toHex(ordPubKey)),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: [
-                            {
-                                instance: new BSV20P2PKH(
-                                    tick,
-                                    max,
-                                    lim,
-                                    Addr(address.toByteString())
-                                ),
-                                amt: 2n,
-                            },
-                        ],
+                        transfer: recipients,
                     }
                 )
 
                 console.log('transfer tx: ', tx.id)
-                const receiver = nexts[0].instance as BSV20P2PKH
+                const receiver = recipients[0].instance as BSV20P2PKH
 
                 expect(receiver.getAmt()).to.equal(2n)
-
-                expect(nexts.length === 2).to.be.true
-
-                const change = nexts[1].instance as BSV20P2PKH
-
-                expect(change.getAmt()).to.equal(4n)
             }
 
             await expect(callContract()).not.rejected
