@@ -36,6 +36,13 @@ export function dummybsv20(
     }
 }
 
+/**
+ * generate a dummy utxo contains a text inscription
+ * @param addr
+ * @param text
+ * @param prepend put text inscription at the front of the locking script if true
+ * @returns
+ */
 export function dummyNFT(
     addr: bsv.Address,
     text: string,

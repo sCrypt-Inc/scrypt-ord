@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { toByteString, bsv, Addr } from 'scrypt-ts'
+import { toByteString, MethodCallOptions } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
@@ -8,14 +8,15 @@ use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
     let instance: CounterFT
-    const tick = toByteString('DOGE', true)
-    const max = 100000n
-    const lim = max / 10n
-    const amt = lim
 
     before(async () => {
         CounterFT.loadArtifact()
-        instance = new CounterFT(tick, max, lim, 0n)
+
+        const tick = 'DOGE'
+        const max = 100000n
+        const lim = max / 10n
+        const amt = lim
+        instance = new CounterFT(toByteString(tick, true), max, lim, 0n)
         await instance.connect(getDefaultSigner())
 
         await instance.deployToken()
@@ -24,9 +25,6 @@ describe('Test SmartContract `CounterFT`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         let currentInstance = instance
-        const receiver = bsv.PrivateKey.fromRandom(
-            bsv.Networks.testnet
-        ).toAddress()
 
         // call the method of current instance to apply the updates on chain
         for (let i = 0; i < 3; ++i) {
@@ -43,28 +41,17 @@ describe('Test SmartContract `CounterFT`', () => {
                 const { tx, nexts } = await currentInstance.methods.inc(
                     transferAmount,
                     {
-                        transfer: [
-                            {
-                                instance: nextInstance,
-                                amt: tokenChangeAmt,
-                            },
-                            {
-                                instance: new BSV20P2PKH(
-                                    tick,
-                                    max,
-                                    lim,
-                                    Addr(receiver.toByteString())
-                                ),
-                                amt: 100n,
-                            },
-                        ],
-                    }
+                        transfer: {
+                            instance: nextInstance,
+                            amt: transferAmount,
+                        },
+                    } as MethodCallOptions<CounterFT>
                 )
                 console.log('Contract CounterFT called: ', tx.id)
                 expect(nexts.length).to.equal(2)
                 expect(nextInstance.getAmt()).to.equal(transferAmount)
-                const tokenChange = nexts[1].instance as OrdP2PKH
-                expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
+                const tokenChange = nexts[1].instance as BSV20P2PKH
+                expect(tokenChange.getAmt()).to.equal(changeAmount)
             }
             await expect(callContract()).not.to.be.rejected
 

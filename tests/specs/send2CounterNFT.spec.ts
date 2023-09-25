@@ -2,8 +2,8 @@ import { expect, use } from 'chai'
 import { MethodCallOptions, Addr, PubKey, findSig, toHex } from 'scrypt-ts'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH } from '../scrypt-ord'
-import { dummyAppendNFT, dummyPrependNFT, dummyP2PKH } from './utils'
+import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { dummyNFT, dummyP2PKH } from './utils'
 import { CounterNFT } from '../contracts/counterNFT'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 use(chaiAsPromised)
@@ -13,7 +13,9 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
         CounterNFT.loadArtifact()
     })
 
-    async function transferToCounter(p2pkh: OrdP2PKH): Promise<CounterNFT> {
+    async function transferToCounter(
+        p2pkh: OneSatNFTP2PKH
+    ): Promise<CounterNFT> {
         const counter = new CounterNFT(0n)
         await counter.connect(getDefaultSigner())
 
@@ -23,7 +25,7 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
             {
                 transfer: counter,
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<OrdP2PKH>
+            } as MethodCallOptions<OneSatNFTP2PKH>
         )
         console.log('transfer NFT:', tx.id)
         return counter
@@ -37,8 +39,9 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
     }
 
     it('P2PKH with inscription appended', async () => {
-        const p2pkh = OrdP2PKH.fromP2PKH(
-            dummyAppendNFT(myAddress, 'hello world')
+        // put text inscription at the end of the locking script
+        const p2pkh = OneSatNFTP2PKH.fromUTXO(
+            dummyNFT(myAddress, 'hello world', false)
         )
         await p2pkh.connect(getDefaultSigner())
 
@@ -47,8 +50,9 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
     })
 
     it('P2PKH with inscription prepended', async () => {
-        const p2pkh = OrdP2PKH.fromP2PKH(
-            dummyPrependNFT(myAddress, 'hello world')
+        // put text inscription at the start of the locking script
+        const p2pkh = OneSatNFTP2PKH.fromUTXO(
+            dummyNFT(myAddress, 'hello world')
         )
         await p2pkh.connect(getDefaultSigner())
 
@@ -57,7 +61,7 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
     })
 
     it('P2PKH without inscription', async () => {
-        const p2pkh = OrdP2PKH.fromP2PKH(dummyP2PKH(myAddress))
+        const p2pkh = OneSatNFTP2PKH.fromUTXO(dummyP2PKH(myAddress))
         await p2pkh.connect(getDefaultSigner())
 
         const counter = await transferToCounter(p2pkh)
