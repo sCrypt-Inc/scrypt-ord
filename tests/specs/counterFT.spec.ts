@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { toByteString, MethodCallOptions } from 'scrypt-ts'
+import { toByteString, bsv, Addr } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
@@ -24,6 +24,9 @@ describe('Test SmartContract `CounterFT`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         let currentInstance = instance
+        const receiver = bsv.PrivateKey.fromRandom(
+            bsv.Networks.testnet
+        ).toAddress()
 
         // call the method of current instance to apply the updates on chain
         for (let i = 0; i < 3; ++i) {
