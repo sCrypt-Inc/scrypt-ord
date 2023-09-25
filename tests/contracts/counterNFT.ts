@@ -4,15 +4,15 @@ import {
     assert,
     hash256,
     Utils,
-    Addr,
     MethodCallOptions,
     bsv,
     ContractTransaction,
     int2ByteString,
     slice,
+    ByteString,
 } from 'scrypt-ts'
 
-import { OneSatNFT, OneSatNFTP2PKH } from '../scrypt-ord'
+import { OneSatNFT } from '../scrypt-ord'
 
 export class CounterNFT extends OneSatNFT {
     @prop(true)
@@ -45,10 +45,20 @@ export class CounterNFT extends OneSatNFT {
     }
 
     @method()
-    public withdraw(addr: Addr) {
+    public withdraw(script: ByteString) {
         this.incCounter()
+
+        // ensure the public method is called from the first input.
+        const outpoint =
+            this.ctx.utxo.outpoint.txid +
+            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
+        assert(
+            slice(this.prevouts, 0n, 36n) == outpoint,
+            'contract must be spent via first input'
+        )
+
         const outputs =
-            Utils.buildAddressOutput(addr, 1n) +
+            Utils.buildOutput(script, 1n) +
             this.buildStateOutputNFT() +
             this.buildChangeOutput()
         assert(
@@ -65,11 +75,9 @@ export class CounterNFT extends OneSatNFT {
     static async buildTxForWithdraw(
         current: CounterNFT,
         options: MethodCallOptions<CounterNFT>,
-        addr: Addr
+        outputScript: ByteString
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()
-
-        const p2pkh = new OneSatNFTP2PKH(addr)
 
         const nextInstance = current.next()
         nextInstance.incCounter()
@@ -78,7 +86,7 @@ export class CounterNFT extends OneSatNFT {
             .addInput(current.buildContractInput())
             .addOutput(
                 new bsv.Transaction.Output({
-                    script: p2pkh.lockingScript,
+                    script: bsv.Script.fromHex(outputScript),
                     satoshis: 1,
                 })
             )
@@ -94,11 +102,6 @@ export class CounterNFT extends OneSatNFT {
             tx,
             atInputIndex: 0,
             nexts: [
-                {
-                    instance: p2pkh,
-                    balance: 1,
-                    atOutputIndex: 0,
-                },
                 {
                     instance: nextInstance,
                     balance: 1,

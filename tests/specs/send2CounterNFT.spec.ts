@@ -1,5 +1,12 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, Addr, PubKey, findSig, toHex } from 'scrypt-ts'
+import {
+    MethodCallOptions,
+    Addr,
+    PubKey,
+    findSig,
+    toHex,
+    toByteString,
+} from 'scrypt-ts'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OneSatNFTP2PKH } from '../scrypt-ord'
@@ -32,8 +39,9 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
     }
 
     async function counterTransfer(counter: CounterNFT) {
+        const p2pkh = new OneSatNFTP2PKH(Addr(myAddress.toByteString()))
         const { tx } = await counter.methods.withdraw(
-            Addr(myAddress.toByteString())
+            toByteString(p2pkh.lockingScript.toHex())
         )
         console.log('transfer NFT: ', tx.id)
     }

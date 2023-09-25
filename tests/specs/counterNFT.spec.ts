@@ -1,9 +1,10 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, Addr } from 'scrypt-ts'
+import { MethodCallOptions, Addr, toByteString } from 'scrypt-ts'
 import { CounterNFT } from '../contracts/counterNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myAddress } from '../utils/privateKey'
+import { OneSatNFTP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterNFT`', () => {
@@ -47,8 +48,11 @@ describe('Test SmartContract `CounterNFT`', () => {
     })
 
     it('should pass when calling `withdraw`', async () => {
+        const receiver = new OneSatNFTP2PKH(Addr(myAddress.toByteString()))
         const call = async () =>
-            await instance.methods.withdraw(Addr(myAddress.toByteString()))
+            await instance.methods.withdraw(
+                toByteString(receiver.lockingScript.toHex())
+            )
         await expect(call()).not.to.be.rejected
     })
 })

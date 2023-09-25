@@ -19,7 +19,7 @@ use(chaiAsPromised)
 
 const chain = 'P2PKH -> HashPuzzle -> Counter -> Counter -> HashPuzzle -> P2PKH'
 
-describe(`Chain test: ${chain}`, () => {
+describe(`Chain FT Test: ${chain}`, () => {
     before(async () => {
         HashPuzzleFT.loadArtifact()
         CounterFT.loadArtifact()
