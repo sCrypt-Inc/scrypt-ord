@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-import {
-    ContractTransaction,
-    MethodCallOptions,
-    toByteString,
-    bsv,
-    Addr,
-} from 'scrypt-ts'
+import { toByteString, bsv, Addr } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
@@ -30,9 +24,6 @@ describe('Test SmartContract `CounterFT`', () => {
 
     it('should pass the public method unit test successfully.', async () => {
         let currentInstance = instance
-
-        const changeAddress = await instance.signer.getDefaultAddress()
-
         const receiver = bsv.PrivateKey.fromRandom(
             bsv.Networks.testnet
         ).toAddress()
