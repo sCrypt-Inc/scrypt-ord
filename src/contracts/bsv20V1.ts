@@ -123,6 +123,10 @@ export class BSV20V1 extends SmartContract {
 
         const utxos = await this.signer.listUnspent(address)
 
+        if (utxos.length === 0) {
+            throw new Error(`no utxo found for address: ${address}`)
+        }
+
         const deployTx = new bsv.Transaction()
             .from(utxos)
             .addOutput(

@@ -61,7 +61,7 @@ export class BSV20P2PKH extends BSV20V1 {
         const nop = this.getPrependNOPScript()
 
         if (nop) {
-            return super.lockingScript.clone().add(nop)
+            return super.lockingScript
         }
 
         return bsv.Script.fromHex(this.utxo.script)
