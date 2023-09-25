@@ -36,9 +36,9 @@ export class OneSatApis {
     }
 
     static async fetchUTXOByOrigin(origin: string): Promise<UTXO | null> {
-        const url = `${this.apiBase}/api/inscriptions/${origin}/latest`
+        const url = `${this.apiBase}/inscriptions/${origin}/latest?script=true`
 
-        const { outpoint, spend } = await superagent
+        const res = await superagent
             .get(url)
             .then(function (response) {
                 // handle success
@@ -50,11 +50,21 @@ export class OneSatApis {
                 return null
             })
 
+        if (!res) {
+            return null
+        }
+
+        const { spend, txid, vout, script } = res
         if (spend) {
             return null
         }
 
-        return OneSatApis.fetchUTXOByOutpoint(outpoint)
+        return {
+            txId: txid,
+            outputIndex: vout,
+            satoshis: 1,
+            script: Buffer.from(script, 'base64').toString('hex'),
+        }
     }
 
     static fetchBSV20Utxos(
