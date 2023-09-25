@@ -2,13 +2,14 @@ import {
     method,
     prop,
     assert,
-    SigHash,
     hash256,
     Utils,
     Addr,
     MethodCallOptions,
     bsv,
     ContractTransaction,
+    int2ByteString,
+    slice,
 } from 'scrypt-ts'
 
 import { OneSatNFT, OneSatNFTP2PKH } from '../scrypt-ord'
@@ -23,12 +24,20 @@ export class CounterNFT extends OneSatNFT {
         this.counter = counter
     }
 
-    @method(SigHash.ANYONECANPAY_ALL)
+    @method()
     public incOnchain() {
         this.incCounter()
 
-        const outputs = this.buildStateOutputNFT() + this.buildChangeOutput()
+        // ensure the public method is called from the first input.
+        const outpoint =
+            this.ctx.utxo.outpoint.txid +
+            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
+        assert(
+            slice(this.prevouts, 0n, 36n) == outpoint,
+            'contract must be spent via first input'
+        )
 
+        const outputs = this.buildStateOutputNFT() + this.buildChangeOutput()
         assert(
             this.ctx.hashOutputs == hash256(outputs),
             'hashOutputs check failed'

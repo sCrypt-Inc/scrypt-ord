@@ -134,7 +134,10 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                     {
                         transfer: [
                             {
-                                instance: new BSV20P2PKH(tick, max, lim,
+                                instance: new BSV20P2PKH(
+                                    tick,
+                                    max,
+                                    lim,
                                     Addr(ordAddress.toByteString())
                                 ),
                                 amt: 15n,
