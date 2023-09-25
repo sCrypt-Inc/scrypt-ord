@@ -10,7 +10,7 @@ import {
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, fromByteString } from '../scrypt-ord'
-import { dummybsv20 } from './utils'
+import { dummyBSV20 } from './utils'
 import { CounterFT } from '../contracts/counterFT'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 use(chaiAsPromised)
@@ -102,7 +102,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
 
     it('P2PKH with inscription appended', async () => {
         const p2pkh = BSV20P2PKH.fromUTXO(
-            dummybsv20(myAddress, fromByteString(tick), tokenInP2PKH)
+            dummyBSV20(myAddress, fromByteString(tick), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
 
@@ -112,7 +112,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
 
     it('P2PKH with inscription prepended', async () => {
         const p2pkh = BSV20P2PKH.fromUTXO(
-            dummybsv20(myAddress, fromByteString(tick), tokenInP2PKH)
+            dummyBSV20(myAddress, fromByteString(tick), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
 

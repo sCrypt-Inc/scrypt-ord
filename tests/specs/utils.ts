@@ -10,7 +10,7 @@ import { randomBytes } from 'crypto'
  * @param prepend put bsv20 inscription at the front of the locking script if true
  * @returns
  */
-export function dummybsv20(
+export function dummyBSV20(
     addr: bsv.Address,
     tick: string,
     amt: bigint,

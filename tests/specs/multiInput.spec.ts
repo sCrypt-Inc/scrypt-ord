@@ -18,7 +18,7 @@ import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, FTReceiver, fromByteString, BSV20V1 } from '../scrypt-ord'
-import { dummybsv20 } from './utils'
+import { dummyBSV20 } from './utils'
 use(chaiAsPromised)
 
 describe('Test multi inputs and outputs', () => {
@@ -35,8 +35,8 @@ describe('Test multi inputs and outputs', () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
             const bsv20P2PKHs = [
-                dummybsv20(address, fromByteString(tick), 4n),
-                dummybsv20(address, fromByteString(tick), 5n),
+                dummyBSV20(address, fromByteString(tick), 4n),
+                dummyBSV20(address, fromByteString(tick), 5n),
             ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)
@@ -66,8 +66,8 @@ describe('Test multi inputs and outputs', () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
             const bsv20P2PKHs = [
-                dummybsv20(address, fromByteString(tick), 4n),
-                dummybsv20(address, fromByteString(tick), 5n),
+                dummyBSV20(address, fromByteString(tick), 4n),
+                dummyBSV20(address, fromByteString(tick), 5n),
             ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
 
             await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
@@ -116,7 +116,7 @@ describe('Test multi inputs and outputs', () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
             const sender0: BSV20P2PKH = BSV20P2PKH.fromUTXO(
-                dummybsv20(address, fromByteString(tick), 4n)
+                dummyBSV20(address, fromByteString(tick), 4n)
             )
 
             await sender0.connect(signer)

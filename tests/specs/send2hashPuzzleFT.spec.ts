@@ -10,7 +10,7 @@ import {
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, fromByteString } from '../scrypt-ord'
-import { dummybsv20 } from './utils'
+import { dummyBSV20 } from './utils'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 use(chaiAsPromised)
 
@@ -39,7 +39,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
             const p2pkh = BSV20P2PKH.fromUTXO(
-                dummybsv20(address, fromByteString(tick), 100n)
+                dummyBSV20(address, fromByteString(tick), 100n)
             )
 
             await p2pkh.connect(signer)
@@ -74,7 +74,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             const p2pkh = BSV20P2PKH.fromUTXO(
-                dummybsv20(address, fromByteString(tick), 100n)
+                dummyBSV20(address, fromByteString(tick), 100n)
             )
 
             signer.addPrivateKey(wrongPrivKey)
@@ -172,7 +172,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
             const p2pkh = BSV20P2PKH.fromUTXO(
-                dummybsv20(address, fromByteString(tick), 100n)
+                dummyBSV20(address, fromByteString(tick), 100n)
             )
 
             await p2pkh.connect(signer)

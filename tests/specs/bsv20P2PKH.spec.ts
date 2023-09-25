@@ -6,7 +6,7 @@ import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH } from '../scrypt-ord'
 import { PubKey, findSig, toHex, Addr, toByteString } from 'scrypt-ts'
-import { dummybsv20 } from './utils'
+import { dummyBSV20 } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract `BSV20P2PKH`', () => {
@@ -75,7 +75,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
             const addr = await signer.getDefaultAddress()
             // put bsv20 inscription script at the end of locking script
             bsv20P2PKH = BSV20P2PKH.fromUTXO(
-                dummybsv20(addr, 'OOO1', 1n, false)
+                dummyBSV20(addr, 'OOO1', 1n, false)
             )
 
             await bsv20P2PKH.connect(signer)
@@ -121,7 +121,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            bsv20P2PKH = BSV20P2PKH.fromUTXO(dummybsv20(addr, tick, 6n))
+            bsv20P2PKH = BSV20P2PKH.fromUTXO(dummyBSV20(addr, tick, 6n))
 
             await bsv20P2PKH.connect(signer)
         })
