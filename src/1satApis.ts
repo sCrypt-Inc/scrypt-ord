@@ -35,7 +35,7 @@ export class OneSatApis {
             })
     }
 
-    static async fetchUTXOByOrigin(origin: string): Promise<UTXO | null> {
+    static async fetchLatestByOrigin(origin: string): Promise<UTXO | null> {
         const url = `${this.apiBase}/inscriptions/${origin}/latest?script=true`
 
         const res = await superagent

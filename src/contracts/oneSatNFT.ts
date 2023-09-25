@@ -14,6 +14,7 @@ import {
     MethodCallOptions,
     ContractTransaction,
     StatefulNext,
+    UTXO,
 } from 'scrypt-ts'
 import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
@@ -137,20 +138,36 @@ export class OneSatNFT extends SmartContract {
         }
     }
 
-    public static async getLatestInstance(origin: string): Promise<OneSatNFT> {
-        const utxo = await OneSatApis.fetchUTXOByOrigin(origin)
+    static override fromUTXO<T extends SmartContract>(
+        this: new (...args: any[]) => T,
+        utxo: UTXO
+    ): T {
+        if (utxo.satoshis !== 1) {
+            throw new Error('invalid ordinal p2pkh utxo')
+        }
+
+        const ins = Ordinal.getInsciptionScript(utxo.script)
+
+        const instance = (
+            this as unknown as typeof SmartContract
+        ).fromLockingScript(utxo.script, {}, bsv.Script.fromHex(ins)) as T
+        instance.from = utxo
+        return instance
+    }
+
+    static async getLatestInstance<T extends SmartContract>(
+        this: new (...args: any[]) => T,
+        origin: string
+    ): Promise<T> {
+        const utxo = await OneSatApis.fetchLatestByOrigin(origin)
 
         if (utxo === null) {
             throw new Error('no utxo found')
         }
 
-        const insciptionScript = Ordinal.getInsciptionScript(utxo.script)
-
-        const instance = this.fromUTXO(
-            utxo,
-            {},
-            bsv.Script.fromHex(insciptionScript)
-        )
-        return instance
+        const a = (this as unknown as typeof OneSatNFT).fromUTXO(
+            utxo
+        ) as unknown as T
+        return a
     }
 }

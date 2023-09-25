@@ -16,7 +16,6 @@ import {
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
-import { OneSatApis } from '../1satApis'
 import { OneSatNFT } from './oneSatNFT'
 
 const P2PKHScriptLen = 50
@@ -100,21 +99,11 @@ export class OneSatNFTP2PKH extends OneSatNFT {
             throw new Error('invalid ordinal p2pkh utxo')
         }
 
-        const instance = OneSatNFTP2PKH.fromLockingScript(utxo.script) as T
+        const instance = (
+            this as unknown as typeof OneSatNFTP2PKH
+        ).fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
-    }
-
-    public static async getLatestInstance(
-        origin: string
-    ): Promise<OneSatNFTP2PKH> {
-        const utxo = await OneSatApis.fetchUTXOByOrigin(origin)
-
-        if (utxo === null) {
-            throw new Error('no utxo found')
-        }
-
-        return this.fromUTXO(utxo)
     }
 }
 
