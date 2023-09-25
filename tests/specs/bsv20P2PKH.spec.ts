@@ -73,6 +73,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
+            // put bsv20 inscription script at the end of locking script
             bsv20P2PKH = BSV20P2PKH.fromUTXO(
                 dummybsv20(addr, 'OOO1', 1n, false)
             )

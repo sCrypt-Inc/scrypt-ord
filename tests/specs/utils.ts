@@ -2,6 +2,14 @@ import { bsv } from 'scrypt-ts'
 import { Ordinal } from '../scrypt-ord'
 import { randomBytes } from 'crypto'
 
+/**
+ * generate a dummy utxo contains a bsv20 inscription
+ * @param addr
+ * @param tick
+ * @param amt
+ * @param prepend put bsv20 inscription at the front of the locking script if true
+ * @returns
+ */
 export function dummybsv20(
     addr: bsv.Address,
     tick: string,
