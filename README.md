@@ -46,11 +46,12 @@ For constructor, `this.init(...arguments)` needs to be called after the `super()
 you can mint a NFT in a contract:
 
 ```ts
+HashPuzzleNFT.loadArtifact();
+
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-HashPuzzleNFT.loadArtifact();
 instance = new HashPuzzleNFT(hash);
 await instance.connect(getDefaultSigner());
 const mintTx = await instance.mintTextNft(text);
@@ -97,11 +98,12 @@ console.log("mint tx: ", tx.id);
 you can transfer exists NFT, which is usually held by a P2PKH, to a contract:
 
 ```ts
+HashPuzzleNFT.loadArtifact();
+
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-HashPuzzleNFT.loadArtifact();
 const recipient = new HashPuzzleNFT(hash);
 await recipient.connect(getDefaultSigner());
 
@@ -124,16 +126,43 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
 console.log("transfer NFT: ", transferTx.id);
 ```
 
+If the NFT is not locked in a P2PKH, but locked in an sCrypt contract, use the `getLatestInstance` method on the corresponding contract class to obtain the instance.
+
+The following code transfers NFT from one `HashPuzzleNFT` contract to another `HashPuzzleNFT` contract:
+
+```ts
+HashPuzzleNFT.loadArtifact();
+
+// get `HashPuzzleNFT` instance that held the NFT
+const nft = await HashPuzzleNFT.getLatestInstance(`origin`);
+await nft.connect(getDefaultSigner());
+
+const hash = sha256(toByteString("Hello sCrypt and 1Sat Ordinals", true));
+const recipient = new HashPuzzleNFT(hash);
+await recipient.connect(getDefaultSigner());
+
+// send NFT to recipient
+const { tx: transferTx } = await nft.methods.unlock(
+  toByteString(`unlock message`, true),
+  {
+    transfer: recipient,
+  }
+);
+
+console.log("transfer NFT: ", transferTx.id);
+```
+
 ## FT
 
 ### deploy token
 
 ```ts
+HashPuzzleFT.loadArtifact();
+
 const tick = toByteString("DOGE", true);
 const max = 100000n;
 const lim = max / 10n;
 
-HashPuzzleFT.loadArtifact();
 let hashPuzzle = new HashPuzzleFT(
   tick,
   max,
@@ -184,11 +213,12 @@ for (let i = 0; i < 3; i++) {
 ### transfer exists FT to a contract (one input)
 
 ```ts
+HashPuzzleFT.loadArtifact();
+
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-HashPuzzleFT.loadArtifact();
 const recipient = new HashPuzzleFT(hash);
 await recipient.connect(getDefaultSigner());
 
@@ -218,11 +248,12 @@ console.log("transfer FT: ", transferTx.id);
 ### transfer exists FT to a contract (multi inputs)
 
 ```ts
+HashPuzzleFT.loadArtifact();
+
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-HashPuzzleFT.loadArtifact();
 const recipient = new HashPuzzleFT(hash);
 await recipient.connect(getDefaultSigner());
 
