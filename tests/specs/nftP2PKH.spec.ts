@@ -9,7 +9,7 @@ import { PubKey, findSig, toHex, Addr } from 'scrypt-ts'
 import { dummyNFT, dummyP2PKH } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract `OrdP2PKH`', () => {
+describe('Test SmartContract `OneSatNFTP2PKH`', () => {
     describe('hold NFT', () => {
         let nftP2PKH: OneSatNFTP2PKH
         const signer = getDefaultSigner()
@@ -47,14 +47,14 @@ describe('Test SmartContract `OrdP2PKH`', () => {
     })
 
     describe('from  utxo nft append', () => {
-        let ordP2PKH: OneSatNFTP2PKH
+        let nftP2PKH: OneSatNFTP2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            ordP2PKH = OneSatNFTP2PKH.fromUTXO(
+            nftP2PKH = OneSatNFTP2PKH.fromUTXO(
                 dummyNFT(addr, 'hello, scrypt', false)
             )
-            await ordP2PKH.connect(signer)
+            await nftP2PKH.connect(signer)
         })
 
         it('transfer should pass.', async () => {
@@ -62,7 +62,7 @@ describe('Test SmartContract `OrdP2PKH`', () => {
                 const address = await signer.getDefaultAddress()
 
                 const ordPubKey = await signer.getDefaultPubKey()
-                const { tx } = await ordP2PKH.methods.unlock(
+                const { tx } = await nftP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(toHex(ordPubKey)),
                     {

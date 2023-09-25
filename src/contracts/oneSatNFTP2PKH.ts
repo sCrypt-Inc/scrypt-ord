@@ -17,7 +17,6 @@ import {
 
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
-import { BSV20V1 } from './bsv20V1'
 import { OneSatNFT } from './oneSatNFT'
 
 const P2PKHScriptLen = 50
@@ -122,7 +121,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'OrdP2PKH',
+    contract: 'OneSatNFTP2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],

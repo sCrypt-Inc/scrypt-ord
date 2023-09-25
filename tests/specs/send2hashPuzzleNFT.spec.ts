@@ -38,7 +38,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
                 dummyNFT(address, 'hello world')
             )
             // or create p2pkh from origin
-            // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OneSatNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -89,7 +89,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
                 dummyNFT(address, 'hello world')
             )
             // or create p2pkh from origin
-            // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OneSatNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -138,7 +138,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             // create p2pkh from a utxo
             const p2pkh = OneSatNFTP2PKH.fromUTXO(dummyP2PKH(address))
             // or create p2pkh from origin
-            // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OneSatNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 

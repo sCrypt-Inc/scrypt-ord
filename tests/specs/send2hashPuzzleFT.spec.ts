@@ -68,7 +68,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             expect(changeToken.getAmt()).to.equal(85n)
         })
 
-        it('transfer FT to a OrdP2PKH', async () => {
+        it('transfer FT to a BSV20P2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () => {
                 const { tx, nexts } = await recipient.methods.unlock(message, {
@@ -143,7 +143,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             console.log('transfer FT: ', transferTx.id)
         })
 
-        it('transfer FT to a OrdP2PKH', async () => {
+        it('transfer FT to a BSV20P2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
