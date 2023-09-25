@@ -60,7 +60,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
     static override fromLockingScript(script: string): SmartContract {
         const ls = bsv.Script.fromHex(script)
 
-        if (!this.DelegateClazz) {
+        if (!this.getDelegateClazz()) {
             throw new Error('no DelegateClazz found!')
         }
 
@@ -74,7 +74,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
             rawP2PKH = script
         }
 
-        const delegateInstance = this.DelegateClazz.fromHex(rawP2PKH)
+        const delegateInstance = this.getDelegateClazz().fromHex(rawP2PKH)
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {
@@ -83,7 +83,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
 
         // we can't  get max, and lim from the bsv20 insciption script.
         const instance = new this(Addr(args[0] as Ripemd160))
-        instance.delegateInstance = delegateInstance
+        instance.setDelegateInstance(delegateInstance)
 
         return instance
     }

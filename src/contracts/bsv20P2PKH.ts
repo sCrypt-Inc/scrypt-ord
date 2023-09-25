@@ -90,7 +90,7 @@ export class BSV20P2PKH extends BSV20V1 {
     static override fromLockingScript(script: string): SmartContract {
         const ls = bsv.Script.fromHex(script)
 
-        if (!this.DelegateClazz) {
+        if (!this.getDelegateClazz()) {
             throw new Error('no DelegateClazz found!')
         }
 
@@ -102,7 +102,7 @@ export class BSV20P2PKH extends BSV20V1 {
             rawP2PKH = script.slice(Number(Ordinal.sizeOfOrdinal(script)) * 2)
         }
 
-        const delegateInstance = this.DelegateClazz.fromHex(rawP2PKH)
+        const delegateInstance = this.getDelegateClazz().fromHex(rawP2PKH)
 
         const bsv20 = Ordinal.getBsv20(bsv.Script.fromHex(script))
 
@@ -118,7 +118,7 @@ export class BSV20P2PKH extends BSV20V1 {
             -1n,
             Addr(args[0] as ByteString)
         )
-        instance.delegateInstance = delegateInstance
+        instance.setDelegateInstance(delegateInstance)
 
         return instance
     }
