@@ -292,4 +292,29 @@ export class BSV20V1 extends SmartContract {
         instance.from = utxo
         return instance
     }
+
+    /**
+     * recover a `BSV20V1` instance from the transaction
+     * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
+     * it's required to pass all their offchain raw data at this transaction moment
+     * @param tx transaction
+     * @param atOutputIndex output index of `tx`
+     * @param offchainValues the value of offchain properties, the raw data of onchain `HashedMap` and `HashedSet` properties, at this transaction moment
+     */
+    static fromTxn<T extends BSV20V1>(
+        this: new (...args: any[]) => T,
+        tx: bsv.Transaction,
+        atOutputIndex: number,
+        offchainValues?: Record<string, any>
+    ): T {
+        const outputScript = tx.outputs[atOutputIndex].script
+        const nopScript = Ordinal.nopScriptFromScript(outputScript)
+        const instance = (this as unknown as typeof SmartContract).fromTx(
+            tx,
+            atOutputIndex,
+            offchainValues,
+            nopScript
+        )
+        return instance as T
+    }
 }
