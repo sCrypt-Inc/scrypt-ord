@@ -132,4 +132,24 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
 
         await expect(callContract()).not.rejected
     })
+
+    it('should fail when passing incorrect message', async () => {
+        const receiver = new HashPuzzleFT(
+            tick,
+            max,
+            lim,
+            sha256(toByteString('HashPuzzle', true))
+        )
+        const call = async () =>
+            await hashPuzzle.methods.unlock(
+                toByteString('incorrect message', true),
+                {
+                    transfer: {
+                        instance: receiver,
+                        amt: 9n,
+                    },
+                } as MethodCallOptions<HashPuzzleFT>
+            )
+        await expect(call()).to.be.rejectedWith(/hashes are not equal/)
+    })
 })

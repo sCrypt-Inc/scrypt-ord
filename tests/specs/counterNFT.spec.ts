@@ -1,8 +1,9 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions } from 'scrypt-ts'
+import { MethodCallOptions, Addr } from 'scrypt-ts'
 import { CounterNFT } from '../contracts/counterNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
+import { myAddress } from '../utils/privateKey'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterNFT`', () => {
@@ -16,7 +17,7 @@ describe('Test SmartContract `CounterNFT`', () => {
         await instance.mintTextNft('hello, world!')
     })
 
-    it('should pass the public method unit test successfully.', async () => {
+    it('should pass when calling `incOnchain`', async () => {
         let currentInstance = instance
 
         // call the method of current instance to apply the updates on chain
@@ -43,5 +44,11 @@ describe('Test SmartContract `CounterNFT`', () => {
             // update the current instance reference
             currentInstance = nextInstance
         }
+    })
+
+    it('should pass when calling `withdraw`', async () => {
+        const call = async () =>
+            await instance.methods.withdraw(Addr(myAddress.toByteString()))
+        await expect(call()).not.to.be.rejected
     })
 })

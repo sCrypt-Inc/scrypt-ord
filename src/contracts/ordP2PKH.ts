@@ -181,7 +181,7 @@ export class OrdP2PKH extends SmartContract {
                   recipients.reduce((acc, receiver) => {
                       return (acc += receiver.amt)
                   }, 0n)
-                : recipients.amt
+                : current.getBSV20Amt() - recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
             }

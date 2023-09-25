@@ -1,29 +1,24 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-import {
-    ContractTransaction,
-    MethodCallOptions,
-    toByteString,
-    bsv,
-    Addr,
-} from 'scrypt-ts'
+import { toByteString, MethodCallOptions } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH, Ordinal } from '../scrypt-ord'
+import { OrdP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
     let instance: CounterFT
-    const tick = 'DOGE'
-    const max = 100000n
-    const lim = max / 10n
-    const amt = lim
 
     before(async () => {
         CounterFT.loadArtifact()
+
+        const tick = 'DOGE'
+        const max = 100000n
+        const lim = max / 10n
+        const amt = lim
         instance = new CounterFT(toByteString(tick, true), max, lim, 0n)
         await instance.connect(getDefaultSigner())
+
         await instance.deployToken()
         await instance.mint(amt)
     })
@@ -31,48 +26,34 @@ describe('Test SmartContract `CounterFT`', () => {
     it('should pass the public method unit test successfully.', async () => {
         let currentInstance = instance
 
-        const changeAddress = await instance.signer.getDefaultAddress()
-
-        const receiver = bsv.PrivateKey.fromRandom(
-            bsv.Networks.testnet
-        ).toAddress()
-
         // call the method of current instance to apply the updates on chain
         for (let i = 0; i < 3; ++i) {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
 
             // apply updates on the next instance off chain
-
-            const amt = currentInstance.getAmt()
-            const tokenChangeAmt = amt - 100n
             nextInstance.incCounter()
 
             // call the method of current instance to apply the updates on chain
+            const changeAmount = 10n
+            const transferAmount = currentInstance.getAmt() - changeAmount
             const callContract = async () => {
-                const { tx: callTx } = await currentInstance.methods.inc(
-                    receiver.toByteString(),
-                    tokenChangeAmt,
+                const { tx, nexts } = await currentInstance.methods.inc(
+                    transferAmount,
                     {
-                        transfer: [
-                            {
-                                instance: nextInstance,
-                                amt: tokenChangeAmt,
-                            },
-                            {
-                                instance: new OrdP2PKH(
-                                    Addr(receiver.toByteString())
-                                ),
-                                amt: 100n,
-                            },
-                        ],
-                    }
+                        transfer: {
+                            instance: nextInstance,
+                            amt: transferAmount,
+                        },
+                    } as MethodCallOptions<CounterFT>
                 )
-
-                console.log('Contract CounterFT called: ', callTx.id)
+                console.log('Contract CounterFT called: ', tx.id)
+                expect(nexts.length).to.equal(2)
+                expect(nextInstance.getAmt()).to.equal(transferAmount)
+                const tokenChange = nexts[1].instance as OrdP2PKH
+                expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
             }
-
-            await expect(callContract()).not.rejected
+            await expect(callContract()).not.to.be.rejected
 
             // update the current instance reference
             currentInstance = nextInstance

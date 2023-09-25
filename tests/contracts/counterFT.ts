@@ -1,13 +1,4 @@
-import {
-    method,
-    prop,
-    assert,
-    SigHash,
-    hash256,
-    ByteString,
-    Addr,
-} from 'scrypt-ts'
-
+import { method, prop, assert, SigHash, hash256, ByteString } from 'scrypt-ts'
 import { BSV20V1 } from '../scrypt-ord'
 
 export class CounterFT extends BSV20V1 {
@@ -20,15 +11,11 @@ export class CounterFT extends BSV20V1 {
         this.counter = counter
     }
 
-    @method(SigHash.ANYONECANPAY_ALL)
-    public inc(address: Addr, changeTokenAmt: bigint) {
+    @method(SigHash.ANYONECANPAY_SINGLE)
+    public inc(tokenAmt: bigint) {
         this.incCounter()
 
-        const outputs =
-            this.buildStateOutputFT(changeTokenAmt) +
-            BSV20V1.buildTransferOutput(address, this.tick, 100n) +
-            this.buildChangeOutput()
-
+        const outputs = this.buildStateOutputFT(tokenAmt)
         assert(
             this.ctx.hashOutputs == hash256(outputs),
             'hashOutputs check failed'
@@ -36,8 +23,7 @@ export class CounterFT extends BSV20V1 {
     }
 
     @method()
-    incCounter(): boolean {
+    incCounter(): void {
         this.counter++
-        return true
     }
 }

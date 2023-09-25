@@ -175,7 +175,7 @@ export class BSV20V1 extends SmartContract {
                   recipients.reduce((acc, receiver) => {
                       return (acc += receiver.amt)
                   }, 0n)
-                : recipients.amt
+                : current.getAmt() - recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
             }
