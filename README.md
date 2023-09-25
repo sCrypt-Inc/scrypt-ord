@@ -59,7 +59,7 @@ console.log("mint NFT: ", mintTx.id);
 const recipientAddress = bsv.Address.fromString("your bitcoin address");
 
 const { tx: transferTx } = await instance.methods.unlock(message, {
-  transfer: new OrdP2PKH(Addr(recipientAddress.toByteString())),
+  transfer: new OneSatNFTP2PKH(Addr(recipientAddress.toByteString())),
 });
 
 console.log("transfer NFT: ", transferTx.id);
@@ -86,7 +86,7 @@ console.log("mint tx: ", tx.id);
 
 ```ts
 const tx = await instance.mint({
-  content: `your content in hex`,
+  content: `your content`,
   contentType: `your contentType`,
 });
 console.log("mint tx: ", tx.id);
@@ -106,9 +106,9 @@ const recipient = new HashPuzzleNFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // create p2pkh from a utxo
-const p2pkh = OrdP2PKH.fromP2PKH(`your utxo`);
+const p2pkh = OneSatNFTP2PKH.fromUTXO(`your utxo`);
 // or create p2pkh from origin
-const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+const p2pkh = await OneSatNFTP2PKH.getLatestInstance(`origin`);
 
 await p2pkh.connect(getDefaultSigner());
 
@@ -118,7 +118,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<OrdP2PKH>
+  } as MethodCallOptions<OneSatNFTP2PKH>
 );
 
 console.log("transfer NFT: ", transferTx.id);
@@ -193,8 +193,8 @@ const recipient = new HashPuzzleFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // create p2pkh from a utxo
-// NOTE: you can use OrdP2PKH.getLatestInstance for bsv20, it only works for NFT
-const p2pkh = OrdP2PKH.fromP2PKH(`your utxo`);
+// NOTE: you can use BSV20P2PKH.getLatestInstance for bsv20, it only works for NFT
+const p2pkh = BSV20P2PKH.fromUTXO(`your utxo`);
 
 await p2pkh.connect(getDefaultSigner());
 
@@ -209,7 +209,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
       },
     ],
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<OrdP2PKH>
+  } as MethodCallOptions<BSV20P2PKH>
 );
 
 console.log("transfer FT: ", transferTx.id);
@@ -227,10 +227,10 @@ const recipient = new HashPuzzleFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // create p2pkh from a utxo
-// NOTE: you can use OrdP2PKH.getLatestInstance for bsv20, it only works for NFT
-const ordP2PKHs = await OrdP2PKH.getBSV20("DOGE", `your ordinal address`);
+// NOTE: you can use BSV20P2PKH.getLatestInstance for bsv20, it only works for NFT
+const bsv20P2PKHs = await BSV20P2PKH.getBSV20("DOGE", `your ordinal address`);
 
-await Promise.all(ordP2PKHs.map((p) => p.connect(signer)));
+await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)));
 const recipients: Array<FTReceiver> = [
   {
     instance: new HashPuzzleFT(tick, max, lim, sha256(message)),
@@ -238,7 +238,11 @@ const recipients: Array<FTReceiver> = [
   },
 ];
 
-const { tx, nexts } = await OrdP2PKH.transfer(ordP2PKHs, signer, recipients);
+const { tx, nexts } = await BSV20P2PKH.transfer(
+  bsv20P2PKHs,
+  signer,
+  recipients
+);
 
 console.log("transfer FT: ", transferTx.id);
 ```
