@@ -11,8 +11,8 @@ import {
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH } from '../scrypt-ord'
-import { dummyPrependbsv20 } from './utils'
+import { BSV20P2PKH } from '../scrypt-ord'
+import { dummybsv20 } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterFT } from '../contracts/counterFT'
 use(chaiAsPromised)
@@ -39,15 +39,15 @@ describe(`Chain test: ${chain}`, () => {
     const tokenToHashPuzzleAgain = 300n
     const tokenToP2PKH = 120n
 
-    async function createP2PKH(): Promise<OrdP2PKH> {
-        const p2pkh = OrdP2PKH.fromP2PKH(
-            dummyPrependbsv20(myAddress, fromByteString(tick), tokenInP2PKH)
+    async function createP2PKH(): Promise<BSV20P2PKH> {
+        const p2pkh = BSV20P2PKH.fromUTXO(
+            dummybsv20(myAddress, fromByteString(tick), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
         return p2pkh
     }
 
-    async function toHashPuzzle(p2pkh: OrdP2PKH): Promise<HashPuzzleFT> {
+    async function toHashPuzzle(p2pkh: BSV20P2PKH): Promise<HashPuzzleFT> {
         const totalAmount = tokenInP2PKH
         const transferAmount = tokenToHashPuzzle
         const changeAmount = totalAmount - transferAmount
@@ -64,7 +64,7 @@ describe(`Chain test: ${chain}`, () => {
                     amt: transferAmount,
                 },
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<OrdP2PKH>
+            } as MethodCallOptions<BSV20P2PKH>
         )
         console.log('[1] P2PKH -> HashPuzzle:', tx.id)
 
@@ -72,8 +72,8 @@ describe(`Chain test: ${chain}`, () => {
 
         expect(hashPuzzle.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as OrdP2PKH
-        expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
+        const tokenChange = nexts[1].instance as BSV20P2PKH
+        expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return hashPuzzle
     }
@@ -101,8 +101,8 @@ describe(`Chain test: ${chain}`, () => {
 
         expect(counter.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as OrdP2PKH
-        expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
+        const tokenChange = nexts[1].instance as BSV20P2PKH
+        expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return counter
     }
@@ -127,8 +127,8 @@ describe(`Chain test: ${chain}`, () => {
 
         expect(nextInstance.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as OrdP2PKH
-        expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
+        const tokenChange = nexts[1].instance as BSV20P2PKH
+        expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return nextInstance
     }
@@ -166,14 +166,19 @@ describe(`Chain test: ${chain}`, () => {
         expect(nextInstance.getAmt()).to.equal(counterAmount)
         expect(hashPuzzle.getAmt()).to.equal(hashPuzzleAmount)
 
-        const tokenChange = nexts[2].instance as OrdP2PKH
-        expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
+        const tokenChange = nexts[2].instance as BSV20P2PKH
+        expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return hashPuzzle
     }
 
     async function toP2PKH(hashPuzzle: HashPuzzleFT) {
-        const p2pkh = new OrdP2PKH(Addr(myAddress.toByteString()))
+        const p2pkh = new BSV20P2PKH(
+            tick,
+            max,
+            lim,
+            Addr(myAddress.toByteString())
+        )
         await p2pkh.connect(getDefaultSigner())
 
         const { tx, nexts } = await hashPuzzle.methods.unlock(
@@ -189,7 +194,7 @@ describe(`Chain test: ${chain}`, () => {
         console.log('[5] HashPuzzle -> P2PKH:', tx.id)
 
         expect(nexts.length).to.equal(1)
-        expect(p2pkh.getBSV20Amt()).to.equal(tokenToP2PKH)
+        expect(p2pkh.getAmt()).to.equal(tokenToP2PKH)
     }
 
     it('should pass', async () => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-useless-escape */
 import {
@@ -23,9 +24,7 @@ import {
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
-import { OrdP2PKH } from './ordP2PKH'
 import { fromByteString } from '../utils'
-import { OneSatApis } from '../1satApis'
 import { ORDMethodCallOptions, FTReceiver } from '../types'
 
 /**
@@ -115,9 +114,7 @@ export class BSV20V1 extends SmartContract {
             throw new Error(`amt should not be greater than "lim: ${this.lim}"`)
         }
 
-        this.prependNOPScript(
-            Ordinal.createMint(fromByteString(this.tick), amt)
-        )
+        this.setAmt(amt)
         return this.deploy(1)
     }
 
@@ -125,6 +122,10 @@ export class BSV20V1 extends SmartContract {
         const address = await this.signer.getDefaultAddress()
 
         const utxos = await this.signer.listUnspent(address)
+
+        if (utxos.length === 0) {
+            throw new Error(`no utxo found for address: ${address}`)
+        }
 
         const deployTx = new bsv.Transaction()
             .from(utxos)
@@ -191,11 +192,6 @@ export class BSV20V1 extends SmartContract {
             function addReceiver(receiver: FTReceiver) {
                 if (receiver.instance instanceof BSV20V1) {
                     receiver.instance.setAmt(receiver.amt)
-                } else if (receiver.instance instanceof OrdP2PKH) {
-                    receiver.instance.setBSV20(
-                        fromByteString(current.tick),
-                        receiver.amt
-                    )
                 } else {
                     throw new Error('unsupport receiver!')
                 }
@@ -226,9 +222,17 @@ export class BSV20V1 extends SmartContract {
                 const tokenChangeAddress = options.tokenChangeAddress
                     ? options.tokenChangeAddress
                     : await current.signer.getDefaultAddress()
-                const p2pkh = OrdP2PKH.fromAddress(tokenChangeAddress)
 
-                p2pkh.setBSV20(fromByteString(current.tick), tokenChangeAmt)
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const { BSV20P2PKH } = require('./bsv20P2PKH')
+                const p2pkh = new BSV20P2PKH(
+                    current.tick,
+                    current.max,
+                    current.lim,
+                    Addr(tokenChangeAddress.toByteString())
+                )
+
+                p2pkh.setAmt(tokenChangeAmt)
                 tx.addOutput(
                     new bsv.Transaction.Output({
                         script: p2pkh.lockingScript,
@@ -264,5 +268,28 @@ export class BSV20V1 extends SmartContract {
                 nexts: nexts,
             })
         }
+    }
+
+    static override fromUTXO<T extends SmartContract>(
+        this: new (...args: any[]) => T,
+        utxo: UTXO
+    ): T {
+        if (utxo.satoshis !== 1) {
+            throw new Error('invalid ordinal bsv20 utxo')
+        }
+
+        const ins = Ordinal.getInsciptionScript(utxo.script)
+
+        if (!ins) {
+            throw new Error('invalid ordinal bsv20 utxo')
+        }
+
+        const nopScript = bsv.Script.fromHex(ins)
+
+        const instance = (
+            this as unknown as typeof SmartContract
+        ).fromLockingScript(utxo.script, {}, nopScript) as T
+        instance.from = utxo
+        return instance
     }
 }

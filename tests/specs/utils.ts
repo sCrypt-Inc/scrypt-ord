@@ -2,7 +2,30 @@ import { bsv } from 'scrypt-ts'
 import { Ordinal } from '../scrypt-ord'
 import { randomBytes } from 'crypto'
 
-export function dummyAppendbsv20(addr: bsv.Address, tick: string, amt: bigint) {
+/**
+ * generate a dummy utxo contains a bsv20 inscription
+ * @param addr
+ * @param tick
+ * @param amt
+ * @param prepend put bsv20 inscription at the front of the locking script if true
+ * @returns
+ */
+export function dummybsv20(
+    addr: bsv.Address,
+    tick: string,
+    amt: bigint,
+    prepend: boolean = true
+) {
+    if (prepend) {
+        return {
+            script: Ordinal.createTransfer(tick, amt)
+                .add(bsv.Script.buildPublicKeyHashOut(addr))
+                .toHex(),
+            satoshis: 1,
+            txId: randomBytes(32).toString('hex'),
+            outputIndex: 0,
+        }
+    }
     return {
         script: bsv.Script.buildPublicKeyHashOut(addr)
             .add(Ordinal.createTransfer(tick, amt))
@@ -13,36 +36,31 @@ export function dummyAppendbsv20(addr: bsv.Address, tick: string, amt: bigint) {
     }
 }
 
-export function dummyPrependbsv20(
+/**
+ * generate a dummy utxo contains a text inscription
+ * @param addr
+ * @param text
+ * @param prepend put text inscription at the front of the locking script if true
+ * @returns
+ */
+export function dummyNFT(
     addr: bsv.Address,
-    tick: string,
-    amt: bigint
+    text: string,
+    prepend: boolean = true
 ) {
-    return {
-        script: Ordinal.createTransfer(tick, amt)
-            .add(bsv.Script.buildPublicKeyHashOut(addr))
-            .toHex(),
-        satoshis: 1,
-        txId: randomBytes(32).toString('hex'),
-        outputIndex: 0,
+    if (prepend) {
+        return {
+            script: Ordinal.create({
+                content: text,
+                contentType: 'text/plain',
+            })
+                .add(bsv.Script.buildPublicKeyHashOut(addr))
+                .toHex(),
+            satoshis: 1,
+            txId: randomBytes(32).toString('hex'),
+            outputIndex: 0,
+        }
     }
-}
-
-export function dummyPrependNFT(addr: bsv.Address, text: string) {
-    return {
-        script: Ordinal.create({
-            content: text,
-            contentType: 'text/plain',
-        })
-            .add(bsv.Script.buildPublicKeyHashOut(addr))
-            .toHex(),
-        satoshis: 1,
-        txId: randomBytes(32).toString('hex'),
-        outputIndex: 0,
-    }
-}
-
-export function dummyAppendNFT(addr: bsv.Address, text: string) {
     return {
         script: bsv.Script.buildPublicKeyHashOut(addr)
             .add(

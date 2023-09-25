@@ -10,8 +10,8 @@ import {
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH } from '../scrypt-ord'
-import { dummyP2PKH, dummyAppendNFT, dummyPrependNFT } from './utils'
+import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { dummyP2PKH, dummyNFT } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
@@ -34,11 +34,11 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyAppendNFT(address, 'hello world')
+            const p2pkh = OneSatNFTP2PKH.fromUTXO(
+                dummyNFT(address, 'hello world')
             )
             // or create p2pkh from origin
-            // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OneSatNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -48,7 +48,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdP2PKH>
+                } as MethodCallOptions<OneSatNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -58,7 +58,9 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
-                    transfer: new OrdP2PKH(Addr(ordAddress.toByteString())),
+                    transfer: new OneSatNFTP2PKH(
+                        Addr(ordAddress.toByteString())
+                    ),
                 })
             await expect(call()).not.to.be.rejected
         })
@@ -83,11 +85,11 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyPrependNFT(address, 'hello world')
+            const p2pkh = OneSatNFTP2PKH.fromUTXO(
+                dummyNFT(address, 'hello world')
             )
             // or create p2pkh from origin
-            // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OneSatNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -97,7 +99,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdP2PKH>
+                } as MethodCallOptions<OneSatNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -107,7 +109,9 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
-                    transfer: new OrdP2PKH(Addr(ordAddress.toByteString())),
+                    transfer: new OneSatNFTP2PKH(
+                        Addr(ordAddress.toByteString())
+                    ),
                 })
             await expect(call()).not.to.be.rejected
         })
@@ -132,9 +136,9 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdP2PKH.fromP2PKH(dummyP2PKH(address))
+            const p2pkh = OneSatNFTP2PKH.fromUTXO(dummyP2PKH(address))
             // or create p2pkh from origin
-            // const p2pkh = OrdP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OneSatNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -144,7 +148,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdP2PKH>
+                } as MethodCallOptions<OneSatNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -154,7 +158,9 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
-                    transfer: new OrdP2PKH(Addr(ordAddress.toByteString())),
+                    transfer: new OneSatNFTP2PKH(
+                        Addr(ordAddress.toByteString())
+                    ),
                 })
             await expect(call()).not.to.be.rejected
         })

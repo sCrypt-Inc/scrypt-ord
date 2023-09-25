@@ -11,7 +11,7 @@ import {
     ContractTransaction,
 } from 'scrypt-ts'
 
-import { OneSatNFT, OrdP2PKH } from '../scrypt-ord'
+import { OneSatNFT, OneSatNFTP2PKH } from '../scrypt-ord'
 
 export class CounterNFT extends OneSatNFT {
     @prop(true)
@@ -60,7 +60,7 @@ export class CounterNFT extends OneSatNFT {
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()
 
-        const p2pkh = new OrdP2PKH(addr)
+        const p2pkh = new OneSatNFTP2PKH(addr)
 
         const nextInstance = current.next()
         nextInstance.incCounter()

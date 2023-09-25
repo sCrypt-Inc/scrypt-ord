@@ -3,7 +3,7 @@ import { toByteString, MethodCallOptions } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdP2PKH } from '../scrypt-ord'
+import { BSV20P2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
@@ -50,8 +50,8 @@ describe('Test SmartContract `CounterFT`', () => {
                 console.log('Contract CounterFT called: ', tx.id)
                 expect(nexts.length).to.equal(2)
                 expect(nextInstance.getAmt()).to.equal(transferAmount)
-                const tokenChange = nexts[1].instance as OrdP2PKH
-                expect(tokenChange.getBSV20Amt()).to.equal(changeAmount)
+                const tokenChange = nexts[1].instance as BSV20P2PKH
+                expect(tokenChange.getAmt()).to.equal(changeAmount)
             }
             await expect(callContract()).not.to.be.rejected
 

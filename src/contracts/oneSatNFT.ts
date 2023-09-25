@@ -18,7 +18,6 @@ import {
 import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
-import { OrdP2PKH } from './ordP2PKH'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)
@@ -138,9 +137,7 @@ export class OneSatNFT extends SmartContract {
         }
     }
 
-    public static async getLatestInstance(
-        origin: string
-    ): Promise<SmartContract> {
+    public static async getLatestInstance(origin: string): Promise<OneSatNFT> {
         const utxo = await OneSatApis.fetchUTXOByOrigin(origin)
 
         if (utxo === null) {
