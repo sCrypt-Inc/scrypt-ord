@@ -73,8 +73,8 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
 
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
-            const p2pkh = OrdP2PKH.fromP2PKH(
-                dummyAppendbsv20(address, fromByteString(tick), 100n)
+            const p2pkh = BSV20P2PKH.fromUTXO(
+                dummybsv20(address, fromByteString(tick), 100n)
             )
 
             signer.addPrivateKey(wrongPrivKey)
@@ -92,12 +92,12 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                             },
                         ],
                         pubKeyOrAddrToSign: wrongPubKey,
-                    } as MethodCallOptions<OrdP2PKH>
+                    } as MethodCallOptions<BSV20P2PKH>
                 )
             await expect(call()).to.be.rejectedWith(/signature check failed/)
         })
 
-        it('transfer FT to a OrdP2PKH', async () => {
+        it('transfer FT to a BSV20P2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () => {
                 const { tx, nexts } = await recipient.methods.unlock(message, {
@@ -134,7 +134,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                     {
                         transfer: [
                             {
-                                instance: new OrdP2PKH(
+                                instance: new BSV20P2PKH(tick, max, lim,
                                     Addr(ordAddress.toByteString())
                                 ),
                                 amt: 15n,
@@ -191,7 +191,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
             console.log('transfer FT: ', transferTx.id)
         })
 
-        it('transfer FT to a OrdP2PKH', async () => {
+        it('transfer FT to a BSV20P2PKH', async () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {

@@ -69,15 +69,15 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
     })
 
     describe('from v1 utxo', () => {
-        let ordP2PKH: BSV20P2PKH
+        let bsv20P2PKH: BSV20P2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            ordP2PKH = BSV20P2PKH.fromUTXO(dummybsv20(addr, 'OOO1', 1n, false))
+            bsv20P2PKH = BSV20P2PKH.fromUTXO(
+                dummybsv20(addr, 'OOO1', 1n, false)
+            )
 
-            await ordP2PKH.connect(signer)
-
-            console.log('ordP2PKH', ordP2PKH.lockingScript.toASM())
+            await bsv20P2PKH.connect(signer)
         })
 
         it('transfer should pass.', async () => {
@@ -96,7 +96,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                         amt: 1n,
                     },
                 ]
-                const { tx } = await ordP2PKH.methods.unlock(
+                const { tx } = await bsv20P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(toHex(ordPubKey)),
                     {
@@ -116,13 +116,13 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
     })
 
     describe('from v2 utxo', () => {
-        let ordP2PKH: BSV20P2PKH
+        let bsv20P2PKH: BSV20P2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            ordP2PKH = BSV20P2PKH.fromUTXO(dummybsv20(addr, tick, 6n))
+            bsv20P2PKH = BSV20P2PKH.fromUTXO(dummybsv20(addr, tick, 6n))
 
-            await ordP2PKH.connect(signer)
+            await bsv20P2PKH.connect(signer)
         })
 
         it('transfer should pass.', async () => {
@@ -140,7 +140,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                     },
                 ]
                 const ordPubKey = await signer.getDefaultPubKey()
-                const { tx } = await ordP2PKH.methods.unlock(
+                const { tx } = await bsv20P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(toHex(ordPubKey)),
                     {

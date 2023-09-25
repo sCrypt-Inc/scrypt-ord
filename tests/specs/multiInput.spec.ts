@@ -30,18 +30,18 @@ describe('Test multi inputs and outputs', () => {
         HashPuzzleFT.loadArtifact()
     })
 
-    it('should transfer 2 ordp2pkh to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 2 bsv20p2pkh to 1 hashPuzzle successfully.', async () => {
         const transferBSV20 = async () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
-            const ordP2PKHs = [
+            const bsv20P2PKHs = [
                 dummybsv20(address, fromByteString(tick), 4n),
                 dummybsv20(address, fromByteString(tick), 5n),
             ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)
 
-            await Promise.all(ordP2PKHs.map((p) => p.connect(signer)))
+            await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
             const recipients: Array<FTReceiver> = [
                 {
                     instance: new HashPuzzleFT(tick, max, lim, sha256(message)),
@@ -50,7 +50,7 @@ describe('Test multi inputs and outputs', () => {
             ]
 
             const { tx } = await BSV20P2PKH.transfer(
-                ordP2PKHs,
+                bsv20P2PKHs,
                 signer,
                 recipients
             )
@@ -61,16 +61,16 @@ describe('Test multi inputs and outputs', () => {
         return expect(transferBSV20()).not.be.rejected
     })
 
-    it('should transfer 2 ordp2pkh to 2 hashPuzzle successfully.', async () => {
+    it('should transfer 2 bsv20p2pkh to 2 hashPuzzle successfully.', async () => {
         const transferBSV20 = async () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
-            const ordP2PKHs = [
+            const bsv20P2PKHs = [
                 dummybsv20(address, fromByteString(tick), 4n),
                 dummybsv20(address, fromByteString(tick), 5n),
             ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
 
-            await Promise.all(ordP2PKHs.map((p) => p.connect(signer)))
+            await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
 
             const message1 = toByteString('1:hello, sCrypt!', true)
             const message2 = toByteString('2:hello, sCrypt!', true)
@@ -97,7 +97,7 @@ describe('Test multi inputs and outputs', () => {
             ]
 
             const { tx } = await BSV20P2PKH.transfer(
-                ordP2PKHs,
+                bsv20P2PKHs,
                 signer,
                 recipients
             )
@@ -108,7 +108,7 @@ describe('Test multi inputs and outputs', () => {
         return expect(transferBSV20()).not.be.rejected
     })
 
-    it('should transfer 1 ordp2pkh and 1 hashPuzzle to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 1 bsv20p2pkh and 1 hashPuzzle to 1 hashPuzzle successfully.', async () => {
         const transferBSV20 = async () => {
             const message1 = toByteString('1:hello, sCrypt!', true)
             const message2 = toByteString('2:hello, sCrypt!', true)
