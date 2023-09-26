@@ -275,7 +275,7 @@ export class Ordinal extends SmartContractLib {
                 amt: amt.toString().replace(/n/, ''),
                 dec: dec.toString().replace(/n/, ''),
             }),
-            contentType: 'application/bsv-20',
+            contentType: ContentType.BSV20,
         })
     }
 
@@ -287,7 +287,7 @@ export class Ordinal extends SmartContractLib {
                 id,
                 amt: amt.toString().replace(/n/, ''),
             }),
-            contentType: 'application/bsv-20',
+            contentType: ContentType.BSV20,
         })
     }
 
@@ -397,7 +397,7 @@ export class Ordinal extends SmartContractLib {
     }
 
     static getBsv20v2Json(content: string, contentType: string): BSV20V1_JSON {
-        if (contentType !== 'application/bsv-20') {
+        if (contentType !== ContentType.BSV20) {
             throw new Error(`invalid bsv20 contentType: ${contentType}`)
         }
 
