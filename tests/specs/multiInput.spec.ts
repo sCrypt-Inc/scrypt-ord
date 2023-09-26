@@ -230,7 +230,7 @@ describe('Test multi inputs and outputs', () => {
 
             let partialContractTx = await sender0.methods.unlock(
                 (sigResps) => findSig(sigResps, ordPubKey),
-                PubKey(toHex(ordPubKey)),
+                PubKey(ordPubKey.toByteString()),
                 {
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,

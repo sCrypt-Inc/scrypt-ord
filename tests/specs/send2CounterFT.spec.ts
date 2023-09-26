@@ -38,7 +38,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
 
         const { tx, nexts } = await p2pkh.methods.unlock(
             (sigResps) => findSig(sigResps, myPublicKey),
-            PubKey(toHex(myPublicKey)),
+            PubKey(myPublicKey.toByteString()),
             {
                 transfer: [
                     {

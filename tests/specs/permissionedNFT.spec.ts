@@ -17,8 +17,8 @@ describe('Test SmartContract `PermissionedNFT`', () => {
         PermissionedNFT.loadArtifact()
 
         instance = new PermissionedNFT(
-            PubKey(toHex(issuerPublicKey)),
-            PubKey(toHex(alicePublicKey))
+            PubKey(issuerPublicKey.toByteString()),
+            PubKey(alicePublicKey.toByteString())
         )
         await instance.connect(
             getDefaultSigner([alicePrivateKey, bobPrivateKey])
@@ -29,11 +29,11 @@ describe('Test SmartContract `PermissionedNFT`', () => {
 
     it('should pass when calling `transfer`', async () => {
         const nextInstance = instance.next()
-        nextInstance.owner = PubKey(toHex(bobPublicKey))
+        nextInstance.owner = PubKey(bobPublicKey.toByteString())
 
         const call = async () =>
             await instance.methods.transfer(
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 (sigResps) => findSig(sigResps, issuerPublicKey),
                 {
