@@ -26,7 +26,7 @@ describe('Test fromTx for SmartContract `CounterFT`', () => {
         outputIndex: number
     ): Promise<{ tx: bsv.Transaction; atOutputIndex: number }> {
         // create instance from tx
-        const instance = CounterFT.fromTxn(tx, outputIndex)
+        const instance = CounterFT.fromTx(tx, outputIndex) as CounterFT
         await instance.connect(getDefaultSigner())
 
         const nextInstance = instance.next()

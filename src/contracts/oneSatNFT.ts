@@ -179,15 +179,14 @@ export class OneSatNFT extends SmartContract {
      * @param atOutputIndex output index of `tx`
      * @param offchainValues the value of offchain properties, the raw data of onchain `HashedMap` and `HashedSet` properties, at this transaction moment
      */
-    static fromTxn<T extends OneSatNFT>(
-        this: new (...args: any[]) => T,
+    static override fromTx<T extends SmartContract>(
         tx: bsv.Transaction,
         atOutputIndex: number,
         offchainValues?: Record<string, any>
     ): T {
         const outputScript = tx.outputs[atOutputIndex].script
         const nopScript = Ordinal.nopScriptFromScript(outputScript)
-        const instance = (this as unknown as typeof SmartContract).fromTx(
+        const instance = super.fromTx(
             tx,
             atOutputIndex,
             offchainValues,

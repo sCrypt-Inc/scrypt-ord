@@ -28,7 +28,10 @@ describe('Test fromTx for SmartContract `HashPuzzleFT`', () => {
 
     it('should unlock successfully after instance recovery', async () => {
         // create instance from deploy tx
-        const hashPuzzle = HashPuzzleFT.fromTxn(deployTx, deployOutputIndex)
+        const hashPuzzle = HashPuzzleFT.fromTx(
+            deployTx,
+            deployOutputIndex
+        ) as HashPuzzleFT
         await hashPuzzle.connect(getDefaultSigner())
 
         const addr = Addr(myAddress.toByteString())
