@@ -17,6 +17,7 @@ import {
 import { Shift10 } from 'scrypt-ts-lib'
 import { BSV20Protocol, Inscription } from '../types'
 import { fromByteString } from '../utils'
+import { ContentType } from '../contentType'
 
 export class Ordinal extends SmartContractLib {
     @method()
@@ -205,7 +206,7 @@ export class Ordinal extends SmartContractLib {
                 tick,
                 amt: amt.toString().replace(/n/, ''),
             }),
-            contentType: 'application/bsv-20',
+            contentType: ContentType.BSV20,
         })
     }
 
@@ -217,7 +218,7 @@ export class Ordinal extends SmartContractLib {
                 tick,
                 amt: amt.toString().replace(/n/, ''),
             }),
-            contentType: 'application/bsv-20',
+            contentType: ContentType.BSV20,
         })
     }
 
@@ -230,7 +231,7 @@ export class Ordinal extends SmartContractLib {
                 max: max.toString().replace(/n/, ''),
                 lim: lim.toString().replace(/n/, ''),
             }),
-            contentType: 'application/bsv-20',
+            contentType: ContentType.BSV20,
         })
     }
 
@@ -303,7 +304,7 @@ export class Ordinal extends SmartContractLib {
     }
 
     static getBsv20Json(content: string, contentType: string): BSV20Protocol {
-        if (contentType !== 'application/bsv-20') {
+        if (contentType !== ContentType.BSV20) {
             throw new Error(`invalid bsv20 contentType: ${contentType}`)
         }
 
