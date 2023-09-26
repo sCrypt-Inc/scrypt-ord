@@ -38,4 +38,16 @@ describe('Test SmartContract `HashPuzzleNFT`', () => {
         const call = async () => await instance.methods.unlock(toByteString(''))
         await expect(call()).to.be.rejectedWith(/hashes are not equal/)
     })
+
+    it('should fail w/ w wrong transfer', async () => {
+        const ordAddress = await instance.signer.getDefaultAddress()
+        const call = async () =>
+            await instance.methods.unlock(message, {
+                transfer: [
+                    new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
+                    new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
+                ]
+            })
+        await expect(call()).to.be.rejectedWith(/Transfer option must be of type `SmartContract`./)
+    })
 })

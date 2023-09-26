@@ -100,7 +100,11 @@ export class OneSatNFT extends SmartContract {
 
             const recipient = options.transfer as NFTReceiver
 
-            if (recipient instanceof SmartContract) {
+            if (recipient) {
+                if (!(recipient instanceof SmartContract)) {
+                    throw new Error('Transfer option must be of type `SmartContract`.')
+                }
+
                 tx.addOutput(
                     new bsv.Transaction.Output({
                         script: recipient.lockingScript,
