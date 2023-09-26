@@ -302,6 +302,7 @@ export class BSV20V1 extends SmartContract {
      * @param offchainValues the value of offchain properties, the raw data of onchain `HashedMap` and `HashedSet` properties, at this transaction moment
      */
     static override fromTx<T extends SmartContract>(
+        this: new (...args: any[]) => T,
         tx: bsv.Transaction,
         atOutputIndex: number,
         offchainValues?: Record<string, any>
