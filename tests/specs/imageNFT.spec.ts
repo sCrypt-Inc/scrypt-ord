@@ -28,10 +28,13 @@ describe('Test inscribe an image NFT to `HashPuzzleNFT`', () => {
 
     it('should pass when transfer NFT', async () => {
         const ordAddress = await instance.signer.getDefaultAddress()
-        const call = async () =>
-            await instance.methods.unlock(message, {
+        const call = async () => {
+            const { tx } = await instance.methods.unlock(message, {
                 transfer: new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
             })
+            console.log('transfer tx: ', tx.id)
+        }
+
         await expect(call()).not.to.be.rejected
     })
 })
