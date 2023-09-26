@@ -364,7 +364,7 @@ export class Ordinal extends SmartContractLib {
         throw new Error(`invalid bsv20 op: ${bsv20.op}`)
     }
 
-    static getInsciption(nopScript: bsv.Script): Inscription {
+    static getInscription(nopScript: bsv.Script): Inscription {
         const content = fromByteString(toHex(nopScript.chunks[6].buf))
         const contentType = fromByteString(toHex(nopScript.chunks[4].buf))
         return {
