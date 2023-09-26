@@ -4,7 +4,7 @@ import { expect, use } from 'chai'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { ContentType, OneSatNFTP2PKH } from '../scrypt-ord'
 import { PubKey, findSig, toHex, Addr } from 'scrypt-ts'
 import { dummyNFT, dummyP2PKH } from './utils'
 use(chaiAsPromised)
@@ -19,7 +19,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
             await nftP2PKH.connect(signer)
             const tx = await nftP2PKH.mint({
                 content: 'hello, sCrypt!',
-                contentType: 'text/plain',
+                contentType: ContentType.TEXT,
             })
             console.log('mint tx:', tx.id)
         })

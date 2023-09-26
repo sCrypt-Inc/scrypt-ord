@@ -1,5 +1,5 @@
 import { bsv } from 'scrypt-ts'
-import { Ordinal } from '../scrypt-ord'
+import { ContentType, Ordinal } from '../scrypt-ord'
 import { randomBytes } from 'crypto'
 
 /**
@@ -52,7 +52,7 @@ export function dummyNFT(
         return {
             script: Ordinal.create({
                 content: text,
-                contentType: 'text/plain',
+                contentType: ContentType.TEXT,
             })
                 .add(bsv.Script.buildPublicKeyHashOut(addr))
                 .toHex(),
@@ -66,7 +66,7 @@ export function dummyNFT(
             .add(
                 Ordinal.create({
                     content: text,
-                    contentType: 'text/plain',
+                    contentType: ContentType.TEXT,
                 })
             )
             .toHex(),

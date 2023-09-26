@@ -19,6 +19,7 @@ import {
 import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
+import { ContentType } from '../contentType'
 
 export class OneSatNFT extends SmartContract {
     @prop(true)
@@ -69,7 +70,7 @@ export class OneSatNFT extends SmartContract {
     async mintTextNft(text: string) {
         return this.mint({
             content: text,
-            contentType: 'text/plain',
+            contentType: ContentType.TEXT
         })
     }
 

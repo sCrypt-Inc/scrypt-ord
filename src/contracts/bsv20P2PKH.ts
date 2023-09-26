@@ -22,7 +22,6 @@ import {
     toHex,
 } from 'scrypt-ts'
 
-import { AbstractContract } from 'scryptlib'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { BSV20V1 } from './bsv20V1'
