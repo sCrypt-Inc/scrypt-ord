@@ -261,7 +261,7 @@ export class BSV20P2PKH extends BSV20V1 {
 
             await p2pkh.methods.unlock(
                 (sigResps) => findSig(sigResps, ordPubKey),
-                PubKey(toHex(ordPubKey)),
+                PubKey(ordPubKey.toByteString()),
                 {
                     partialContractTx: {
                         tx: tx,

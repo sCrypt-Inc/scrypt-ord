@@ -33,8 +33,8 @@ describe('Test SmartContract `PermissionedFT`', () => {
             toByteString(tick, true),
             max,
             lim,
-            PubKey(toHex(issuerPublicKey)),
-            PubKey(toHex(alicePublicKey))
+            PubKey(issuerPublicKey.toByteString()),
+            PubKey(alicePublicKey.toByteString())
         )
         await instance.connect(
             getDefaultSigner([alicePrivateKey, bobPrivateKey])
@@ -47,7 +47,7 @@ describe('Test SmartContract `PermissionedFT`', () => {
     it('should pass when calling `transfer`', async () => {
         const call = async () =>
             await instance.methods.transfer(
-                PubKey(toHex(bobPublicKey)),
+                PubKey(bobPublicKey.toByteString()),
                 tokenTransferAmount,
                 tokenChangeAmount,
                 (sigResps) => findSig(sigResps, alicePublicKey),

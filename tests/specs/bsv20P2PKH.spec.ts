@@ -50,7 +50,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                 ]
                 const { tx } = await bsv20P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: recipients,
@@ -99,7 +99,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                 ]
                 const { tx } = await bsv20P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: recipients,
@@ -143,7 +143,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                 const ordPubKey = await signer.getDefaultPubKey()
                 const { tx } = await bsv20P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: recipients,

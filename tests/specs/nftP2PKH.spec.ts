@@ -31,7 +31,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                 const ordPubKey = await signer.getDefaultPubKey()
                 const { tx } = await nftP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: new OneSatNFTP2PKH(
@@ -64,7 +64,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                 const ordPubKey = await signer.getDefaultPubKey()
                 const { tx } = await nftP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: new OneSatNFTP2PKH(
@@ -97,7 +97,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                 const ordPubKey = await signer.getDefaultPubKey()
                 const { tx } = await nftP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: new OneSatNFTP2PKH(
@@ -129,7 +129,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                 const ordPubKey = await signer.getDefaultPubKey()
                 const { tx } = await nftP2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
-                    PubKey(toHex(ordPubKey)),
+                    PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
                         transfer: new OneSatNFTP2PKH(
