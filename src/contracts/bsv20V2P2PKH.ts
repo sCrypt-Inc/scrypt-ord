@@ -13,34 +13,33 @@ import {
     toByteString,
     pubKey2Addr,
     ByteString,
-    fromByteString,
     MethodCallOptions,
     findSig,
     ContractTransaction,
     StatefulNext,
     Signer,
+    toHex,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
-import { BSV20V1 } from './bsv20V1'
-import { BSV20V1_JSON, FTReceiver } from '../types'
+import {
+    BSV20V1_JSON,
+    BSV20V2_JSON,
+    BSV20V2_TRANSFER_JSON,
+    FTReceiver,
+} from '../types'
+import { BSV20V2 } from './bsv20V2'
 
 const P2PKHScriptLen = 50
 
-export class BSV20P2PKH extends BSV20V1 {
+export class BSV20V2P2PKH extends BSV20V2 {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
 
-    constructor(
-        tick: ByteString,
-        max: bigint,
-        lim: bigint,
-        dec: bigint,
-        addr: Addr
-    ) {
-        super(tick, max, lim, dec)
+    constructor(id: ByteString, amt: bigint, dec: bigint, addr: Addr) {
+        super(id, amt, dec)
         this.init(...arguments)
         this.addr = addr
     }
@@ -57,7 +56,8 @@ export class BSV20P2PKH extends BSV20V1 {
     }
 
     override init(...args: any[]) {
-        const [_, __, ___, ____, addr] = args
+        const [id, _, __, addr] = args
+        this.id = id
         super.init(addr)
     }
 
@@ -88,7 +88,7 @@ export class BSV20P2PKH extends BSV20V1 {
 
     override getAmt() {
         const nop = this.getNopScript()
-        return Ordinal.getAmt(nop, fromByteString(this.tick))
+        return Ordinal.getAmtV2(nop)
     }
 
     static override fromLockingScript(script: string): SmartContract {
@@ -110,18 +110,17 @@ export class BSV20P2PKH extends BSV20V1 {
 
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
-            true
-        ) as BSV20V1_JSON
+            false
+        ) as BSV20V2_TRANSFER_JSON
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {
             return arg.value
         })
 
-        // we can't get max, lim, and dec from the bsv20 insciption script.
+        // we can't  get max, and lim from the bsv20 insciption script.
         const instance = new this(
-            toByteString(bsv20.tick, true),
-            -1n,
+            toByteString(bsv20.id, true),
             -1n,
             -1n,
             Addr(args[0] as ByteString)
@@ -144,17 +143,17 @@ export class BSV20P2PKH extends BSV20V1 {
             throw new Error('invalid ordinal p2pkh utxo')
         }
 
-        const instance = BSV20P2PKH.fromLockingScript(utxo.script) as T
+        const instance = BSV20V2P2PKH.fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
     }
 
-    static fromOutPoint(outPoint: string): BSV20P2PKH {
+    static fromOutPoint(outPoint: string): BSV20V2P2PKH {
         const utxo = OneSatApis.fetchUTXOByOutpoint(outPoint)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
-        return BSV20P2PKH.fromUTXO(utxo)
+        return BSV20V2P2PKH.fromUTXO(utxo)
     }
 
     /**
@@ -166,13 +165,13 @@ export class BSV20P2PKH extends BSV20V1 {
     static async getBSV20(
         tick: string,
         address: string
-    ): Promise<Array<BSV20P2PKH>> {
+    ): Promise<Array<BSV20V2P2PKH>> {
         const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
-        return bsv20Utxos.map((utxo) => BSV20P2PKH.fromUTXO(utxo))
+        return bsv20Utxos.map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
     }
 
     static async transfer(
-        senders: Array<BSV20P2PKH>,
+        senders: Array<BSV20V2P2PKH>,
         signer: Signer,
         receivers: Array<FTReceiver>
     ) {
@@ -197,12 +196,12 @@ export class BSV20P2PKH extends BSV20V1 {
         const tx = new bsv.Transaction()
         const nexts: StatefulNext<SmartContract>[] = []
 
-        const tick = senders[0].tick
+        const id = senders[0].id
 
         for (let i = 0; i < receivers.length; i++) {
             const receiver = receivers[i]
 
-            if (receiver.instance instanceof BSV20V1) {
+            if (receiver.instance instanceof BSV20V2) {
                 receiver.instance.setAmt(receiver.amt)
             } else {
                 throw new Error('unsupport receiver, only BSV20!')
@@ -223,10 +222,9 @@ export class BSV20P2PKH extends BSV20V1 {
         }
 
         if (tokenChangeAmt > 0n) {
-            const p2pkh = new BSV20P2PKH(
-                tick,
+            const p2pkh = new BSV20V2P2PKH(
+                id,
                 senders[0].max,
-                senders[0].lim,
                 senders[0].dec,
                 Addr(ordPubKey.toAddress().toByteString())
             )
@@ -254,8 +252,8 @@ export class BSV20P2PKH extends BSV20V1 {
             p2pkh.bindTxBuilder(
                 'unlock',
                 async (
-                    current: BSV20P2PKH,
-                    options: MethodCallOptions<BSV20P2PKH>
+                    current: BSV20V2P2PKH,
+                    options: MethodCallOptions<BSV20V2P2PKH>
                 ): Promise<ContractTransaction> => {
                     const tx = options.partialContractTx.tx
                     tx.addInput(current.buildContractInput())
@@ -270,7 +268,7 @@ export class BSV20P2PKH extends BSV20V1 {
 
             await p2pkh.methods.unlock(
                 (sigResps) => findSig(sigResps, ordPubKey),
-                PubKey(ordPubKey.toByteString()),
+                PubKey(toHex(ordPubKey)),
                 {
                     partialContractTx: {
                         tx: tx,
@@ -279,7 +277,7 @@ export class BSV20P2PKH extends BSV20V1 {
                     },
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<BSV20P2PKH>
+                } as MethodCallOptions<BSV20V2P2PKH>
             )
         }
 
@@ -297,7 +295,7 @@ export class BSV20P2PKH extends BSV20V1 {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'BSV20P2PKH',
+    contract: 'BSV20V2P2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],
@@ -335,4 +333,4 @@ const desc = {
     sourceMapFile: '',
 }
 
-BSV20P2PKH.loadArtifact(desc)
+BSV20V2P2PKH.loadArtifact(desc)
