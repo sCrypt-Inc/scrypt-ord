@@ -372,4 +372,8 @@ export class Ordinal extends SmartContractLib {
             contentType,
         }
     }
+
+    static nopScriptFromScript(script: bsv.Script): bsv.Script {
+        return bsv.Script.fromHex(Ordinal.getInsciptionScript(script.toHex()))
+    }
 }

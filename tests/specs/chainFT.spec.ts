@@ -12,14 +12,14 @@ import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH } from '../scrypt-ord'
-import { dummybsv20 } from './utils'
+import { dummyBSV20 } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterFT } from '../contracts/counterFT'
 use(chaiAsPromised)
 
 const chain = 'P2PKH -> HashPuzzle -> Counter -> Counter -> HashPuzzle -> P2PKH'
 
-describe(`Chain test: ${chain}`, () => {
+describe(`Chain FT Test: ${chain}`, () => {
     before(async () => {
         HashPuzzleFT.loadArtifact()
         CounterFT.loadArtifact()
@@ -41,7 +41,7 @@ describe(`Chain test: ${chain}`, () => {
 
     async function createP2PKH(): Promise<BSV20P2PKH> {
         const p2pkh = BSV20P2PKH.fromUTXO(
-            dummybsv20(myAddress, fromByteString(tick), tokenInP2PKH)
+            dummyBSV20(myAddress, fromByteString(tick), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
         return p2pkh

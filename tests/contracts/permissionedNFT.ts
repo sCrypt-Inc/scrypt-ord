@@ -1,4 +1,13 @@
-import { method, prop, PubKey, Sig, assert, hash256 } from 'scrypt-ts'
+import {
+    method,
+    prop,
+    PubKey,
+    Sig,
+    assert,
+    hash256,
+    int2ByteString,
+    slice,
+} from 'scrypt-ts'
 
 import { OneSatNFT } from '../scrypt-ord'
 
@@ -27,6 +36,15 @@ export class PermissionedNFT extends OneSatNFT {
         assert(
             this.checkSig(issuerSig, this.issuer),
             'issuer signature check failed'
+        )
+
+        // ensure the public method is called from the first input.
+        const outpoint =
+            this.ctx.utxo.outpoint.txid +
+            int2ByteString(this.ctx.utxo.outpoint.outputIndex, 4n)
+        assert(
+            slice(this.prevouts, 0n, 36n) == outpoint,
+            'contract must be spent via first input'
         )
 
         this.owner = recipient
