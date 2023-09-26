@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, PubKey, findSig, toHex } from 'scrypt-ts'
+import { MethodCallOptions, PubKey, findSig } from 'scrypt-ts'
 import { PermissionedNFT } from '../contracts/permissionedNFT'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'

@@ -4,7 +4,6 @@ import {
     MethodCallOptions,
     PubKey,
     findSig,
-    toHex,
     toByteString,
 } from 'scrypt-ts'
 import { getDefaultSigner } from '../utils/txHelper'

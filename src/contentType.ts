@@ -65,5 +65,5 @@ export const ContentType = {
     VIDEO_MP4: 'video/mp4',
     MP4: 'video/mp4',
     VIDEO_WEBM: 'video/webm',
-    WEBM: 'video/webm'
+    WEBM: 'video/webm',
 } as const

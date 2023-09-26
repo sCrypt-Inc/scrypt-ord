@@ -46,8 +46,10 @@ describe('Test SmartContract `HashPuzzleNFT`', () => {
                 transfer: [
                     new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
                     new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
-                ]
+                ],
             })
-        await expect(call()).to.be.rejectedWith(/Transfer option must be of type `SmartContract`./)
+        await expect(call()).to.be.rejectedWith(
+            /Transfer option must be of type `SmartContract`./
+        )
     })
 })

@@ -1,11 +1,5 @@
 import { expect, use } from 'chai'
-import {
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    toByteString,
-    toHex,
-} from 'scrypt-ts'
+import { MethodCallOptions, PubKey, findSig, toByteString } from 'scrypt-ts'
 import { PermissionedFT } from '../contracts/permissionedFT'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'

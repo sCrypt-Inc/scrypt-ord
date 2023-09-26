@@ -70,7 +70,7 @@ export class OneSatNFT extends SmartContract {
     async mintTextNft(text: string) {
         return this.mint({
             content: text,
-            contentType: ContentType.TEXT
+            contentType: ContentType.TEXT,
         })
     }
 
@@ -103,7 +103,9 @@ export class OneSatNFT extends SmartContract {
 
             if (recipient) {
                 if (!(recipient instanceof SmartContract)) {
-                    throw new Error('Transfer option must be of type `SmartContract`.')
+                    throw new Error(
+                        'Transfer option must be of type `SmartContract`.'
+                    )
                 }
 
                 tx.addOutput(
