@@ -3,7 +3,7 @@ import { ContentType, Ordinal } from '../scrypt-ord'
 import { randomBytes } from 'crypto'
 
 /**
- * generate a dummy utxo contains a bsv20 inscription
+ * generate a dummy utxo contains a bsv20 v1 transfer inscription
  * @param addr
  * @param tick
  * @param amt
@@ -36,6 +36,39 @@ export function dummyBSV20(
     }
 }
 
+/**
+ * generate a dummy utxo contains a bsv20 v2 transfer inscription
+ * @param addr
+ * @param id
+ * @param amt
+ * @param prepend put bsv20 inscription at the front of the locking script if true
+ * @returns
+ */
+export function dummyBSV20V2(
+    addr: bsv.Address,
+    id: string,
+    amt: bigint,
+    prepend: boolean = true
+) {
+    if (prepend) {
+        return {
+            script: Ordinal.createTransferV2(id, amt)
+                .add(bsv.Script.buildPublicKeyHashOut(addr))
+                .toHex(),
+            satoshis: 1,
+            txId: randomBytes(32).toString('hex'),
+            outputIndex: 0,
+        }
+    }
+    return {
+        script: bsv.Script.buildPublicKeyHashOut(addr)
+            .add(Ordinal.createTransferV2(id, amt))
+            .toHex(),
+        satoshis: 1,
+        txId: randomBytes(32).toString('hex'),
+        outputIndex: 0,
+    }
+}
 /**
  * generate a dummy utxo contains a text inscription
  * @param addr
