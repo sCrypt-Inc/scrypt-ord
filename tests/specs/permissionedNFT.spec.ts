@@ -24,7 +24,7 @@ describe('Test SmartContract `PermissionedNFT`', () => {
             getDefaultSigner([alicePrivateKey, bobPrivateKey])
         )
 
-        await instance.mintTextNft('hello world')
+        await instance.inscribeTextNft('hello world')
     })
 
     it('should pass when calling `transfer`', async () => {

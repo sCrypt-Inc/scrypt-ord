@@ -17,11 +17,11 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
             const address = await signer.getDefaultAddress()
             nftP2PKH = new OneSatNFTP2PKH(Addr(address.toByteString()))
             await nftP2PKH.connect(signer)
-            const tx = await nftP2PKH.mint({
+            const tx = await nftP2PKH.inscribe({
                 content: 'hello, sCrypt!',
                 contentType: ContentType.TEXT,
             })
-            console.log('mint tx:', tx.id)
+            console.log('inscribed tx:', tx.id)
         })
 
         it('nft transfer should pass.', async () => {

@@ -13,7 +13,7 @@ describe('Test fromTx for SmartContract `CounterNFT`', () => {
         CounterNFT.loadArtifact()
         const counter = new CounterNFT(0n)
         await counter.connect(getDefaultSigner())
-        deployTx = await counter.mintTextNft('Hello World')
+        deployTx = await counter.inscribeTextNft('Hello World')
     })
 
     async function inc(

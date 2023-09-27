@@ -3,12 +3,12 @@ import { Addr, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { ContentType, OneSatNFTP2PKH } from '../scrypt-ord'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 use(chaiAsPromised)
 
-describe('Test mint a image NFT to `HashPuzzleNFT`', () => {
+describe('Test inscribe an image NFT to `HashPuzzleNFT`', () => {
     const text = 'Hello sCrypt and 1Sat Oridinals'
     const message = toByteString(text, true)
     const hash = sha256(message)
@@ -22,8 +22,8 @@ describe('Test mint a image NFT to `HashPuzzleNFT`', () => {
         const bb = readFileSync(
             join(__dirname, '..', '..', 'logo.png')
         ).toString('base64')
-        const tx = await instance.mintImageNft(bb, 'image/png')
-        console.log('mint tx: ', tx.id)
+        const tx = await instance.inscribeImageNft(bb, ContentType.PNG)
+        console.log('inscribed tx: ', tx.id)
     })
 
     it('should pass when transfer NFT', async () => {
