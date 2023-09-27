@@ -41,9 +41,9 @@ export class HashPuzzleNFT extends OneSatNFT {
 
 For constructor, `this.init(...arguments)` needs to be called after the `super()` statement.
 
-### mint and transfer NFT
+### inscribe and transfer NFT
 
-you can mint a NFT in a contract:
+you can inscribe an NFT in a contract:
 
 ```ts
 HashPuzzleNFT.loadArtifact();
@@ -54,8 +54,8 @@ const hash = sha256(message);
 
 instance = new HashPuzzleNFT(hash);
 await instance.connect(getDefaultSigner());
-const mintTx = await instance.mintTextNft(text);
-console.log("mint NFT: ", mintTx.id);
+const insciptionTx = await instance.inscribeTextNft(text);
+console.log("inscribed NFT: ", mintTx.id);
 
 const recipientAddress = bsv.Address.fromString("your bitcoin address");
 
@@ -66,31 +66,31 @@ const { tx: transferTx } = await instance.methods.unlock(message, {
 console.log("transfer NFT: ", transferTx.id);
 ```
 
-1. mint a text NFT
+1. inscribe a text NFT
 
 ```ts
-const mintTx = await instance.mintTextNft("hello world!");
-console.log("mint NFT: ", mintTx.id);
+const inscriptionTx = await instance.inscribeTextNft("hello world!");
+console.log("inscribed NFT: ", inscriptionTx.id);
 ```
 
-2. mint a image NFT
+2. inscribe an image NFT
 
 ```ts
 const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString(
   "base64"
 );
-const tx = await instance.mintImageNft(bb, "image/png");
-console.log("mint tx: ", tx.id);
+const tx = await instance.inscribeImageNft(bb, ContentType.PNG);
+console.log("inscribed NFT: ", tx.id);
 ```
 
-3. mint other type NFT
+3. inscribe NFT of another type
 
 ```ts
-const tx = await instance.mint({
+const tx = await instance.inscribe({
   content: `your content`,
   contentType: `your contentType`,
 });
-console.log("mint tx: ", tx.id);
+console.log("inscribed NFT: ", tx.id);
 ```
 
 ### transfer exists NFT to a contract
