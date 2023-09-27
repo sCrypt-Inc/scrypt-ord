@@ -8,3 +8,4 @@ artifacts/
 !.vscode/launch.json
 !.vscode/tasks.json
 tsconfig-scryptTS.json
+tests/tsconfig-scryptTS.json
