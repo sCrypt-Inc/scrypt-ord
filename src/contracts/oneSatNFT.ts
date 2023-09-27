@@ -81,6 +81,10 @@ export class OneSatNFT extends SmartContract {
         })
     }
 
+    getInscription(): Inscription {
+        return Ordinal.getInscription(this.getPrependNOPScript())
+    }
+
     protected override getDefaultTxBuilder(
         methodName: string
     ): MethodCallTxBuilder<this> {

@@ -9,3 +9,4 @@ artifacts/
 !.vscode/tasks.json
 !.vscode/settings.json
 .eslintcache
+tsconfig-scryptTS.json
