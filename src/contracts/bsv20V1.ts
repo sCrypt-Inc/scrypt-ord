@@ -25,7 +25,7 @@ import {
 
 import { Ordinal } from './ordinal'
 import { fromByteString } from '../utils'
-import { ORDMethodCallOptions, FTReceiver } from '../types'
+import { ORDMethodCallOptions, FTReceiver, Inscription } from '../types'
 
 /**
  * A base class implementing the bsv20 v1 protocol
@@ -157,6 +157,10 @@ export class BSV20V1 extends SmartContract {
         }
 
         return Ordinal.getAmt(nopScript, fromByteString(this.tick))
+    }
+
+    getInscription(): Inscription {
+        return Ordinal.getInscription(this.getPrependNOPScript())
     }
 
     protected override getDefaultTxBuilder(
