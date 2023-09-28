@@ -37,7 +37,7 @@ export class OneSatNFT extends SmartContract {
     }
 
     @method()
-    static buildMintNFTOutput(
+    static buildInscribedNFTOutput(
         script: ByteString,
         content: ByteString,
         contentType: ByteString
@@ -62,20 +62,20 @@ export class OneSatNFT extends SmartContract {
         )
     }
 
-    async mint(inscription: Inscription) {
+    async inscribe(inscription: Inscription) {
         this.prependNOPScript(OneSatNFT.create(inscription))
         return this.deploy(1)
     }
 
-    async mintTextNft(text: string) {
-        return this.mint({
+    async inscribeTextNft(text: string) {
+        return this.inscribe({
             content: text,
             contentType: ContentType.TEXT,
         })
     }
 
-    async mintImageNft(base64: string, contentType: string) {
-        return this.mint({
+    async inscribeImageNft(base64: string, contentType: string) {
+        return this.inscribe({
             content: Buffer.from(base64, 'base64').toString('hex'),
             contentType,
         })
