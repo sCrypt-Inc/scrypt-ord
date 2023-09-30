@@ -25,7 +25,7 @@ import { ORDMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
 /**
  * A base class implementing the bsv20 v1 protocol
  */
-export class BSV20V2 extends SmartContract {
+export abstract class BSV20V2 extends SmartContract {
     /** Ticker: identifier of the bsv-20 */
     @prop(true)
     id: ByteString
@@ -47,7 +47,10 @@ export class BSV20V2 extends SmartContract {
 
     @method()
     buildStateOutputFT(amt: bigint): ByteString {
-        assert(this.id !== toByteString(''), 'token id is not initialized')
+        if (this.isGenesis()) {
+            this.initId()
+        }
+
         const stateScript =
             BSV20V2.createTransferInsciption(this.id, amt) +
             Ordinal.removeInsciption(this.getStateScript())
@@ -57,15 +60,6 @@ export class BSV20V2 extends SmartContract {
     @method()
     isGenesis(): boolean {
         return this.id === toByteString('')
-    }
-
-    @method()
-    static getId(txid: ByteString, outputIndex: bigint): ByteString {
-        return (
-            Ordinal.txId2str(txid) +
-            toByteString('_', true) +
-            Ordinal.int2Str(outputIndex)
-        )
     }
 
     @method()
@@ -97,15 +91,12 @@ export class BSV20V2 extends SmartContract {
     }
 
     @method()
-    public __scrypt_ts_base_unlock() {
-        assert(false, 'should not reach here!')
+    initId(): void {
+        this.id =
+            Ordinal.txId2str(this.ctx.utxo.outpoint.txid) +
+            toByteString('_', true) +
+            Ordinal.int2Str(this.ctx.utxo.outpoint.outputIndex)
     }
-
-    // @method()
-    // initId(): void {
-    //     const idStr = Ordinal.txId2str(this.ctx.utxo.outpoint.txid)  + toByteString("_", true) + Ordinal.int2Str(this.ctx.utxo.outpoint.outputIndex)
-    //     this.id = idStr;
-    // }
 
     getTokenId(): string {
         if (this.id) {

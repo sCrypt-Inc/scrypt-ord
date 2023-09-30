@@ -25,7 +25,7 @@ import { ORDMethodCallOptions, FTReceiver, Inscription } from '../types'
 /**
  * A base class implementing the bsv20 v1 protocol
  */
-export class BSV20V1 extends SmartContract {
+export abstract class BSV20V1 extends SmartContract {
     @prop(true)
     isBSV20V1: boolean
     /** Ticker: 4 letter identifier of the bsv-20 */
@@ -33,9 +33,11 @@ export class BSV20V1 extends SmartContract {
     readonly tick: ByteString
 
     /** Max supply: set max supply of the bsv-20 */
+    @prop()
     readonly max: bigint
 
     /** Mint limit: If letting users mint to themselves, limit per ordinal. If ommitted or 0, mint amt us unlimited. */
+    @prop()
     readonly lim: bigint
 
     /** Decimals: set decimal precision, default to 0 */
@@ -101,11 +103,6 @@ export class BSV20V1 extends SmartContract {
             transferJSON,
             toByteString('application/bsv-20', true)
         )
-    }
-
-    @method()
-    public __scrypt_ts_base_unlock() {
-        assert(false, 'should not reach here!')
     }
 
     async mint(amt: bigint) {

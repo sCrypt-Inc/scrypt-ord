@@ -21,7 +21,7 @@ import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { ContentType } from '../contentType'
 
-export class OneSatNFT extends SmartContract {
+export abstract class OneSatNFT extends SmartContract {
     @prop(true)
     isOneSatNFT: boolean
 
@@ -45,11 +45,6 @@ export class OneSatNFT extends SmartContract {
         const part1 = Ordinal.createInsciption(content, contentType)
         const part2 = Ordinal.removeInsciption(script)
         return Utils.buildOutput(part1 + part2, 1n)
-    }
-
-    @method()
-    public __scrypt_ts_base_unlock() {
-        assert(false, 'should not reach here!')
     }
 
     static create(inscription: Inscription): bsv.Script {
@@ -176,7 +171,7 @@ export class OneSatNFT extends SmartContract {
             throw new Error('no utxo found')
         }
 
-        const a = (this as unknown as typeof OneSatNFT).fromUTXO(
+        const a = (this as unknown as typeof SmartContract).fromUTXO(
             utxo
         ) as unknown as T
         return a

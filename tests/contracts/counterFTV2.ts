@@ -15,13 +15,6 @@ export class CounterFTV2 extends BSV20V2 {
     public inc(tokenAmt: bigint) {
         this.incCounter()
 
-        if (this.isGenesis()) {
-            this.id = CounterFTV2.getId(
-                this.ctx.utxo.outpoint.txid,
-                this.ctx.utxo.outpoint.outputIndex
-            )
-        }
-
         const outputs = this.buildStateOutputFT(tokenAmt)
 
         assert(

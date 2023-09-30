@@ -44,13 +44,6 @@ export class PermissionedFTV2 extends BSV20V2 {
         ownerSig: Sig,
         issuerSig: Sig
     ) {
-        if (this.isGenesis()) {
-            this.id = PermissionedFTV2.getId(
-                this.ctx.utxo.outpoint.txid,
-                this.ctx.utxo.outpoint.outputIndex
-            )
-        }
-
         // check owner signature
         assert(
             this.checkSig(ownerSig, this.owner),
