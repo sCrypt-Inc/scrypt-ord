@@ -1,8 +1,8 @@
 import { method, prop, assert, ByteString, sha256, Sha256 } from 'scrypt-ts'
 
-import { OneSatNFT } from '../scrypt-ord'
+import { OrdinalNFT } from '../scrypt-ord'
 
-export class HashPuzzleNFT extends OneSatNFT {
+export class HashPuzzleNFT extends OrdinalNFT {
     @prop()
     hash: Sha256
 

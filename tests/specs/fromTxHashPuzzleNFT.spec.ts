@@ -3,7 +3,7 @@ import { sha256, toByteString, bsv, Addr } from 'scrypt-ts'
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { OrdNFTP2PKH } from '../scrypt-ord'
 import { myAddress } from '../utils/privateKey'
 use(chaiAsPromised)
 
@@ -27,7 +27,7 @@ describe('Test fromTx for SmartContract `HashPuzzleNFT`', () => {
         await hashPuzzle.connect(getDefaultSigner())
 
         const addr = Addr(myAddress.toByteString())
-        const receiver = new OneSatNFTP2PKH(addr)
+        const receiver = new OrdNFTP2PKH(addr)
         const call = async () =>
             await hashPuzzle.methods.unlock(message, {
                 transfer: receiver,

@@ -4,18 +4,18 @@ import { expect, use } from 'chai'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { ContentType, OneSatNFTP2PKH } from '../scrypt-ord'
+import { ContentType, OrdNFTP2PKH } from '../scrypt-ord'
 import { PubKey, findSig, toHex, Addr } from 'scrypt-ts'
 import { dummyNFT, dummyP2PKH } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract `OneSatNFTP2PKH`', () => {
+describe('Test SmartContract `OrdNFTP2PKH`', () => {
     describe('hold NFT', () => {
-        let nftP2PKH: OneSatNFTP2PKH
+        let nftP2PKH: OrdNFTP2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const address = await signer.getDefaultAddress()
-            nftP2PKH = new OneSatNFTP2PKH(Addr(address.toByteString()))
+            nftP2PKH = new OrdNFTP2PKH(Addr(address.toByteString()))
             await nftP2PKH.connect(signer)
             const tx = await nftP2PKH.inscribe({
                 content: 'hello, sCrypt!',
@@ -34,9 +34,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                     PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: new OneSatNFTP2PKH(
-                            Addr(address.toByteString())
-                        ),
+                        transfer: new OrdNFTP2PKH(Addr(address.toByteString())),
                     }
                 )
 
@@ -47,11 +45,11 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
     })
 
     describe('from  utxo nft append', () => {
-        let nftP2PKH: OneSatNFTP2PKH
+        let nftP2PKH: OrdNFTP2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            nftP2PKH = OneSatNFTP2PKH.fromUTXO(
+            nftP2PKH = OrdNFTP2PKH.fromUTXO(
                 dummyNFT(addr, 'hello, scrypt', false)
             )
             await nftP2PKH.connect(signer)
@@ -67,9 +65,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                     PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: new OneSatNFTP2PKH(
-                            Addr(address.toByteString())
-                        ),
+                        transfer: new OrdNFTP2PKH(Addr(address.toByteString())),
                     }
                 )
 
@@ -81,11 +77,11 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
     })
 
     describe('from  utxo nft prepend', () => {
-        let nftP2PKH: OneSatNFTP2PKH
+        let nftP2PKH: OrdNFTP2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            nftP2PKH = OneSatNFTP2PKH.fromUTXO(dummyNFT(addr, 'hello workd'))
+            nftP2PKH = OrdNFTP2PKH.fromUTXO(dummyNFT(addr, 'hello workd'))
 
             await nftP2PKH.connect(signer)
         })
@@ -100,9 +96,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                     PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: new OneSatNFTP2PKH(
-                            Addr(address.toByteString())
-                        ),
+                        transfer: new OrdNFTP2PKH(Addr(address.toByteString())),
                     }
                 )
 
@@ -114,11 +108,11 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
     })
 
     describe('from  utxo without nft in script', () => {
-        let nftP2PKH: OneSatNFTP2PKH
+        let nftP2PKH: OrdNFTP2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            nftP2PKH = OneSatNFTP2PKH.fromUTXO(dummyP2PKH(addr))
+            nftP2PKH = OrdNFTP2PKH.fromUTXO(dummyP2PKH(addr))
             await nftP2PKH.connect(signer)
         })
 
@@ -132,9 +126,7 @@ describe('Test SmartContract `OneSatNFTP2PKH`', () => {
                     PubKey(ordPubKey.toByteString()),
                     {
                         pubKeyOrAddrToSign: ordPubKey,
-                        transfer: new OneSatNFTP2PKH(
-                            Addr(address.toByteString())
-                        ),
+                        transfer: new OrdNFTP2PKH(Addr(address.toByteString())),
                     }
                 )
 

@@ -21,7 +21,7 @@ import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { ContentType } from '../contentType'
 
-export abstract class OneSatNFT extends SmartContract {
+export abstract class OrdinalNFT extends SmartContract {
     @prop(true)
     isOneSatNFT: boolean
 
@@ -58,7 +58,7 @@ export abstract class OneSatNFT extends SmartContract {
     }
 
     async inscribe(inscription: Inscription) {
-        this.prependNOPScript(OneSatNFT.create(inscription))
+        this.prependNOPScript(OrdinalNFT.create(inscription))
         return this.deploy(1)
     }
 
@@ -84,11 +84,11 @@ export abstract class OneSatNFT extends SmartContract {
         methodName: string
     ): MethodCallTxBuilder<this> {
         return async function (
-            current: OneSatNFT,
-            options_: MethodCallOptions<OneSatNFT>,
+            current: OrdinalNFT,
+            options_: MethodCallOptions<OrdinalNFT>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as ORDMethodCallOptions<OneSatNFT>
+            const options = options_ as ORDMethodCallOptions<OrdinalNFT>
 
             // bsv change address
             const changeAddress = await current.signer.getDefaultAddress()
@@ -178,7 +178,7 @@ export abstract class OneSatNFT extends SmartContract {
     }
 
     /**
-     * recover a `OneSatNFT` instance from the transaction
+     * recover a `OrdinalNFT` instance from the transaction
      * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
      * it's required to pass all their offchain raw data at this transaction moment
      * @param tx transaction

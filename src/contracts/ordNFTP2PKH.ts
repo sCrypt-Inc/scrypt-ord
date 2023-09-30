@@ -16,11 +16,11 @@ import {
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
-import { OneSatNFT } from './oneSatNFT'
+import { OrdinalNFT } from './ordinalNFT'
 
 const P2PKHScriptLen = 50
 
-export class OneSatNFTP2PKH extends OneSatNFT {
+export class OrdNFTP2PKH extends OrdinalNFT {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
@@ -100,7 +100,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
         }
 
         const instance = (
-            this as unknown as typeof OneSatNFTP2PKH
+            this as unknown as typeof OrdNFTP2PKH
         ).fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
@@ -110,7 +110,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'OneSatNFTP2PKH',
+    contract: 'OrdNFTP2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],
@@ -148,4 +148,4 @@ const desc = {
     sourceMapFile: '',
 }
 
-OneSatNFTP2PKH.loadArtifact(desc)
+OrdNFTP2PKH.loadArtifact(desc)

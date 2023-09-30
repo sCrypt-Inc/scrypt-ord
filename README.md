@@ -10,13 +10,14 @@ npm i scrypt-ord
 
 ## NFT
 
-To lock a `1sat` NFT via a smart contract, have your smart contract extend the `OneSatNFT` class:
+To lock a `1sat` NFT via a smart contract, have your smart contract extend the `OrdinalNFT` class:
 
 ```ts
 import { method, prop, assert, ByteString, sha256, Sha256 } from "scrypt-ts";
-import { OneSatNFT } from "scrypt-ord";
 
-export class HashPuzzleNFT extends OneSatNFT {
+import { OrdinalNFT } from "scrypt-ord";
+
+export class HashPuzzleNFT extends OrdinalNFT {
   @prop()
   hash: Sha256;
 
@@ -53,7 +54,7 @@ console.log("Inscribed NFT: ", inscriptionTx.id);
 const recipientAddress = bsv.Address.fromString("your bitcoin address");
 
 const { tx: transferTx } = await instance.methods.unlock(message, {
-  transfer: new OneSatNFTP2PKH(Addr(recipientAddress.toByteString())),
+  transfer: new OrdNFTP2PKH(Addr(recipientAddress.toByteString())),
 });
 
 console.log("Transferred NFT: ", transferTx.id);
@@ -99,9 +100,9 @@ const recipient = new HashPuzzleNFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // Create a P2PKH object from a UTXO
-const p2pkh = OneSatNFTP2PKH.fromUTXO(`your UTXO`);
+const p2pkh = OrdNFTP2PKH.fromUTXO(`your UTXO`);
 // Alternatively, create a P2PKH from an origin
-const p2pkh = await OneSatNFTP2PKH.getLatestInstance(`origin TXID`);
+const p2pkh = await OrdNFTP2PKH.getLatestInstance(`origin TXID`);
 
 await p2pkh.connect(getDefaultSigner());
 
@@ -111,7 +112,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<OneSatNFTP2PKH>
+  } as MethodCallOptions<OrdNFTP2PKH>
 );
 
 console.log("Transferred NFT: ", transferTx.id);

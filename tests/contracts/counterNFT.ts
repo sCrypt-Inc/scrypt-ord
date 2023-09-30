@@ -12,9 +12,9 @@ import {
     ByteString,
 } from 'scrypt-ts'
 
-import { OneSatNFT } from '../scrypt-ord'
+import { OrdinalNFT } from '../scrypt-ord'
 
-export class CounterNFT extends OneSatNFT {
+export class CounterNFT extends OrdinalNFT {
     @prop(true)
     counter: bigint
 
