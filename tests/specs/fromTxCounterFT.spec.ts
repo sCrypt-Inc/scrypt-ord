@@ -3,7 +3,7 @@ import { MethodCallOptions, bsv, toByteString } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test fromTx for SmartContract `CounterFT`', () => {
@@ -48,7 +48,7 @@ describe('Test fromTx for SmartContract `CounterFT`', () => {
 
         expect(nexts.length).to.equal(2)
         expect(nextInstance.getAmt()).to.equal(transferAmount)
-        const tokenChange = nexts[1].instance as BSV20P2PKH
+        const tokenChange = nexts[1].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return { tx: callTx, atOutputIndex: nexts[0]!.atOutputIndex }

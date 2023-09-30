@@ -123,15 +123,15 @@ describe('Test SmartContract `BSV20V2P2PKH`', () => {
     })
 
     describe('from v2 utxo', () => {
-        let bsv20P2PKH: BSV20V2P2PKH
+        let BSV20V1P2PKH: BSV20V2P2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            bsv20P2PKH = BSV20V2P2PKH.fromUTXO(
+            BSV20V1P2PKH = BSV20V2P2PKH.fromUTXO(
                 dummyBSV20V2(addr, fromByteString(tokenId), 6n)
             )
 
-            await bsv20P2PKH.connect(signer)
+            await BSV20V1P2PKH.connect(signer)
         })
 
         it('transfer should pass.', async () => {
@@ -149,7 +149,7 @@ describe('Test SmartContract `BSV20V2P2PKH`', () => {
                     },
                 ]
                 const ordPubKey = await signer.getDefaultPubKey()
-                const { tx } = await bsv20P2PKH.methods.unlock(
+                const { tx } = await BSV20V1P2PKH.methods.unlock(
                     (sigResps) => findSig(sigResps, ordPubKey),
                     PubKey(ordPubKey.toByteString()),
                     {
