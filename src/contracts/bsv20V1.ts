@@ -14,12 +14,7 @@ import {
     MethodCallOptions,
     ContractTransaction,
     StatefulNext,
-    toHex,
     UTXO,
-    findSig,
-    PubKey,
-    Signer,
-    SignatureHashType,
     MethodCallTxBuilder,
 } from 'scrypt-ts'
 

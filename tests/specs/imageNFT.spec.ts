@@ -22,7 +22,7 @@ describe('Test inscribe an image NFT to `HashPuzzleNFT`', () => {
         const bb = readFileSync(
             join(__dirname, '..', '..', 'logo.png')
         ).toString('base64')
-        const tx = await instance.inscribeImageNft(bb, ContentType.PNG)
+        const tx = await instance.inscribeImage(bb, ContentType.PNG)
         console.log('inscribed tx: ', tx.id)
     })
 

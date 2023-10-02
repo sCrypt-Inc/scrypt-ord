@@ -11,7 +11,6 @@ import {
     findSig,
     sha256,
     toByteString,
-    toHex,
 } from 'scrypt-ts'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'

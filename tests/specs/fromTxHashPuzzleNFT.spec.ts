@@ -18,7 +18,7 @@ describe('Test fromTx for SmartContract `HashPuzzleNFT`', () => {
         const hash = sha256(message)
         const hashPuzzle = new HashPuzzleNFT(hash)
         await hashPuzzle.connect(getDefaultSigner())
-        deployTx = await hashPuzzle.inscribeTextNft('Hello World')
+        deployTx = await hashPuzzle.inscribeText('Hello World')
     })
 
     it('should unlock successfully after instance recovery', async () => {
