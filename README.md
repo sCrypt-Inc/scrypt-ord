@@ -70,7 +70,9 @@ console.log("Inscribed NFT: ", inscriptionTx.id);
 #### Inscribe an Image NFT
 
 ```ts
-const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString("base64");
+const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString(
+  "base64"
+);
 const tx = await instance.inscribeImage(bb, ContentType.PNG);
 console.log("Inscribed NFT: ", tx.id);
 ```
@@ -210,7 +212,6 @@ const message = toByteString(text, true);
 const hash = sha256(message);
 
 const recipient = new HashPuzzleFT(hash);
-await recipient.connect(getDefaultSigner());
 
 // create p2pkh from a utxo
 // NOTE: You can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
@@ -240,7 +241,6 @@ const message = toByteString(text, true);
 const hash = sha256(message);
 
 const recipient = new HashPuzzleFT(hash);
-await recipient.connect(getDefaultSigner());
 
 // create p2pkh from a utxo
 // NOTE: you can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT

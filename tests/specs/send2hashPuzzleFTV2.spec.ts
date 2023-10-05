@@ -34,7 +34,6 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         before(async () => {
             HashPuzzleFTV2.loadArtifact()
             recipient = new HashPuzzleFTV2(tokenId, max, dec, hash)
-            await recipient.connect(signer)
         })
 
         it('transfer exist FT to a HashPuzzle', async () => {
@@ -101,6 +100,7 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         })
 
         it('transfer FT to a BSV20V2P2PKH', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () => {
                 const { tx, nexts } = await recipient.methods.unlock(message, {
@@ -130,6 +130,7 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         })
 
         it('should fail when passing incorrect message', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(
@@ -167,7 +168,6 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         before(async () => {
             HashPuzzleFTV2.loadArtifact()
             recipient = new HashPuzzleFTV2(tick, max, lim, hash)
-            await recipient.connect(signer)
         })
 
         it('transfer exist FT to a HashPuzzle', async () => {
@@ -198,6 +198,7 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         })
 
         it('transfer FT to a BSV20V2P2PKH', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {

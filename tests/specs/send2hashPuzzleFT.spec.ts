@@ -32,7 +32,6 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
         before(async () => {
             HashPuzzleFT.loadArtifact()
             recipient = new HashPuzzleFT(tick, max, lim, dec, hash)
-            await recipient.connect(signer)
         })
 
         it('transfer exist FT to a HashPuzzle', async () => {
@@ -99,6 +98,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
         })
 
         it('transfer FT to a BSV20V1P2PKH', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () => {
                 const { tx, nexts } = await recipient.methods.unlock(message, {
@@ -129,6 +129,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
         })
 
         it('should fail when passing incorrect message', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(

@@ -27,7 +27,6 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         before(async () => {
             HashPuzzleNFT.loadArtifact()
             recipient = new HashPuzzleNFT(hash)
-            await recipient.connect(signer)
         })
 
         it('transfer exist NFT to a HashPuzzle', async () => {
@@ -53,6 +52,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         })
 
         it('should pass when transfer NFT', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
@@ -74,7 +74,6 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         before(async () => {
             HashPuzzleNFT.loadArtifact()
             recipient = new HashPuzzleNFT(hash)
-            await recipient.connect(signer)
         })
 
         it('transfer exist NFT to a HashPuzzle', async () => {
@@ -100,6 +99,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         })
 
         it('should pass when transfer NFT', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
@@ -121,7 +121,6 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         before(async () => {
             HashPuzzleNFT.loadArtifact()
             recipient = new HashPuzzleNFT(hash)
-            await recipient.connect(signer)
         })
 
         it('transfer exist NFT to a HashPuzzle', async () => {
@@ -147,6 +146,7 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         })
 
         it('should pass when transfer NFT', async () => {
+            await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
