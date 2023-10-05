@@ -24,7 +24,7 @@ describe('Test mint a image NFT to `OrdNFTP2PKH`', () => {
         const bb = readFileSync(
             join(__dirname, '..', '..', 'logo.png')
         ).toString('base64')
-        const tx = await instance.mintImageNft(bb, 'image/png')
+        const tx = await instance.inscribeImage(bb, 'image/png')
         console.log('mint tx: ', tx.id)
 
         const call = async () => {
