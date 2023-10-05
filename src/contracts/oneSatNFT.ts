@@ -37,7 +37,7 @@ export class OneSatNFT extends SmartContract {
     }
 
     @method()
-    static buildInscribedNFTOutput(
+    static buildInscribedOutput(
         script: ByteString,
         content: ByteString,
         contentType: ByteString
@@ -67,14 +67,14 @@ export class OneSatNFT extends SmartContract {
         return this.deploy(1)
     }
 
-    async inscribeTextNft(text: string) {
+    async inscribeText(text: string) {
         return this.inscribe({
             content: text,
             contentType: ContentType.TEXT,
         })
     }
 
-    async inscribeImageNft(base64: string, contentType: string) {
+    async inscribeImage(base64: string, contentType: string) {
         return this.inscribe({
             content: Buffer.from(base64, 'base64').toString('hex'),
             contentType,

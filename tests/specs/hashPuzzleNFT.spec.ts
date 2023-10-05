@@ -17,7 +17,7 @@ describe('Test SmartContract `HashPuzzleNFT`', () => {
         HashPuzzleNFT.loadArtifact()
         instance = new HashPuzzleNFT(hash)
         await instance.connect(getDefaultSigner())
-        await instance.inscribeTextNft(text)
+        await instance.inscribeText(text)
     })
 
     it('should pass when transfer NFT', async () => {

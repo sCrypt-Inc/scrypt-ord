@@ -47,7 +47,7 @@ const hash = sha256(message);
 
 const instance = new HashPuzzleNFT(hash);
 await instance.connect(getDefaultSigner());
-const inscriptionTx = await instance.inscribeTextNft(text);
+const inscriptionTx = await instance.inscribeText(text);
 console.log("Inscribed NFT: ", inscriptionTx.id);
 
 const recipientAddress = bsv.Address.fromString("your bitcoin address");
@@ -62,7 +62,7 @@ console.log("Transferred NFT: ", transferTx.id);
 #### Inscribe a Text NFT
 
 ```ts
-const inscriptionTx = await instance.inscribeTextNft("hello world!");
+const inscriptionTx = await instance.inscribeText("hello world!");
 console.log("Inscribed NFT: ", inscriptionTx.id);
 ```
 
@@ -70,7 +70,7 @@ console.log("Inscribed NFT: ", inscriptionTx.id);
 
 ```ts
 const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString("base64");
-const tx = await instance.inscribeImageNft(bb, ContentType.PNG);
+const tx = await instance.inscribeImage(bb, ContentType.PNG);
 console.log("Inscribed NFT: ", tx.id);
 ```
 

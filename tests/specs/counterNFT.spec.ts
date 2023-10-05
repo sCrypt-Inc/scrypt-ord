@@ -15,7 +15,7 @@ describe('Test SmartContract `CounterNFT`', () => {
         instance = new CounterNFT(1n)
         await instance.connect(getDefaultSigner())
 
-        await instance.inscribeTextNft('hello, world!')
+        await instance.inscribeText('hello, world!')
     })
 
     it('should pass when calling `incOnchain`', async () => {
