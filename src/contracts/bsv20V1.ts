@@ -41,6 +41,7 @@ export abstract class BSV20V1 extends SmartContract {
     readonly lim: bigint
 
     /** Decimals: set decimal precision, default to 0 */
+    @prop()
     readonly dec: bigint
 
     constructor(tick: ByteString, max: bigint, lim: bigint, dec: bigint) {
