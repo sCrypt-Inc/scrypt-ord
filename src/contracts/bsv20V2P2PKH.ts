@@ -62,16 +62,28 @@ export class BSV20V2P2PKH extends BSV20V2 {
     }
 
     override get lockingScript() {
-        const nop = this.getPrependNOPScript()
+        const nop = this.getNopScript()
 
         if (nop) {
-            return super.lockingScript
+            return new bsv.Script('')
+                .add(bsv.Opcode.OP_DUP)
+                .add(bsv.Opcode.OP_HASH160)
+                .add(bsv.Script.fromASM(this.addr))
+                .add(bsv.Opcode.OP_EQUALVERIFY)
+                .add(bsv.Opcode.OP_CHECKSIG)
+                .add(nop)
         }
 
-        return bsv.Script.fromHex(this.utxo.script)
+        throw new Error('No nop script found!')
     }
 
     private getNopScript() {
+        const nop = this.getPrependNOPScript()
+
+        if (nop) {
+            return nop
+        }
+
         const ls = bsv.Script.fromHex(this.utxo.script)
         if (Ordinal.isOrdinalP2PKHV1(ls)) {
             return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
@@ -82,8 +94,6 @@ export class BSV20V2P2PKH extends BSV20V2 {
                 Ordinal.getInsciptionScript(this.utxo.script)
             )
         }
-
-        return this.getPrependNOPScript()
     }
 
     override getAmt() {

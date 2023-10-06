@@ -42,17 +42,43 @@ export class OrdNFTP2PKH extends OrdinalNFT {
         assert(this.checkSig(sig, pubkey), 'signature check failed')
     }
 
-    public getNopScript(): bsv.Script | null {
-        const ls = this.lockingScript
-        if (Ordinal.isOrdinalP2PKHV1(ls)) {
-            return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
+    private getNopScript(): bsv.Script | null {
+        const nop = this.getPrependNOPScript()
+
+        if (nop) {
+            return nop
         }
 
-        if (Ordinal.isOrdinalP2PKHV2(ls)) {
-            return this.getPrependNOPScript()
+        if (this.from) {
+            const ls = bsv.Script.fromHex(this.utxo.script)
+            if (Ordinal.isOrdinalP2PKHV1(ls)) {
+                return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
+            }
+
+            if (Ordinal.isOrdinalP2PKHV2(ls)) {
+                return bsv.Script.fromHex(
+                    Ordinal.getInsciptionScript(this.utxo.script)
+                )
+            }
         }
 
         return null
+    }
+
+    override get lockingScript() {
+        const nop = this.getNopScript()
+
+        if (nop) {
+            return new bsv.Script('')
+                .add(bsv.Opcode.OP_DUP)
+                .add(bsv.Opcode.OP_HASH160)
+                .add(bsv.Script.fromASM(this.addr))
+                .add(bsv.Opcode.OP_EQUALVERIFY)
+                .add(bsv.Opcode.OP_CHECKSIG)
+                .add(nop)
+        }
+
+        return super.lockingScript
     }
 
     static override fromLockingScript(script: string): SmartContract {
