@@ -45,19 +45,27 @@ async function main() {
 
     // for now, the contract instance holds the BSV20 token
     // this token can be transferred only when the hash puzzle is solved
-    const address = myAddress
-    const receiver = new BSV20P2PKH(
+    const addressAlice = myAddress
+    const alice = new BSV20P2PKH(
         tick,
         max,
         lim,
-        Addr(address.toByteString())
+        Addr(addressAlice.toByteString())
     )
+    const addressBob = myAddress
+    const bob = new BSV20P2PKH(tick, max, lim, Addr(addressBob.toByteString()))
 
     const { tx: transferTx } = await hashPuzzle.methods.unlock(message, {
-        transfer: {
-            instance: receiver,
-            amt: 1n,
-        },
+        transfer: [
+            {
+                instance: alice,
+                amt: 2n,
+            },
+            {
+                instance: bob,
+                amt: 5n,
+            },
+        ],
     } as MethodCallOptions<HashPuzzleFT>)
     console.log(`Transfer tx: ${transferTx.id}`)
 }

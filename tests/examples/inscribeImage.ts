@@ -46,7 +46,7 @@ async function main() {
     const image = readImage()
 
     // inscribe image into contract instance
-    const mintTx = await hashPuzzle.mintImageNft(image, 'image/png')
+    const mintTx = await hashPuzzle.inscribeImage(image, 'image/png')
     console.log(`Mint tx: ${mintTx.id}`)
 
     // for now, the contract instance holds the image inscription
