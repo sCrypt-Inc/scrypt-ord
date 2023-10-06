@@ -91,4 +91,29 @@ export class OneSatApis {
                 return []
             })
     }
+
+    static fetchBSV20V2Utxos(
+        address: string,
+        id: string
+    ): Promise<Array<UTXO>> {
+        const url = `${this.apiBase}/bsv20/${address}/id/${id}`
+
+        return superagent
+            .get(url)
+            .then(function (response) {
+                // handle success
+                if (Array.isArray(response.body)) {
+                    return Promise.all(
+                        response.body.map((utxo) => {
+                            return OneSatApis.fetchUTXOByOutpoint(utxo.outpoint)
+                        })
+                    )
+                }
+                return []
+            })
+            .catch(function (error) {
+                handlerApiError(error)
+                return []
+            })
+    }
 }

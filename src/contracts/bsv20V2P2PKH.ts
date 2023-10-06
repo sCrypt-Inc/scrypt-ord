@@ -157,16 +157,16 @@ export class BSV20V2P2PKH extends BSV20V2 {
     }
 
     /**
-     * Get all unspent bsv20 p2pkh of a address by tick
-     * @param tick
+     * Get all unspent bsv20 p2pkh of a address by id
+     * @param id
      * @param address
      * @returns
      */
     static async getBSV20(
-        tick: string,
+        id: string,
         address: string
     ): Promise<Array<BSV20V2P2PKH>> {
-        const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
+        const bsv20Utxos = await OneSatApis.fetchBSV20V2Utxos(address, id)
         return bsv20Utxos.map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
     }
 
