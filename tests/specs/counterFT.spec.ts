@@ -16,7 +16,8 @@ describe('Test SmartContract `CounterFT`', () => {
         const max = 100000n
         const lim = max / 10n
         const amt = lim
-        instance = new CounterFT(toByteString(tick, true), max, lim, 0n)
+        const dec = 0n
+        instance = new CounterFT(toByteString(tick, true), max, lim, dec, 0n)
         await instance.connect(getDefaultSigner())
 
         await instance.deployToken()

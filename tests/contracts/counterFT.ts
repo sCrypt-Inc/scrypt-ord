@@ -5,8 +5,14 @@ export class CounterFT extends BSV20V1 {
     @prop(true)
     counter: bigint
 
-    constructor(tick: ByteString, max: bigint, lim: bigint, counter: bigint) {
-        super(tick, max, lim)
+    constructor(
+        tick: ByteString,
+        max: bigint,
+        lim: bigint,
+        dec: bigint,
+        counter: bigint
+    ) {
+        super(tick, max, lim, dec)
         this.init(...arguments)
         this.counter = counter
     }

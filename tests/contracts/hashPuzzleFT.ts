@@ -6,8 +6,14 @@ export class HashPuzzleFT extends BSV20V1 {
     @prop()
     hash: Sha256
 
-    constructor(tick: ByteString, max: bigint, lim: bigint, hash: Sha256) {
-        super(tick, max, lim)
+    constructor(
+        tick: ByteString,
+        max: bigint,
+        lim: bigint,
+        dec: bigint,
+        hash: Sha256
+    ) {
+        super(tick, max, lim, dec)
         this.init(...arguments)
         this.hash = hash
     }

@@ -9,3 +9,4 @@
 !**/.vscode/tasks.json
 tsconfig-scryptTS.json
 tests/tsconfig-scryptTS.json
+README.md

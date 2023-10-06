@@ -10,6 +10,7 @@ describe('Test SmartContract `PermissionedFT`', () => {
     const tick = 'DOGE'
     const max = 1000n
     const lim = max / 10n
+    const dec = 0n
     const amount = lim // 100
     const tokenChangeAmount = amount / 10n // 10
     const tokenTransferAmount = amount - tokenChangeAmount // 90
@@ -27,6 +28,7 @@ describe('Test SmartContract `PermissionedFT`', () => {
             toByteString(tick, true),
             max,
             lim,
+            dec,
             PubKey(issuerPublicKey.toByteString()),
             PubKey(alicePublicKey.toByteString())
         )

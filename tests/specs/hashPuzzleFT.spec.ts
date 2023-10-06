@@ -13,6 +13,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
     const max = 100000n
     const lim = max / 10n
     const amt = 1000n
+    const dec = 0n
 
     let hashPuzzle: HashPuzzleFT
     before(async () => {
@@ -21,6 +22,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
             tick,
             max,
             lim,
+            dec,
             sha256(toByteString('hello, sCrypt!:0', true))
         )
         await hashPuzzle.connect(getDefaultSigner())
@@ -36,6 +38,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                     tick,
                     max,
                     lim,
+                    dec,
                     sha256(toByteString(`hello, sCrypt!:${i + 1}`, true))
                 )
 
@@ -69,6 +72,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 tick,
                 max,
                 lim,
+                dec,
                 sha256(toByteString(`hello, sCrypt!`, true))
             )
 
@@ -107,6 +111,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
                 tick,
                 max,
                 lim,
+                dec,
                 sha256(toByteString(`hello, sCrypt!`, true))
             )
 
@@ -138,6 +143,7 @@ describe('Test SmartContract `HashPuzzleFT`', () => {
             tick,
             max,
             lim,
+            dec,
             sha256(toByteString('HashPuzzle', true))
         )
         const call = async () =>

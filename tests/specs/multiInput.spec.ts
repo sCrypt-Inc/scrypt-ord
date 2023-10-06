@@ -24,6 +24,7 @@ describe('Test multi inputs and outputs', () => {
     const tick = toByteString('OOO1', true)
     const max = 21000000n
     const lim = max
+    const dec = 0n
 
     before(async () => {
         HashPuzzleFT.loadArtifact()
@@ -43,7 +44,13 @@ describe('Test multi inputs and outputs', () => {
             await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashPuzzleFT(tick, max, lim, sha256(message)),
+                    instance: new HashPuzzleFT(
+                        tick,
+                        max,
+                        lim,
+                        dec,
+                        sha256(message)
+                    ),
                     amt: 6n,
                 },
             ]
@@ -80,6 +87,7 @@ describe('Test multi inputs and outputs', () => {
                         tick,
                         max,
                         lim,
+                        dec,
                         sha256(message1)
                     ),
                     amt: 6n,
@@ -89,6 +97,7 @@ describe('Test multi inputs and outputs', () => {
                         tick,
                         max,
                         lim,
+                        dec,
                         sha256(message2)
                     ),
                     amt: 3n,
@@ -120,7 +129,13 @@ describe('Test multi inputs and outputs', () => {
 
             await sender0.connect(signer)
 
-            const sender1 = new HashPuzzleFT(tick, max, lim, sha256(message1))
+            const sender1 = new HashPuzzleFT(
+                tick,
+                max,
+                lim,
+                dec,
+                sha256(message1)
+            )
             await sender1.connect(signer)
             await sender1.mint(5n)
 
@@ -130,6 +145,7 @@ describe('Test multi inputs and outputs', () => {
                         tick,
                         max,
                         lim,
+                        dec,
                         sha256(message1)
                     ),
                     amt: 6n,
@@ -139,6 +155,7 @@ describe('Test multi inputs and outputs', () => {
                         tick,
                         max,
                         lim,
+                        dec,
                         sha256(message2)
                     ),
                     amt: 3n,
@@ -196,6 +213,7 @@ describe('Test multi inputs and outputs', () => {
                             tick,
                             max,
                             lim,
+                            dec,
                             Addr(ordPubKey.toAddress().toByteString())
                         )
 

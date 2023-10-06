@@ -19,7 +19,6 @@ import {
     ContractTransaction,
     StatefulNext,
     Signer,
-    toHex,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
@@ -34,8 +33,14 @@ export class BSV20P2PKH extends BSV20V1 {
     @prop()
     readonly addr: Addr
 
-    constructor(tick: ByteString, max: bigint, lim: bigint, addr: Addr) {
-        super(tick, max, lim)
+    constructor(
+        tick: ByteString,
+        max: bigint,
+        lim: bigint,
+        dec: bigint,
+        addr: Addr
+    ) {
+        super(tick, max, lim, dec)
         this.init(...arguments)
         this.addr = addr
     }
@@ -52,7 +57,7 @@ export class BSV20P2PKH extends BSV20V1 {
     }
 
     override init(...args: any[]) {
-        const [_, __, ___, addr] = args
+        const [_, __, ___, ____, addr] = args
         super.init(addr)
     }
 
@@ -110,9 +115,10 @@ export class BSV20P2PKH extends BSV20V1 {
             return arg.value
         })
 
-        // we can't  get max, and lim from the bsv20 insciption script.
+        // we can't get max, lim, and dec from the bsv20 insciption script.
         const instance = new this(
             toByteString(bsv20.tick, true),
+            -1n,
             -1n,
             -1n,
             Addr(args[0] as ByteString)
@@ -218,6 +224,7 @@ export class BSV20P2PKH extends BSV20V1 {
                 tick,
                 senders[0].max,
                 senders[0].lim,
+                senders[0].dec,
                 Addr(ordPubKey.toAddress().toByteString())
             )
 

@@ -10,12 +10,13 @@ describe('Test fromTx for SmartContract `CounterFT`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
+    const dec = 0n
 
     let deployTx: bsv.Transaction
 
     before(async () => {
         CounterFT.loadArtifact()
-        const counter = new CounterFT(tick, max, lim, 0n)
+        const counter = new CounterFT(tick, max, lim, dec, 0n)
         await counter.connect(getDefaultSigner())
         await counter.deployToken()
         deployTx = await counter.mint(1000n)

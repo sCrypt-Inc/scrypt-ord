@@ -31,6 +31,7 @@ describe(`Chain FT Test: ${chain}`, () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = 10000n
+    const dec = 0n
 
     const tokenInP2PKH = 1000n
     const tokenToHashPuzzle = 800n
@@ -52,7 +53,7 @@ describe(`Chain FT Test: ${chain}`, () => {
         const transferAmount = tokenToHashPuzzle
         const changeAmount = totalAmount - transferAmount
 
-        const hashPuzzle = new HashPuzzleFT(tick, max, lim, hash)
+        const hashPuzzle = new HashPuzzleFT(tick, max, lim, dec, hash)
         await hashPuzzle.connect(getDefaultSigner())
 
         const { tx, nexts } = await p2pkh.methods.unlock(
@@ -83,7 +84,7 @@ describe(`Chain FT Test: ${chain}`, () => {
         const transferAmount = tokenToCounter
         const changeAmount = totalAmount - transferAmount
 
-        const counter = new CounterFT(tick, max, lim, 0n)
+        const counter = new CounterFT(tick, max, lim, dec, 0n)
         await counter.connect(getDefaultSigner())
 
         const { tx, nexts } = await hashPuzzle.methods.unlock(
@@ -144,7 +145,7 @@ describe(`Chain FT Test: ${chain}`, () => {
         const nextInstance = counter.next()
         nextInstance.incCounter()
 
-        const hashPuzzle = new HashPuzzleFT(tick, max, lim, hash)
+        const hashPuzzle = new HashPuzzleFT(tick, max, lim, dec, hash)
         await hashPuzzle.connect(getDefaultSigner())
 
         const { tx, nexts } = await counter.methods.inc(counterAmount, {
@@ -177,6 +178,7 @@ describe(`Chain FT Test: ${chain}`, () => {
             tick,
             max,
             lim,
+            dec,
             Addr(myAddress.toByteString())
         )
         await p2pkh.connect(getDefaultSigner())

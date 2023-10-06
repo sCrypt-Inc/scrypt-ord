@@ -27,10 +27,11 @@ export class PermissionedFT extends BSV20V1 {
         tick: ByteString,
         max: bigint,
         lim: bigint,
+        dec: bigint,
         issuer: PubKey,
         owner: PubKey
     ) {
-        super(tick, max, lim)
+        super(tick, max, lim, dec)
         this.init(...arguments)
         this.issuer = issuer
         this.owner = owner

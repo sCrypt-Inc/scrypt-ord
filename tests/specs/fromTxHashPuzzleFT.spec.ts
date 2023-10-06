@@ -11,6 +11,7 @@ describe('Test fromTx for SmartContract `HashPuzzleFT`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
+    const dec = 0n
 
     const message = toByteString('Hello sCrypt', true)
 
@@ -20,7 +21,7 @@ describe('Test fromTx for SmartContract `HashPuzzleFT`', () => {
     before(async () => {
         HashPuzzleFT.loadArtifact()
         const hash = sha256(message)
-        const hashPuzzle = new HashPuzzleFT(tick, max, lim, hash)
+        const hashPuzzle = new HashPuzzleFT(tick, max, lim, dec, hash)
         await hashPuzzle.connect(getDefaultSigner())
         await hashPuzzle.deployToken()
         deployTx = await hashPuzzle.mint(100n)
@@ -32,7 +33,7 @@ describe('Test fromTx for SmartContract `HashPuzzleFT`', () => {
         await hashPuzzle.connect(getDefaultSigner())
 
         const addr = Addr(myAddress.toByteString())
-        const receiver = new BSV20P2PKH(tick, max, lim, addr)
+        const receiver = new BSV20P2PKH(tick, max, lim, dec, addr)
         const call = async () =>
             await hashPuzzle.methods.unlock(message, {
                 transfer: {

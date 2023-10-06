@@ -13,6 +13,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
+    const dec = 0n
 
     describe('hold bsv20', () => {
         const amt = 1000n
@@ -25,6 +26,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                 tick,
                 max,
                 lim,
+                dec,
                 Addr(address.toByteString())
             )
             await bsv20P2PKH.connect(getDefaultSigner())
@@ -43,6 +45,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                             tick,
                             max,
                             lim,
+                            dec,
                             Addr(address.toByteString())
                         ),
                         amt: 100n,
@@ -92,6 +95,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                             tick,
                             max,
                             lim,
+                            dec,
                             Addr(address.toByteString())
                         ),
                         amt: 1n,
@@ -135,6 +139,7 @@ describe('Test SmartContract `BSV20P2PKH`', () => {
                             tick,
                             max,
                             lim,
+                            dec,
                             Addr(address.toByteString())
                         ),
                         amt: 2n,

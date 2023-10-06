@@ -30,11 +30,12 @@ async function main() {
     const tick = toByteString('HELLO', true)
     const max = 100n
     const lim = 10n
+    const dec = 0n
 
     // create contract instance
     const message = toByteString('Hello sCrpyt', true)
     const hash = sha256(message)
-    const hashPuzzle = new HashPuzzleFT(tick, max, lim, hash)
+    const hashPuzzle = new HashPuzzleFT(tick, max, lim, dec, hash)
     await hashPuzzle.connect(getSigner())
 
     // deploy the new BSV20 token $HELLO
@@ -45,15 +46,10 @@ async function main() {
 
     // for now, the contract instance holds the BSV20 token
     // this token can be transferred only when the hash puzzle is solved
-    const addressAlice = myAddress
-    const alice = new BSV20P2PKH(
-        tick,
-        max,
-        lim,
-        Addr(addressAlice.toByteString())
-    )
-    const addressBob = myAddress
-    const bob = new BSV20P2PKH(tick, max, lim, Addr(addressBob.toByteString()))
+    const addressAlice = Addr(myAddress.toByteString())
+    const alice = new BSV20P2PKH(tick, max, lim, dec, addressAlice)
+    const addressBob = Addr(myAddress.toByteString())
+    const bob = new BSV20P2PKH(tick, max, lim, dec, addressBob)
 
     const { tx: transferTx } = await hashPuzzle.methods.unlock(message, {
         transfer: [

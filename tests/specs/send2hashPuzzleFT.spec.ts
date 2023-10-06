@@ -19,6 +19,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
         const tick = toByteString('DOGE', true)
         const max = 100000n
         const lim = max / 10n
+        const dec = 0n
 
         const text = 'Hello sCrypt and 1Sat Ordinals'
         const message = toByteString(text, true)
@@ -30,7 +31,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
 
         before(async () => {
             HashPuzzleFT.loadArtifact()
-            recipient = new HashPuzzleFT(tick, max, lim, hash)
+            recipient = new HashPuzzleFT(tick, max, lim, dec, hash)
             await recipient.connect(signer)
         })
 
@@ -107,6 +108,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                                 tick,
                                 max,
                                 lim,
+                                dec,
                                 Addr(ordAddress.toByteString())
                             ),
                             amt: 15n,
@@ -138,6 +140,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                                     tick,
                                     max,
                                     lim,
+                                    dec,
                                     Addr(ordAddress.toByteString())
                                 ),
                                 amt: 15n,
@@ -153,6 +156,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
         const tick = toByteString('DOGE', true)
         const max = 100000n
         const lim = max / 10n
+        const dec = 0n
         const text = 'Hello sCrypt and 1Sat Ordinals'
         const message = toByteString(text, true)
         const hash = sha256(message)
@@ -163,7 +167,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
 
         before(async () => {
             HashPuzzleFT.loadArtifact()
-            recipient = new HashPuzzleFT(tick, max, lim, hash)
+            recipient = new HashPuzzleFT(tick, max, lim, dec, hash)
             await recipient.connect(signer)
         })
 
@@ -204,6 +208,7 @@ describe('Test SmartContract send FT to `HashPuzzleFT`', () => {
                                 tick,
                                 max,
                                 lim,
+                                dec,
                                 Addr(ordAddress.toByteString())
                             ),
                             amt: 9n,

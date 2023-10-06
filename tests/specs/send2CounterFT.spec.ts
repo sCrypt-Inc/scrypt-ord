@@ -18,6 +18,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
+    const dec = 0n
 
     const tokenInP2PKH = 1000n
     const tokenToCounter = 400n
@@ -28,7 +29,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
     })
 
     async function transferToCounter(p2pkh: BSV20P2PKH): Promise<CounterFT> {
-        const counter = new CounterFT(tick, max, lim, 0n)
+        const counter = new CounterFT(tick, max, lim, dec, 0n)
         await counter.connect(getDefaultSigner())
 
         const totalAmount = tokenInP2PKH
@@ -74,6 +75,7 @@ describe('Test SmartContract send FT to `CounterFT`', () => {
             tick,
             max,
             lim,
+            dec,
             Addr(myAddress.toByteString())
         )
 

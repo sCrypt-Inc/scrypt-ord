@@ -38,11 +38,15 @@ export class BSV20V1 extends SmartContract {
     /** Mint limit: If letting users mint to themselves, limit per ordinal. If ommitted or 0, mint amt us unlimited. */
     readonly lim: bigint
 
-    constructor(tick: ByteString, max: bigint, lim: bigint) {
+    /** Decimals: set decimal precision, default to 0 */
+    readonly dec: bigint
+
+    constructor(tick: ByteString, max: bigint, lim: bigint, dec: bigint) {
         super(...arguments)
         this.tick = tick
         this.max = max
         this.lim = lim
+        this.dec = dec
         this.isBSV20V1 = true
     }
 
@@ -127,7 +131,12 @@ export class BSV20V1 extends SmartContract {
             .addOutput(
                 new bsv.Transaction.Output({
                     script: bsv.Script.buildPublicKeyHashOut(address).add(
-                        Ordinal.createDeploy(this.tick, this.max, this.lim)
+                        Ordinal.createDeploy(
+                            this.tick,
+                            this.max,
+                            this.lim,
+                            this.dec
+                        )
                     ),
                     satoshis: 1,
                 })
@@ -228,6 +237,7 @@ export class BSV20V1 extends SmartContract {
                     current.tick,
                     current.max,
                     current.lim,
+                    current.dec,
                     Addr(tokenChangeAddress.toByteString())
                 )
 
