@@ -154,11 +154,13 @@ HashPuzzleFT.loadArtifact();
 const tick = toByteString("DOGE", true);
 const max = 100000n;
 const lim = max / 10n;
+const dec = 0;
 
 const hashPuzzle = new HashPuzzleFT(
   tick,
   max,
   lim,
+  dec,
   sha256(toByteString("hello, sCrypt!:0", true))
 );
 await hashPuzzle.connect(getDefaultSigner());
@@ -179,6 +181,7 @@ for (let i = 0; i < 3; i++) {
     tick,
     max,
     lim,
+    dec,
     sha256(toByteString(`hello, sCrypt!:${i + 1}`, true))
   );
 
@@ -252,7 +255,7 @@ const bsv20V1P2PKHs = await BSV20V1P2PKH.getBSV20(
 await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)));
 const recipients: Array<FTReceiver> = [
   {
-    instance: new HashPuzzleFT(tick, max, lim, sha256(message)),
+    instance: new HashPuzzleFT(tick, max, lim, dec, sha256(message)),
     amt: 6n,
   },
 ];
