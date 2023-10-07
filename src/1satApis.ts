@@ -7,7 +7,7 @@ export class OneSatApis {
     private network: bsv.Networks.Network = bsv.Networks.mainnet
 
     private static get apiBase() {
-        return 'https://test.ordinals.gorillapool.io/api'
+        return 'https://v3.ordinals.gorillapool.io/api'
     }
 
     static fetchUTXOByOutpoint(outpoint: string): UTXO | null {
