@@ -10,13 +10,14 @@ npm i scrypt-ord
 
 ## NFT
 
-To lock a `1sat` NFT via a smart contract, have your smart contract extend the `OneSatNFT` class:
+To lock a `1sat` NFT via a smart contract, have your smart contract extend the `OrdinalNFT` class:
 
 ```ts
 import { method, prop, assert, ByteString, sha256, Sha256 } from "scrypt-ts";
-import { OneSatNFT } from "scrypt-ord";
 
-export class HashPuzzleNFT extends OneSatNFT {
+import { OrdinalNFT } from "scrypt-ord";
+
+export class HashPuzzleNFT extends OrdinalNFT {
   @prop()
   hash: Sha256;
 
@@ -53,7 +54,7 @@ console.log("Inscribed NFT: ", inscriptionTx.id);
 const recipientAddress = bsv.Address.fromString("your bitcoin address");
 
 const { tx: transferTx } = await instance.methods.unlock(message, {
-  transfer: new OneSatNFTP2PKH(Addr(recipientAddress.toByteString())),
+  transfer: new OrdNFTP2PKH(Addr(recipientAddress.toByteString())),
 });
 
 console.log("Transferred NFT: ", transferTx.id);
@@ -69,7 +70,9 @@ console.log("Inscribed NFT: ", inscriptionTx.id);
 #### Inscribe an Image NFT
 
 ```ts
-const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString("base64");
+const bb = readFileSync(join(__dirname, "..", "..", "logo.png")).toString(
+  "base64"
+);
 const tx = await instance.inscribeImage(bb, ContentType.PNG);
 console.log("Inscribed NFT: ", tx.id);
 ```
@@ -99,9 +102,9 @@ const recipient = new HashPuzzleNFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // Create a P2PKH object from a UTXO
-const p2pkh = OneSatNFTP2PKH.fromUTXO(`your UTXO`);
+const p2pkh = OrdNFTP2PKH.fromUTXO(`your UTXO`);
 // Alternatively, create a P2PKH from an origin
-const p2pkh = await OneSatNFTP2PKH.getLatestInstance(`origin TXID`);
+const p2pkh = await OrdNFTP2PKH.getLatestInstance(`origin TXID`);
 
 await p2pkh.connect(getDefaultSigner());
 
@@ -111,7 +114,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<OneSatNFTP2PKH>
+  } as MethodCallOptions<OrdNFTP2PKH>
 );
 
 console.log("Transferred NFT: ", transferTx.id);
@@ -209,11 +212,11 @@ const message = toByteString(text, true);
 const hash = sha256(message);
 
 const recipient = new HashPuzzleFT(hash);
-await recipient.connect(getDefaultSigner());
 
-// Create P2PKH from a UTXO
-// NOTE: You can not use BSV20P2PKH.getLatestInstance for bsv20, it only works for NFT
-const p2pkh = BSV20P2PKH.fromUTXO(`your UTXO`);
+// create p2pkh from a utxo
+// NOTE: You can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
+const p2pkh = BSV20V1P2PKH.fromUTXO(`your utxo`);
+
 await p2pkh.connect(getDefaultSigner());
 
 const { tx: transferTx } = await p2pkh.methods.unlock(
@@ -222,7 +225,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<BSV20P2PKH>
+  } as MethodCallOptions<BSV20V1P2PKH>
 );
 
 console.log("Transferred FT: ", transferTx.id);
@@ -238,13 +241,15 @@ const message = toByteString(text, true);
 const hash = sha256(message);
 
 const recipient = new HashPuzzleFT(hash);
-await recipient.connect(getDefaultSigner());
 
-// Create p2pkh from a UTXO
-// NOTE: You can not use BSV20P2PKH.getLatestInstance for bsv20, it only works for NFT
-const bsv20P2PKHs = await BSV20P2PKH.getBSV20("DOGE", `your ordinal address`);
+// create p2pkh from a utxo
+// NOTE: you can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
+const bsv20V1P2PKHs = await BSV20V1P2PKH.getBSV20(
+  "DOGE",
+  `your ordinal address`
+);
 
-await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)));
+await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)));
 const recipients: Array<FTReceiver> = [
   {
     instance: new HashPuzzleFT(tick, max, lim, sha256(message)),
@@ -252,8 +257,8 @@ const recipients: Array<FTReceiver> = [
   },
 ];
 
-const { tx, nexts } = await BSV20P2PKH.transfer(
-  bsv20P2PKHs,
+const { tx, nexts } = await BSV20V1P2PKH.transfer(
+  bsv20V1P2PKHs,
   signer,
   recipients
 );

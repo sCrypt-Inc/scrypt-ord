@@ -3,7 +3,7 @@ import { Addr, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { OrdNFTP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashPuzzleNFT`', () => {
@@ -24,7 +24,7 @@ describe('Test SmartContract `HashPuzzleNFT`', () => {
         const ordAddress = await instance.signer.getDefaultAddress()
         const call = async () =>
             await instance.methods.unlock(message, {
-                transfer: new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
+                transfer: new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
             })
         await expect(call()).not.to.be.rejected
     })
@@ -44,8 +44,8 @@ describe('Test SmartContract `HashPuzzleNFT`', () => {
         const call = async () =>
             await instance.methods.unlock(message, {
                 transfer: [
-                    new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
-                    new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
+                    new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
+                    new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
                 ],
             })
         await expect(call()).to.be.rejectedWith(

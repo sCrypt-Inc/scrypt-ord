@@ -15,7 +15,13 @@ import {
     toHex,
 } from 'scrypt-ts'
 import { Shift10 } from 'scrypt-ts-lib'
-import { BSV20Protocol, Inscription } from '../types'
+import {
+    BSV20V1_JSON,
+    BSV20V2_JSON,
+    BSV20V2_TRANSFER_JSON,
+    BSV20_JSON,
+    Inscription,
+} from '../types'
 import { fromByteString } from '../utils'
 import { ContentType } from '../contentType'
 
@@ -153,6 +159,23 @@ export class Ordinal extends SmartContractLib {
         return n
     }
 
+    @method()
+    static txId2str(txid: ByteString): ByteString {
+        let txidStr = toByteString('')
+        const ascii = toByteString('0123456789abcdef', true)
+        for (let i = 0n; i < 32n; i++) {
+            const index = 32n - i - 1n
+            const char = slice(txid, index, index + 1n)
+            const cInt = Utils.fromLEUnsigned(char)
+            const left = cInt / 16n
+            const right = cInt % 16n
+            txidStr += slice(ascii, left, left + 1n)
+            txidStr += slice(ascii, right, right + 1n)
+        }
+
+        return txidStr
+    }
+
     // Converts integer to hex-encoded ASCII.
     // 1000 -> '31303030'
     // Input cannot be larger than 2^64-1.
@@ -178,6 +201,9 @@ export class Ordinal extends SmartContractLib {
                     res = int2ByteString(48n + ithDigit, 1n) + res
                 }
             }
+        }
+        if (n == 0n) {
+            res = toByteString('30')
         }
 
         return res
@@ -236,6 +262,30 @@ export class Ordinal extends SmartContractLib {
                 max: max.toString().replace(/n/, ''),
                 lim: lim.toString().replace(/n/, ''),
                 dec: dec.toString().replace(/n/, ''),
+            }),
+            contentType: ContentType.BSV20,
+        })
+    }
+
+    static createDeployV2(amt: bigint, dec: bigint): bsv.Script {
+        return Ordinal.create({
+            content: JSON.stringify({
+                p: 'bsv-20',
+                op: 'deploy+mint',
+                amt: amt.toString().replace(/n/, ''),
+                dec: dec.toString().replace(/n/, ''),
+            }),
+            contentType: ContentType.BSV20,
+        })
+    }
+
+    static createTransferV2(id: string, amt: bigint): bsv.Script {
+        return Ordinal.create({
+            content: JSON.stringify({
+                p: 'bsv-20',
+                op: 'transfer',
+                id,
+                amt: amt.toString().replace(/n/, ''),
             }),
             contentType: ContentType.BSV20,
         })
@@ -309,47 +359,94 @@ export class Ordinal extends SmartContractLib {
         )
     }
 
-    static getBsv20Json(content: string, contentType: string): BSV20Protocol {
+    static getBsv20v1Json(content: string, contentType: string): BSV20V1_JSON {
+        if (contentType !== ContentType.BSV20) {
+            throw new Error(`invalid bsv20 contentType: ${contentType}`)
+        }
+        const bsv20P = 'bsv-20'
+
+        const bsv20 = JSON.parse(content)
+
+        if (
+            bsv20.p === bsv20P &&
+            bsv20.op === 'deploy' &&
+            typeof bsv20.tick === 'string' &&
+            typeof bsv20.max === 'string'
+        ) {
+            // BSV20V1_DEPLOY_JSON
+            return bsv20
+        } else if (
+            bsv20.p === bsv20P &&
+            bsv20.op === 'mint' &&
+            typeof bsv20.tick === 'string' &&
+            typeof bsv20.amt === 'string'
+        ) {
+            // BSV20V1_MINT_JSON
+            return bsv20
+        } else if (
+            bsv20.p === bsv20P &&
+            bsv20.op === 'transfer' &&
+            typeof bsv20.tick === 'string' &&
+            typeof bsv20.amt === 'string'
+        ) {
+            // BSV20V1_TRANSFER_JSON
+            return bsv20
+        }
+
+        throw new Error(`invalid bsv20 v1 json, ${content}`)
+    }
+
+    static getBsv20v2Json(content: string, contentType: string): BSV20V1_JSON {
         if (contentType !== ContentType.BSV20) {
             throw new Error(`invalid bsv20 contentType: ${contentType}`)
         }
 
         const bsv20 = JSON.parse(content)
+        const bsv20P = 'bsv-20'
 
         if (
-            typeof bsv20.tick === 'string' &&
-            typeof bsv20.op === 'string' &&
+            bsv20.p === bsv20P &&
+            bsv20.op === 'deploy+mint' &&
             typeof bsv20.amt === 'string'
         ) {
+            // BSV20V2_DEPLOY_MINT_JSON
+            return bsv20
+        } else if (
+            bsv20.p === bsv20P &&
+            bsv20.op === 'transfer' &&
+            typeof bsv20.id === 'string' &&
+            typeof bsv20.amt === 'string'
+        ) {
+            // BSV20V2_TRANSFER_JSON
             return bsv20
         }
 
-        throw new Error(`invalid bsv20 op, ${content}`)
+        throw new Error(`invalid bsv20 v2 json, ${content}`)
     }
 
-    static getBsv20(script: bsv.Script): BSV20Protocol {
-        if (Ordinal.isOrdinalContract(script)) {
-            const content = fromByteString(toHex(script.chunks[6].buf))
-            const contentType = fromByteString(toHex(script.chunks[4].buf))
-            return Ordinal.getBsv20Json(content, contentType)
-        }
+    static getBsv20(script: bsv.Script, v1: boolean): BSV20_JSON {
+        const [content, contentType] = Ordinal.isOrdinalContract(script)
+            ? [
+                  fromByteString(toHex(script.chunks[6].buf)),
+                  fromByteString(toHex(script.chunks[4].buf)),
+              ]
+            : Ordinal.isOrdinalP2PKHV1(script)
+            ? [
+                  fromByteString(toHex(script.chunks[11].buf)),
+                  fromByteString(toHex(script.chunks[9].buf)),
+              ]
+            : [
+                  fromByteString(toHex(script.chunks[6].buf)),
+                  fromByteString(toHex(script.chunks[4].buf)),
+              ]
 
-        if (Ordinal.isOrdinalP2PKH(script)) {
-            if (Ordinal.isOrdinalP2PKHV1(script)) {
-                const content = fromByteString(toHex(script.chunks[11].buf))
-                const contentType = fromByteString(toHex(script.chunks[9].buf))
-                return Ordinal.getBsv20Json(content, contentType)
-            } else {
-                const content = fromByteString(toHex(script.chunks[6].buf))
-                const contentType = fromByteString(toHex(script.chunks[4].buf))
-                return Ordinal.getBsv20Json(content, contentType)
-            }
-        }
-        throw new Error(`invalid 1sat ordinal`)
+        return v1
+            ? Ordinal.getBsv20v1Json(content, contentType)
+            : Ordinal.getBsv20v2Json(content, contentType)
     }
 
     static getAmt(script: bsv.Script, tick?: string): bigint {
-        const bsv20 = Ordinal.getBsv20(script)
+        const bsv20 = Ordinal.getBsv20(script, true) as BSV20V1_JSON
         if (typeof tick === 'string' && bsv20.tick !== tick) {
             throw new Error(`invalid bsv20 tick, expected ${tick}`)
         }
@@ -361,8 +458,18 @@ export class Ordinal extends SmartContractLib {
         throw new Error(`invalid bsv20 op: ${bsv20.op}`)
     }
 
+    static getAmtV2(script: bsv.Script): bigint {
+        const bsv20 = Ordinal.getBsv20(script, false) as BSV20V2_JSON
+        return BigInt(bsv20.amt)
+    }
+
+    static getTokenId(script: bsv.Script): string {
+        const bsv20 = Ordinal.getBsv20(script, false) as BSV20V2_TRANSFER_JSON
+        return bsv20.id
+    }
+
     static getTick(script: bsv.Script): string {
-        const bsv20 = Ordinal.getBsv20(script)
+        const bsv20 = Ordinal.getBsv20(script, true) as BSV20V1_JSON
 
         if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
             return bsv20.tick

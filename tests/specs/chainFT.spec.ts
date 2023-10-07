@@ -11,7 +11,7 @@ import {
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH } from '../scrypt-ord'
 import { dummyBSV20 } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterFT } from '../contracts/counterFT'
@@ -40,15 +40,15 @@ describe(`Chain FT Test: ${chain}`, () => {
     const tokenToHashPuzzleAgain = 300n
     const tokenToP2PKH = 120n
 
-    async function createP2PKH(): Promise<BSV20P2PKH> {
-        const p2pkh = BSV20P2PKH.fromUTXO(
+    async function createP2PKH(): Promise<BSV20V1P2PKH> {
+        const p2pkh = BSV20V1P2PKH.fromUTXO(
             dummyBSV20(myAddress, fromByteString(tick), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
         return p2pkh
     }
 
-    async function toHashPuzzle(p2pkh: BSV20P2PKH): Promise<HashPuzzleFT> {
+    async function toHashPuzzle(p2pkh: BSV20V1P2PKH): Promise<HashPuzzleFT> {
         const totalAmount = tokenInP2PKH
         const transferAmount = tokenToHashPuzzle
         const changeAmount = totalAmount - transferAmount
@@ -65,7 +65,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: transferAmount,
                 },
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<BSV20P2PKH>
+            } as MethodCallOptions<BSV20V1P2PKH>
         )
         console.log('[1] P2PKH -> HashPuzzle:', tx.id)
 
@@ -73,7 +73,7 @@ describe(`Chain FT Test: ${chain}`, () => {
 
         expect(hashPuzzle.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as BSV20P2PKH
+        const tokenChange = nexts[1].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return hashPuzzle
@@ -102,7 +102,7 @@ describe(`Chain FT Test: ${chain}`, () => {
 
         expect(counter.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as BSV20P2PKH
+        const tokenChange = nexts[1].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return counter
@@ -128,7 +128,7 @@ describe(`Chain FT Test: ${chain}`, () => {
 
         expect(nextInstance.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as BSV20P2PKH
+        const tokenChange = nexts[1].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return nextInstance
@@ -167,14 +167,14 @@ describe(`Chain FT Test: ${chain}`, () => {
         expect(nextInstance.getAmt()).to.equal(counterAmount)
         expect(hashPuzzle.getAmt()).to.equal(hashPuzzleAmount)
 
-        const tokenChange = nexts[2].instance as BSV20P2PKH
+        const tokenChange = nexts[2].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return hashPuzzle
     }
 
     async function toP2PKH(hashPuzzle: HashPuzzleFT) {
-        const p2pkh = new BSV20P2PKH(
+        const p2pkh = new BSV20V1P2PKH(
             tick,
             max,
             lim,

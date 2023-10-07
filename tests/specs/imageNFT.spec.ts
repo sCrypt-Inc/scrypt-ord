@@ -3,7 +3,7 @@ import { Addr, sha256, toByteString } from 'scrypt-ts'
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { ContentType, OneSatNFTP2PKH } from '../scrypt-ord'
+import { OrdNFTP2PKH, ContentType } from '../scrypt-ord'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 use(chaiAsPromised)
@@ -28,10 +28,13 @@ describe('Test inscribe an image NFT to `HashPuzzleNFT`', () => {
 
     it('should pass when transfer NFT', async () => {
         const ordAddress = await instance.signer.getDefaultAddress()
-        const call = async () =>
-            await instance.methods.unlock(message, {
-                transfer: new OneSatNFTP2PKH(Addr(ordAddress.toByteString())),
+        const call = async () => {
+            const { tx } = await instance.methods.unlock(message, {
+                transfer: new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
             })
+            console.log('transfer tx: ', tx.id)
+        }
+
         await expect(call()).not.to.be.rejected
     })
 })

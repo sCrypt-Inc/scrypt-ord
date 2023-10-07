@@ -16,11 +16,11 @@ import {
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
-import { OneSatNFT } from './oneSatNFT'
+import { OrdinalNFT } from './ordinalNFT'
 
 const P2PKHScriptLen = 50
 
-export class OneSatNFTP2PKH extends OneSatNFT {
+export class OrdNFTP2PKH extends OrdinalNFT {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
@@ -42,17 +42,43 @@ export class OneSatNFTP2PKH extends OneSatNFT {
         assert(this.checkSig(sig, pubkey), 'signature check failed')
     }
 
-    public getNopScript(): bsv.Script | null {
-        const ls = this.lockingScript
-        if (Ordinal.isOrdinalP2PKHV1(ls)) {
-            return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
+    private getNopScript(): bsv.Script | null {
+        const nop = this.getPrependNOPScript()
+
+        if (nop) {
+            return nop
         }
 
-        if (Ordinal.isOrdinalP2PKHV2(ls)) {
-            return this.getPrependNOPScript()
+        if (this.from) {
+            const ls = bsv.Script.fromHex(this.utxo.script)
+            if (Ordinal.isOrdinalP2PKHV1(ls)) {
+                return bsv.Script.fromHex(ls.toHex().slice(P2PKHScriptLen))
+            }
+
+            if (Ordinal.isOrdinalP2PKHV2(ls)) {
+                return bsv.Script.fromHex(
+                    Ordinal.getInsciptionScript(this.utxo.script)
+                )
+            }
         }
 
         return null
+    }
+
+    override get lockingScript() {
+        const nop = this.getNopScript()
+
+        if (nop) {
+            return new bsv.Script('')
+                .add(bsv.Opcode.OP_DUP)
+                .add(bsv.Opcode.OP_HASH160)
+                .add(bsv.Script.fromASM(this.addr))
+                .add(bsv.Opcode.OP_EQUALVERIFY)
+                .add(bsv.Opcode.OP_CHECKSIG)
+                .add(nop)
+        }
+
+        return super.lockingScript
     }
 
     static override fromLockingScript(script: string): SmartContract {
@@ -100,7 +126,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
         }
 
         const instance = (
-            this as unknown as typeof OneSatNFTP2PKH
+            this as unknown as typeof OrdNFTP2PKH
         ).fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
@@ -110,7 +136,7 @@ export class OneSatNFTP2PKH extends OneSatNFT {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'OneSatNFTP2PKH',
+    contract: 'OrdNFTP2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],
@@ -148,4 +174,4 @@ const desc = {
     sourceMapFile: '',
 }
 
-OneSatNFTP2PKH.loadArtifact(desc)
+OrdNFTP2PKH.loadArtifact(desc)

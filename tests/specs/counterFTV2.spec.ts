@@ -1,27 +1,23 @@
 import { expect, use } from 'chai'
 import { toByteString, MethodCallOptions } from 'scrypt-ts'
-import { CounterFT } from '../contracts/counterFT'
+import { CounterFTV2 } from '../contracts/counterFTV2'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20V2P2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `CounterFT`', () => {
-    let instance: CounterFT
+describe('Test SmartContract `CounterFTV2`', () => {
+    let instance: CounterFTV2
 
+    let tokenId: string
     before(async () => {
-        CounterFT.loadArtifact()
+        CounterFTV2.loadArtifact()
 
-        const tick = 'DOGE'
         const max = 100000n
-        const lim = max / 10n
-        const amt = lim
         const dec = 0n
-        instance = new CounterFT(toByteString(tick, true), max, lim, dec, 0n)
+        instance = new CounterFTV2(toByteString(''), max, dec, 0n)
         await instance.connect(getDefaultSigner())
-
-        await instance.deployToken()
-        await instance.mint(amt)
+        tokenId = await instance.deployToken()
     })
 
     it('should pass the public method unit test successfully.', async () => {
@@ -32,6 +28,7 @@ describe('Test SmartContract `CounterFT`', () => {
             // create the next instance from the current
             const nextInstance = currentInstance.next()
 
+            nextInstance.id = toByteString(tokenId, true)
             // apply updates on the next instance off chain
             nextInstance.incCounter()
 
@@ -46,12 +43,12 @@ describe('Test SmartContract `CounterFT`', () => {
                             instance: nextInstance,
                             amt: transferAmount,
                         },
-                    } as MethodCallOptions<CounterFT>
+                    } as MethodCallOptions<CounterFTV2>
                 )
-                console.log('Contract CounterFT called: ', tx.id)
+                console.log('Contract CounterFTV2 called: ', tx.id)
                 expect(nexts.length).to.equal(2)
                 expect(nextInstance.getAmt()).to.equal(transferAmount)
-                const tokenChange = nexts[1].instance as BSV20V1P2PKH
+                const tokenChange = nexts[1].instance as BSV20V2P2PKH
                 expect(tokenChange.getAmt()).to.equal(changeAmount)
             }
             await expect(callContract()).not.to.be.rejected

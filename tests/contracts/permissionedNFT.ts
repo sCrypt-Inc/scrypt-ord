@@ -9,9 +9,9 @@ import {
     slice,
 } from 'scrypt-ts'
 
-import { OneSatNFT } from '../scrypt-ord'
+import { OrdinalNFT } from '../scrypt-ord'
 
-export class PermissionedNFT extends OneSatNFT {
+export class PermissionedNFT extends OrdinalNFT {
     @prop()
     readonly issuer: PubKey
 

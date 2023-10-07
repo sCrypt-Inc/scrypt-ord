@@ -20,83 +20,67 @@ import {
 
 import { Ordinal } from './ordinal'
 import { fromByteString } from '../utils'
-import { ORDMethodCallOptions, FTReceiver, Inscription } from '../types'
+import { ORDMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
 
 /**
  * A base class implementing the bsv20 v1 protocol
  */
-export abstract class BSV20V1 extends SmartContract {
+export abstract class BSV20V2 extends SmartContract {
+    /** Ticker: identifier of the bsv-20 */
     @prop(true)
-    isBSV20V1: boolean
-    /** Ticker: 4 letter identifier of the bsv-20 */
-    @prop()
-    readonly tick: ByteString
+    id: ByteString
 
-    /** Max supply: set max supply of the bsv-20 */
     @prop()
+    /** Max supply: max 2^64-1 */
     readonly max: bigint
 
-    /** Mint limit: If letting users mint to themselves, limit per ordinal. If ommitted or 0, mint amt us unlimited. */
     @prop()
-    readonly lim: bigint
-
-    /** Decimals: set decimal precision, default to 0 */
-    @prop()
+    /** Decimals: set decimal precision, defaults to 0. This is different from BRC20 which defaults to 18. */
     readonly dec: bigint
 
-    constructor(tick: ByteString, max: bigint, lim: bigint, dec: bigint) {
+    constructor(id: ByteString, max: bigint, dec: bigint) {
         super(...arguments)
-        this.tick = tick
         this.max = max
-        this.lim = lim
         this.dec = dec
-        this.isBSV20V1 = true
+        this.id = id
     }
 
     @method()
     buildStateOutputFT(amt: bigint): ByteString {
+        if (this.isGenesis()) {
+            this.initId()
+        }
+
         const stateScript =
-            BSV20V1.createTransferInsciption(this.tick, amt) +
+            BSV20V2.createTransferInsciption(this.id, amt) +
             Ordinal.removeInsciption(this.getStateScript())
         return Utils.buildOutput(stateScript, 1n)
     }
 
     @method()
+    isGenesis(): boolean {
+        return this.id === toByteString('')
+    }
+
+    @method()
     static buildTransferOutput(
         address: Addr,
-        tick: ByteString,
+        id: ByteString,
         amt: bigint
     ): ByteString {
         const transferScript =
-            BSV20V1.createTransferInsciption(tick, amt) +
+            BSV20V2.createTransferInsciption(id, amt) +
             Utils.buildPublicKeyHashScript(address)
         return Utils.buildOutput(transferScript, 1n)
     }
 
     @method()
-    static createMintInsciption(tick: ByteString, amt: bigint): ByteString {
-        const amtByteString = Ordinal.int2Str(amt)
-
-        const mintJSON =
-            toByteString('{"p":"bsv-20","op":"mint","tick":"', true) +
-            tick +
-            toByteString('","amt":"', true) +
-            amtByteString +
-            toByteString('"}', true)
-
-        return Ordinal.createInsciption(
-            mintJSON,
-            toByteString('application/bsv-20', true)
-        )
-    }
-
-    @method()
-    static createTransferInsciption(tick: ByteString, amt: bigint): ByteString {
+    static createTransferInsciption(id: ByteString, amt: bigint): ByteString {
         const amtByteString = Ordinal.int2Str(amt)
 
         const transferJSON =
-            toByteString('{"p":"bsv-20","op":"transfer","tick":"', true) +
-            tick +
+            toByteString('{"p":"bsv-20","op":"transfer","id":"', true) +
+            id +
             toByteString('","amt":"', true) +
             amtByteString +
             toByteString('"}', true)
@@ -106,47 +90,54 @@ export abstract class BSV20V1 extends SmartContract {
         )
     }
 
-    async mint(amt: bigint) {
-        if (amt > this.lim) {
-            throw new Error(`amt should not be greater than "lim: ${this.lim}"`)
-        }
-
-        this.setAmt(amt)
-        return this.deploy(1)
+    @method()
+    initId(): void {
+        this.id =
+            Ordinal.txId2str(this.ctx.utxo.outpoint.txid) +
+            toByteString('_', true) +
+            Ordinal.int2Str(this.ctx.utxo.outpoint.outputIndex)
     }
 
-    async deployToken() {
-        const address = await this.signer.getDefaultAddress()
+    getTokenId(): string {
+        if (this.id) {
+            return fromByteString(this.id)
+        }
+        const nop = this.getPrependNOPScript()
 
-        const utxos = await this.signer.listUnspent(address)
+        if (nop) {
+            const bsv20 = Ordinal.getBsv20(nop, false) as BSV20V2_JSON
 
-        if (utxos.length === 0) {
-            throw new Error(`no utxo found for address: ${address}`)
+            if (bsv20.op === 'deploy+mint') {
+                return `${this.utxo.txId}_${this.utxo.outputIndex}`
+            } else {
+                return bsv20.id
+            }
         }
 
-        const deployTx = new bsv.Transaction()
-            .from(utxos)
-            .addOutput(
-                new bsv.Transaction.Output({
-                    script: bsv.Script.buildPublicKeyHashOut(address).add(
-                        Ordinal.createDeploy(
-                            this.tick,
-                            this.max,
-                            this.lim,
-                            this.dec
-                        )
-                    ),
-                    satoshis: 1,
-                })
-            )
-            .change(address)
+        throw new Error('token id is not initialized!')
+    }
 
-        return this.signer.signAndsendTransaction(deployTx)
+    async deployToken(): Promise<string> {
+        if (this.id !== toByteString('')) {
+            throw new Error(
+                'contract instance to deploy token should not have a id!'
+            )
+        }
+
+        this.prependNOPScript(Ordinal.createDeployV2(this.max, this.dec))
+
+        const tx = await this.deploy(1)
+        return `${tx.id}_0`
     }
 
     setAmt(amt: bigint) {
+        const id = this.getTokenId()
+        if (!id) {
+            throw new Error('no token id!')
+        }
+
         this.prependNOPScript(
-            Ordinal.createTransfer(fromByteString(this.tick), amt)
+            Ordinal.createTransferV2(fromByteString(this.id), amt)
         )
         return this
     }
@@ -158,22 +149,18 @@ export abstract class BSV20V1 extends SmartContract {
             throw new Error('no amt setted!')
         }
 
-        return Ordinal.getAmt(nopScript, fromByteString(this.tick))
-    }
-
-    getInscription(): Inscription {
-        return Ordinal.getInscription(this.getPrependNOPScript())
+        return Ordinal.getAmtV2(nopScript)
     }
 
     protected override getDefaultTxBuilder(
         methodName: string
     ): MethodCallTxBuilder<this> {
         return async function (
-            current: BSV20V1,
-            options_: MethodCallOptions<BSV20V1>,
+            current: BSV20V2,
+            options_: MethodCallOptions<BSV20V2>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as ORDMethodCallOptions<BSV20V1>
+            const options = options_ as ORDMethodCallOptions<BSV20V2>
             const recipients = options.transfer as
                 | Array<FTReceiver>
                 | FTReceiver
@@ -196,7 +183,7 @@ export abstract class BSV20V1 extends SmartContract {
             tx.addInput(current.buildContractInput())
 
             function addReceiver(receiver: FTReceiver) {
-                if (receiver.instance instanceof BSV20V1) {
+                if (receiver.instance instanceof BSV20V2) {
                     receiver.instance.setAmt(receiver.amt)
                 } else {
                     throw new Error('unsupport receiver!')
@@ -230,11 +217,10 @@ export abstract class BSV20V1 extends SmartContract {
                     : await current.signer.getDefaultAddress()
 
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const { BSV20V1P2PKH } = require('./BSV20V1P2PKH')
-                const p2pkh = new BSV20V1P2PKH(
-                    current.tick,
+                const { BSV20V2P2PKH } = require('./bsv20V2P2PKH')
+                const p2pkh = new BSV20V2P2PKH(
+                    toByteString(current.getTokenId(), true),
                     current.max,
-                    current.lim,
                     current.dec,
                     Addr(tokenChangeAddress.toByteString())
                 )
@@ -298,30 +284,5 @@ export abstract class BSV20V1 extends SmartContract {
         ).fromLockingScript(utxo.script, {}, nopScript) as T
         instance.from = utxo
         return instance
-    }
-
-    /**
-     * recover a `BSV20V1` instance from the transaction
-     * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
-     * it's required to pass all their offchain raw data at this transaction moment
-     * @param tx transaction
-     * @param atOutputIndex output index of `tx`
-     * @param offchainValues the value of offchain properties, the raw data of onchain `HashedMap` and `HashedSet` properties, at this transaction moment
-     */
-    static override fromTx<T extends SmartContract>(
-        this: new (...args: any[]) => T,
-        tx: bsv.Transaction,
-        atOutputIndex: number,
-        offchainValues?: Record<string, any>
-    ): T {
-        const outputScript = tx.outputs[atOutputIndex].script
-        const nopScript = Ordinal.nopScriptFromScript(outputScript)
-        const instance = super.fromTx(
-            tx,
-            atOutputIndex,
-            offchainValues,
-            nopScript
-        )
-        return instance as T
     }
 }

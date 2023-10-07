@@ -10,7 +10,7 @@ import {
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OneSatNFTP2PKH } from '../scrypt-ord'
+import { OrdNFTP2PKH } from '../scrypt-ord'
 import { dummyNFT } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterNFT } from '../contracts/counterNFT'
@@ -27,13 +27,13 @@ describe(`Chain NFT Test: ${chain}`, () => {
     const text = 'Hello sCrypt!'
     const hash = sha256(toByteString(text, true))
 
-    async function createP2PKH(): Promise<OneSatNFTP2PKH> {
-        const p2pkh = OneSatNFTP2PKH.fromUTXO(dummyNFT(myAddress, text))
+    async function createP2PKH(): Promise<OrdNFTP2PKH> {
+        const p2pkh = OrdNFTP2PKH.fromUTXO(dummyNFT(myAddress, text))
         await p2pkh.connect(getDefaultSigner())
         return p2pkh
     }
 
-    async function toHashPuzzle(p2pkh: OneSatNFTP2PKH): Promise<HashPuzzleNFT> {
+    async function toHashPuzzle(p2pkh: OrdNFTP2PKH): Promise<HashPuzzleNFT> {
         const hashPuzzle = new HashPuzzleNFT(hash)
         await hashPuzzle.connect(getDefaultSigner())
         const { tx } = await p2pkh.methods.unlock(
@@ -42,7 +42,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
             {
                 transfer: hashPuzzle,
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<OneSatNFTP2PKH>
+            } as MethodCallOptions<OrdNFTP2PKH>
         )
         console.log('[1] P2PKH -> HashPuzzle:', tx.id)
         return hashPuzzle
@@ -89,7 +89,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
     }
 
     async function toP2PKH(hashPuzzle: HashPuzzleNFT) {
-        const p2pkh = new OneSatNFTP2PKH(Addr(myAddress.toByteString()))
+        const p2pkh = new OrdNFTP2PKH(Addr(myAddress.toByteString()))
         await p2pkh.connect(getDefaultSigner())
         const { tx } = await hashPuzzle.methods.unlock(
             toByteString(text, true),

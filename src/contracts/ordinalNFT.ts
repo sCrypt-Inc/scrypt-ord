@@ -21,7 +21,7 @@ import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { ContentType } from '../contentType'
 
-export class OneSatNFT extends SmartContract {
+export abstract class OrdinalNFT extends SmartContract {
     @prop(true)
     isOneSatNFT: boolean
 
@@ -47,11 +47,6 @@ export class OneSatNFT extends SmartContract {
         return Utils.buildOutput(part1 + part2, 1n)
     }
 
-    @method()
-    public __scrypt_ts_base_unlock() {
-        assert(false, 'should not reach here!')
-    }
-
     static create(inscription: Inscription): bsv.Script {
         const contentTypeBytes = toByteString(inscription.contentType, true)
         const contentBytes = inscription.contentType.includes('text')
@@ -63,7 +58,7 @@ export class OneSatNFT extends SmartContract {
     }
 
     async inscribe(inscription: Inscription) {
-        this.prependNOPScript(OneSatNFT.create(inscription))
+        this.prependNOPScript(OrdinalNFT.create(inscription))
         return this.deploy(1)
     }
 
@@ -89,11 +84,11 @@ export class OneSatNFT extends SmartContract {
         methodName: string
     ): MethodCallTxBuilder<this> {
         return async function (
-            current: OneSatNFT,
-            options_: MethodCallOptions<OneSatNFT>,
+            current: OrdinalNFT,
+            options_: MethodCallOptions<OrdinalNFT>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as ORDMethodCallOptions<OneSatNFT>
+            const options = options_ as ORDMethodCallOptions<OrdinalNFT>
 
             // bsv change address
             const changeAddress = await current.signer.getDefaultAddress()
@@ -176,14 +171,14 @@ export class OneSatNFT extends SmartContract {
             throw new Error('no utxo found')
         }
 
-        const a = (this as unknown as typeof OneSatNFT).fromUTXO(
+        const a = (this as unknown as typeof SmartContract).fromUTXO(
             utxo
         ) as unknown as T
         return a
     }
 
     /**
-     * recover a `OneSatNFT` instance from the transaction
+     * recover a `OrdinalNFT` instance from the transaction
      * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
      * it's required to pass all their offchain raw data at this transaction moment
      * @param tx transaction

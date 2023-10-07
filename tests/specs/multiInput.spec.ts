@@ -16,7 +16,12 @@ import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20P2PKH, FTReceiver, fromByteString, BSV20V1 } from '../scrypt-ord'
+import {
+    BSV20V1P2PKH,
+    FTReceiver,
+    fromByteString,
+    BSV20V1,
+} from '../scrypt-ord'
 import { dummyBSV20 } from './utils'
 use(chaiAsPromised)
 
@@ -30,18 +35,18 @@ describe('Test multi inputs and outputs', () => {
         HashPuzzleFT.loadArtifact()
     })
 
-    it('should transfer 2 bsv20p2pkh to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 2 BSV20V1P2PKH to 1 hashPuzzle successfully.', async () => {
         const transferBSV20 = async () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
-            const bsv20P2PKHs = [
+            const bsv20V1P2PKHs = [
                 dummyBSV20(address, fromByteString(tick), 4n),
                 dummyBSV20(address, fromByteString(tick), 5n),
-            ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
+            ].map((utxo) => BSV20V1P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)
 
-            await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
+            await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)))
             const recipients: Array<FTReceiver> = [
                 {
                     instance: new HashPuzzleFT(
@@ -55,8 +60,8 @@ describe('Test multi inputs and outputs', () => {
                 },
             ]
 
-            const { tx } = await BSV20P2PKH.transfer(
-                bsv20P2PKHs,
+            const { tx } = await BSV20V1P2PKH.transfer(
+                bsv20V1P2PKHs,
                 signer,
                 recipients
             )
@@ -67,16 +72,16 @@ describe('Test multi inputs and outputs', () => {
         return expect(transferBSV20()).not.be.rejected
     })
 
-    it('should transfer 2 bsv20p2pkh to 2 hashPuzzle successfully.', async () => {
+    it('should transfer 2 BSV20V1P2PKH to 2 hashPuzzle successfully.', async () => {
         const transferBSV20 = async () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
-            const bsv20P2PKHs = [
+            const bsv20V1P2PKHs = [
                 dummyBSV20(address, fromByteString(tick), 4n),
                 dummyBSV20(address, fromByteString(tick), 5n),
-            ].map((utxo) => BSV20P2PKH.fromUTXO(utxo))
+            ].map((utxo) => BSV20V1P2PKH.fromUTXO(utxo))
 
-            await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
+            await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)))
 
             const message1 = toByteString('1:hello, sCrypt!', true)
             const message2 = toByteString('2:hello, sCrypt!', true)
@@ -104,8 +109,8 @@ describe('Test multi inputs and outputs', () => {
                 },
             ]
 
-            const { tx } = await BSV20P2PKH.transfer(
-                bsv20P2PKHs,
+            const { tx } = await BSV20V1P2PKH.transfer(
+                bsv20V1P2PKHs,
                 signer,
                 recipients
             )
@@ -116,14 +121,14 @@ describe('Test multi inputs and outputs', () => {
         return expect(transferBSV20()).not.be.rejected
     })
 
-    it('should transfer 1 bsv20p2pkh and 1 hashPuzzle to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 1 BSV20V1P2PKH and 1 hashPuzzle to 1 hashPuzzle successfully.', async () => {
         const transferBSV20 = async () => {
             const message1 = toByteString('1:hello, sCrypt!', true)
             const message2 = toByteString('2:hello, sCrypt!', true)
 
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
-            const sender0: BSV20P2PKH = BSV20P2PKH.fromUTXO(
+            const sender0: BSV20V1P2PKH = BSV20V1P2PKH.fromUTXO(
                 dummyBSV20(address, fromByteString(tick), 4n)
             )
 
@@ -179,8 +184,8 @@ describe('Test multi inputs and outputs', () => {
             sender0.bindTxBuilder(
                 'unlock',
                 async (
-                    current: BSV20P2PKH,
-                    options: MethodCallOptions<BSV20P2PKH>
+                    current: BSV20V1P2PKH,
+                    options: MethodCallOptions<BSV20V1P2PKH>
                 ): Promise<ContractTransaction> => {
                     const tx = new bsv.Transaction()
                     const nexts: StatefulNext<SmartContract>[] = []
@@ -209,7 +214,7 @@ describe('Test multi inputs and outputs', () => {
                     }
 
                     if (tokenChangeAmt > 0n) {
-                        const p2pkh = new BSV20P2PKH(
+                        const p2pkh = new BSV20V1P2PKH(
                             tick,
                             max,
                             lim,
@@ -251,7 +256,7 @@ describe('Test multi inputs and outputs', () => {
                 {
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<BSV20P2PKH>
+                } as MethodCallOptions<BSV20V1P2PKH>
             )
 
             sender1.bindTxBuilder(
@@ -280,7 +285,7 @@ describe('Test multi inputs and outputs', () => {
                 transfer: recipients,
                 pubKeyOrAddrToSign: ordPubKey,
                 multiContractCall: true,
-            } as MethodCallOptions<BSV20P2PKH>)
+            } as MethodCallOptions<BSV20V1P2PKH>)
 
             const { tx } = await SmartContract.multiContractCall(
                 partialContractTx,
