@@ -111,7 +111,10 @@ export abstract class BSV20V1 extends SmartContract {
             throw new Error(`amt should not be greater than "lim: ${this.lim}"`)
         }
 
-        this.setAmt(amt)
+        this.prependNOPScript(
+            Ordinal.createMint(fromByteString(this.tick), amt)
+        )
+
         return this.deploy(1)
     }
 
