@@ -19,6 +19,7 @@ import {
     StatefulNext,
     Signer,
     toHex,
+    fromByteString,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
@@ -94,6 +95,25 @@ export class BSV20V2P2PKH extends BSV20V2 {
                 Ordinal.getInsciptionScript(this.utxo.script)
             )
         }
+    }
+
+    override getTokenId(): string {
+        if (this.id) {
+            return fromByteString(this.id)
+        }
+        const nop = this.getNopScript()
+
+        if (nop) {
+            const bsv20 = Ordinal.getBsv20(nop, false) as BSV20V2_JSON
+
+            if (bsv20.op === 'deploy+mint') {
+                return `${this.utxo.txId}_${this.utxo.outputIndex}`
+            } else {
+                return bsv20.id
+            }
+        }
+
+        throw new Error('token id is not initialized!')
     }
 
     override getAmt() {
@@ -206,7 +226,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
         const tx = new bsv.Transaction()
         const nexts: StatefulNext<SmartContract>[] = []
 
-        const id = senders[0].id
+        const id = senders[0].getTokenId()
 
         for (let i = 0; i < receivers.length; i++) {
             const receiver = receivers[i]
@@ -233,7 +253,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
 
         if (tokenChangeAmt > 0n) {
             const p2pkh = new BSV20V2P2PKH(
-                id,
+                toByteString(id, true),
                 senders[0].max,
                 senders[0].dec,
                 Addr(ordPubKey.toAddress().toByteString())

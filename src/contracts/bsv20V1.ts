@@ -133,7 +133,7 @@ export abstract class BSV20V1 extends SmartContract {
                 new bsv.Transaction.Output({
                     script: bsv.Script.buildPublicKeyHashOut(address).add(
                         Ordinal.createDeploy(
-                            this.tick,
+                            fromByteString(this.tick),
                             this.max,
                             this.lim,
                             this.dec

@@ -6,8 +6,8 @@ export class HashPuzzleFTV2 extends BSV20V2 {
     @prop()
     hash: Sha256
 
-    constructor(id: ByteString, amt: bigint, dec: bigint, hash: Sha256) {
-        super(id, amt, dec)
+    constructor(id: ByteString, max: bigint, dec: bigint, hash: Sha256) {
+        super(id, max, dec)
         this.init(...arguments)
         this.hash = hash
     }
