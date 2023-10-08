@@ -3,14 +3,13 @@ import {
     bsv,
     TestWallet,
     DefaultProvider,
-    toByteString,
-    sha256,
     Addr,
     MethodCallOptions,
+    findSig,
+    PubKey,
 } from 'scrypt-ts'
-import { myAddress, myPrivateKey } from '../utils/privateKey'
+import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { join } from 'path'
-import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
 import { ContentType, OrdNFTP2PKH } from '../scrypt-ord'
 
 /**
@@ -34,29 +33,31 @@ function readImage(): string {
 }
 
 async function main() {
-    HashPuzzleNFT.loadArtifact('tests/artifacts/contracts/hashPuzzleNFT.json')
+    const address = myAddress
 
-    // create contract instance
-    const message = toByteString('Hello sCrpyt', true)
-    const hash = sha256(message)
-    const hashPuzzle = new HashPuzzleNFT(hash)
-    await hashPuzzle.connect(getSigner())
+    const p2pkh = new OrdNFTP2PKH(Addr(address.toByteString()))
+    await p2pkh.connect(getSigner())
 
     // read image data
     const image = readImage()
 
     // inscribe image into contract instance
-    const mintTx = await hashPuzzle.inscribeImage(image, ContentType.PNG)
+    const mintTx = await p2pkh.inscribeImage(image, ContentType.PNG)
     console.log(`Mint tx: ${mintTx.id}`)
 
     // for now, the contract instance holds the image inscription
     // this inscription can be transferred only when the hash puzzle is solved
-    const address = myAddress
+
     const receiver = new OrdNFTP2PKH(Addr(address.toByteString()))
 
-    const { tx: transferTx } = await hashPuzzle.methods.unlock(message, {
-        transfer: receiver,
-    } as MethodCallOptions<HashPuzzleNFT>)
+    const { tx: transferTx } = await p2pkh.methods.unlock(
+        (sigResponses) => findSig(sigResponses, myPublicKey),
+        PubKey(myPublicKey.toByteString()),
+        {
+            transfer: receiver,
+            pubKeyOrAddrToSign: myPublicKey,
+        } as MethodCallOptions<OrdNFTP2PKH>
+    )
     console.log(`Transfer tx: ${transferTx.id}`)
 }
 
