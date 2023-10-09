@@ -47,18 +47,8 @@ export abstract class OrdinalNFT extends SmartContract {
         return Utils.buildOutput(part1 + part2, 1n)
     }
 
-    static create(inscription: Inscription): bsv.Script {
-        const contentTypeBytes = toByteString(inscription.contentType, true)
-        const contentBytes = inscription.contentType.includes('text')
-            ? toByteString(inscription.content, true)
-            : toByteString(inscription.content)
-        return bsv.Script.fromASM(
-            `OP_FALSE OP_IF 6f7264 OP_1 ${contentTypeBytes} OP_0 ${contentBytes} OP_ENDIF`
-        )
-    }
-
     async inscribe(inscription: Inscription) {
-        this.prependNOPScript(OrdinalNFT.create(inscription))
+        this.prependNOPScript(Ordinal.create(inscription))
         return this.deploy(1)
     }
 
@@ -69,9 +59,18 @@ export abstract class OrdinalNFT extends SmartContract {
         })
     }
 
-    async inscribeImage(base64: string, contentType: string) {
+    /**
+     *
+     * @param content in base64 string format or buffer
+     * @param contentType
+     * @returns
+     */
+    async inscribeImage(content: string | Buffer, contentType: string) {
         return this.inscribe({
-            content: Buffer.from(base64, 'base64').toString('hex'),
+            content:
+                content instanceof Buffer
+                    ? content
+                    : Buffer.from(content, 'base64'),
             contentType,
         })
     }

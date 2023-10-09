@@ -9,7 +9,7 @@ import {
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
-import { BSV20P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
@@ -24,7 +24,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashPuzzleFT.loadArtifact('tests/artifacts/contracts/hashPuzzleFT.json')
+    HashPuzzleFT.loadArtifact('./artifacts/contracts/hashPuzzleFT.json')
 
     // BSV20 fields
     const tick = toByteString('HELLO', true)
@@ -44,12 +44,14 @@ async function main() {
     const mintTx = await hashPuzzle.mint(10n)
     console.log(`Mint tx: ${mintTx.id}`)
 
+    console.log(hashPuzzle.getInscription())
+
     // for now, the contract instance holds the BSV20 token
     // this token can be transferred only when the hash puzzle is solved
     const addressAlice = Addr(myAddress.toByteString())
-    const alice = new BSV20P2PKH(tick, max, lim, dec, addressAlice)
+    const alice = new BSV20V1P2PKH(tick, max, lim, dec, addressAlice)
     const addressBob = Addr(myAddress.toByteString())
-    const bob = new BSV20P2PKH(tick, max, lim, dec, addressBob)
+    const bob = new BSV20V1P2PKH(tick, max, lim, dec, addressBob)
 
     const { tx: transferTx } = await hashPuzzle.methods.unlock(message, {
         transfer: [

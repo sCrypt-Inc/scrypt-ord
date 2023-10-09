@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import {
     bsv,
     TestWallet,
@@ -34,7 +34,7 @@ function readImage(): string {
 }
 
 async function main() {
-    HashPuzzleNFT.loadArtifact('tests/artifacts/contracts/hashPuzzleNFT.json')
+    HashPuzzleNFT.loadArtifact('./artifacts/contracts/hashPuzzleNFT.json')
 
     // create contract instance
     const message = toByteString('Hello sCrpyt', true)
@@ -48,6 +48,10 @@ async function main() {
     // inscribe image into contract instance
     const mintTx = await hashPuzzle.inscribeImage(image, ContentType.PNG)
     console.log(`Mint tx: ${mintTx.id}`)
+
+    const inscription = hashPuzzle.getInscription().content as Buffer
+
+    writeFileSync('inscription.png', inscription)
 
     // for now, the contract instance holds the image inscription
     // this inscription can be transferred only when the hash puzzle is solved

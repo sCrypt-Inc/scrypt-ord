@@ -15,6 +15,7 @@
     "td": "cd tests && cross-env NETWORK=local mocha",
     "test:testnet": "cd tests && cross-env NETWORK=testnet mocha --no-timeouts",
     "test:mainnet": "cd tests && cross-env NETWORK=mainnet mocha --no-timeouts",
+    "example": "cd tests && npx ts-node examples/mintBSV20.ts",
     "lint": "eslint . --ext .js,.ts --fix && prettier --write --ignore-unknown \"**/*\"",
     "lint-check": "eslint . --ext .js,.ts && prettier --check --ignore-unknown \"**/*\"",
     "prepare": "husky install",

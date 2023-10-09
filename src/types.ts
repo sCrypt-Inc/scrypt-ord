@@ -2,8 +2,8 @@ import { MethodCallOptions, SmartContract, bsv } from 'scrypt-ts'
 
 /** Ordinal Inscription */
 export type Inscription = {
-    /** content in text */
-    content: string
+    /** content in utf8 text or Buffer */
+    content: string | Buffer
     /** contentType in text */
     contentType: string
 }

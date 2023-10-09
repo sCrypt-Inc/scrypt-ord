@@ -218,7 +218,10 @@ export class Ordinal extends SmartContractLib {
 
     static create(inscription: Inscription): bsv.Script {
         const contentTypeBytes = toByteString(inscription.contentType, true)
-        const contentBytes = toByteString(inscription.content, true)
+        const contentBytes =
+            inscription.content instanceof Buffer
+                ? toByteString(inscription.content.toString('hex'))
+                : toByteString(inscription.content, true)
         return bsv.Script.fromASM(
             `OP_FALSE OP_IF 6f7264 OP_1 ${contentTypeBytes} OP_0 ${contentBytes} OP_ENDIF`
         )
@@ -479,11 +482,25 @@ export class Ordinal extends SmartContractLib {
     }
 
     static getInscription(nopScript: bsv.Script): Inscription {
-        const content = fromByteString(toHex(nopScript.chunks[6].buf))
+        const rawContent = toHex(nopScript.chunks[6].buf)
         const contentType = fromByteString(toHex(nopScript.chunks[4].buf))
-        return {
-            content,
-            contentType,
+
+        switch (contentType) {
+            case ContentType.TEXT:
+            case ContentType.TEXT_UTF8:
+            case ContentType.CSS:
+            case ContentType.HTML:
+            case ContentType.BSV20:
+            case ContentType.JSON:
+                return {
+                    content: fromByteString(rawContent),
+                    contentType,
+                }
+            default:
+                return {
+                    content: Buffer.from(rawContent, 'hex'),
+                    contentType,
+                }
         }
     }
 
