@@ -23,7 +23,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashPuzzleFTV2.loadArtifact('tests/artifacts/contracts/hashPuzzleFTV2.json')
+    HashPuzzleFTV2.loadArtifact('./artifacts/contracts/hashPuzzleFTV2.json')
 
     // BSV20 fields
     const max = 21000000n

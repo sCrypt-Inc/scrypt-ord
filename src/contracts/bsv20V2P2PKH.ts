@@ -67,12 +67,12 @@ export class BSV20V2P2PKH extends BSV20V2 {
 
         if (nop) {
             return new bsv.Script('')
+                .add(nop)
                 .add(bsv.Opcode.OP_DUP)
                 .add(bsv.Opcode.OP_HASH160)
                 .add(bsv.Script.fromASM(this.addr))
                 .add(bsv.Opcode.OP_EQUALVERIFY)
                 .add(bsv.Opcode.OP_CHECKSIG)
-                .add(nop)
         }
 
         throw new Error('No nop script found!')

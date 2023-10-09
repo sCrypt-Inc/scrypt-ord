@@ -70,12 +70,12 @@ export class OrdNFTP2PKH extends OrdinalNFT {
 
         if (nop) {
             return new bsv.Script('')
+                .add(nop)
                 .add(bsv.Opcode.OP_DUP)
                 .add(bsv.Opcode.OP_HASH160)
                 .add(bsv.Script.fromASM(this.addr))
                 .add(bsv.Opcode.OP_EQUALVERIFY)
                 .add(bsv.Opcode.OP_CHECKSIG)
-                .add(nop)
         }
 
         return super.lockingScript
