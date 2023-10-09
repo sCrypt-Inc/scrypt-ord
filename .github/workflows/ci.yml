@@ -1,0 +1,29 @@
+name: Test
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Prepare git
+        run: git config --global core.autocrlf false
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Npm Install
+        run: npm i
+      - name: gen Env
+        run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > ./test/.env
+      - name: Test
+        run: npm t
