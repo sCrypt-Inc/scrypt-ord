@@ -1,6 +1,6 @@
 {
   "name": "scrypt-ord",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A demo sCrypt smart contract.",
   "main": "dist/index.js",
   "types": "src/index.ts",
