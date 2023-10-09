@@ -20,7 +20,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - name: gen Env
-        run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > ./test/.env
+        run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > ./tests/.env
       - name: Test
         run: npm t
       - name: Verify Versions

@@ -24,6 +24,6 @@ jobs:
       - name: Npm Install
         run: npm i
       - name: gen Env
-        run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > ./test/.env
+        run: echo "PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"" > ./tests/.env
       - name: Test
         run: npm t
