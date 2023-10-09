@@ -233,7 +233,7 @@ export abstract class BSV20V1 extends SmartContract {
                     : await current.signer.getDefaultAddress()
 
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const { BSV20V1P2PKH } = require('./BSV20V1P2PKH')
+                const { BSV20V1P2PKH } = require('./bsv20V1P2PKH')
                 const p2pkh = new BSV20V1P2PKH(
                     current.tick,
                     current.max,
