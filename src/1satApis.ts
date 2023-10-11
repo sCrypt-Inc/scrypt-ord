@@ -4,10 +4,16 @@ import superagent from 'superagent'
 import { handlerApiError } from './utils'
 
 export class OneSatApis {
-    private network: bsv.Networks.Network = bsv.Networks.mainnet
+    private static network: bsv.Networks.Network = bsv.Networks.mainnet
 
     private static get apiBase() {
-        return 'https://v3.ordinals.gorillapool.io/api'
+        return OneSatApis.network === bsv.Networks.mainnet
+            ? 'https://v3.ordinals.gorillapool.io/api'
+            : 'https://testnet.ordinals.gorillapool.io/api'
+    }
+
+    static setNetwork(network: bsv.Networks.Network) {
+        OneSatApis.network = network
     }
 
     static fetchUTXOByOutpoint(outpoint: string): UTXO | null {
