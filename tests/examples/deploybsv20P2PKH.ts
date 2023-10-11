@@ -1,7 +1,5 @@
 import {
-    bsv,
     TestWallet,
-    DefaultProvider,
     toByteString,
     Addr,
     MethodCallOptions,
@@ -9,17 +7,12 @@ import {
     PubKey,
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH, OrdProvider } from '../scrypt-ord'
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.mainnet,
-        })
-    )
+    return new TestWallet(myPrivateKey, new OrdProvider())
 }
 
 async function main() {

@@ -122,4 +122,22 @@ export class OneSatApis {
                 return []
             })
     }
+
+    static submitTx(txid: string): Promise<void> {
+        const url = `${this.apiBase}/tx/${txid}/submit`
+        return superagent
+            .post(url)
+            .then(function (response) {
+                // handle success
+                if (response.status !== 204) {
+                    throw new Error(`invalid status: ${response.status}`)
+                }
+
+                return
+            })
+            .catch(function (error) {
+                handlerApiError(error)
+                return
+            })
+    }
 }

@@ -1,8 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs'
 import {
-    bsv,
     TestWallet,
-    DefaultProvider,
     toByteString,
     sha256,
     Addr,
@@ -11,18 +9,13 @@ import {
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { join } from 'path'
 import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
-import { ContentType, OrdNFTP2PKH } from '../scrypt-ord'
+import { ContentType, OrdNFTP2PKH, OrdProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.mainnet,
-        })
-    )
+    return new TestWallet(myPrivateKey, new OrdProvider())
 }
 
 /**

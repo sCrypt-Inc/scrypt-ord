@@ -1,27 +1,14 @@
 import { readFileSync } from 'fs'
-import {
-    bsv,
-    TestWallet,
-    DefaultProvider,
-    Addr,
-    MethodCallOptions,
-    findSig,
-    PubKey,
-} from 'scrypt-ts'
+import { TestWallet, Addr, MethodCallOptions, findSig, PubKey } from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { join } from 'path'
-import { ContentType, OrdNFTP2PKH } from '../scrypt-ord'
+import { ContentType, OrdNFTP2PKH, OrdProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.mainnet,
-        })
-    )
+    return new TestWallet(myPrivateKey, new OrdProvider())
 }
 
 /**

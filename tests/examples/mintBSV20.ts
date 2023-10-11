@@ -1,7 +1,5 @@
 import {
-    bsv,
     TestWallet,
-    DefaultProvider,
     toByteString,
     sha256,
     Addr,
@@ -9,27 +7,22 @@ import {
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH, OrdProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(
-        myPrivateKey,
-        new DefaultProvider({
-            network: bsv.Networks.mainnet,
-        })
-    )
+    return new TestWallet(myPrivateKey, new OrdProvider())
 }
 
 async function main() {
     HashPuzzleFT.loadArtifact('./artifacts/contracts/hashPuzzleFT.json')
 
     // BSV20 fields
-    const tick = toByteString('HELLO', true)
-    const max = 100n
-    const lim = 10n
+    const tick = toByteString('VIVO', true)
+    const max = 21000000n
+    const lim = 1337n
     const dec = 0n
 
     // create contract instance
@@ -39,7 +32,7 @@ async function main() {
     await hashPuzzle.connect(getSigner())
 
     // deploy the new BSV20 token $HELLO
-    await hashPuzzle.deployToken()
+    //await hashPuzzle.deployToken()
     // mint 10 $HELLO into contract instance
     const mintTx = await hashPuzzle.mint(10n)
     console.log(`Mint tx: ${mintTx.id}`)
