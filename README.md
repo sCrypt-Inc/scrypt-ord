@@ -8,6 +8,21 @@
 npm i scrypt-ord
 ```
 
+
+## `OrdProvider`
+
+When you use sCrypt 1Sat Ordinals SDK, we recommend that you use `OrdProvider` to create `Signer`. This allows your transactions to be indexed faster.
+
+
+```ts
+export function getDefaultSigner(): TestWallet {
+    return new TestWallet(
+        myPrivateKey,
+        new OrdProvider(bsv.Networks.mainnet)
+    )
+}
+```
+
 ## NFT
 
 To lock a `1sat` NFT via a smart contract, have your smart contract extend the `OrdinalNFT` class:
