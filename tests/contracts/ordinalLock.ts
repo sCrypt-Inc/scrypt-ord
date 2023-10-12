@@ -22,7 +22,7 @@ export class OrdinalLock extends OrdinalNFT {
 
     constructor(seller: PubKey, amount: bigint) {
         super()
-        this.init(seller, amount)
+        this.init(...arguments)
         this.seller = seller
         this.amount = amount
     }
