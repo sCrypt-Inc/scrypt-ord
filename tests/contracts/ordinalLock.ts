@@ -10,6 +10,8 @@ import {
     bsv,
     PubKey,
     hash160,
+    Sig,
+    SigHash,
 } from 'scrypt-ts'
 import { OrdinalNFT } from '../scrypt-ord'
 
@@ -30,9 +32,19 @@ export class OrdinalLock extends OrdinalNFT {
     @method()
     public purchase(receiver: Addr) {
         const outputs =
-            Utils.buildAddressOutput(receiver, 1n) + // inscription to the buyer
+            Utils.buildAddressOutput(receiver, 1n) + // ordinal to the buyer
             Utils.buildAddressOutput(hash160(this.seller), this.amount) + // fund to the seller
             this.buildChangeOutput()
+        assert(
+            this.ctx.hashOutputs == hash256(outputs),
+            'hashOutputs check failed'
+        )
+    }
+
+    @method(SigHash.ANYONECANPAY_SINGLE)
+    public cancel(sig: Sig) {
+        assert(this.checkSig(sig, this.seller), 'seller signature check failed')
+        const outputs = Utils.buildAddressOutput(hash160(this.seller), 1n) // ordinal back to the seller
         assert(
             this.ctx.hashOutputs == hash256(outputs),
             'hashOutputs check failed'
@@ -61,6 +73,29 @@ export class OrdinalLock extends OrdinalNFT {
                         Utils.buildAddressScript(hash160(current.seller))
                     ),
                     satoshis: Number(current.amount),
+                })
+            )
+            .change(options.changeAddress || defaultAddress)
+        return {
+            tx,
+            atInputIndex: 0,
+            nexts: [],
+        }
+    }
+
+    static async buildTxForCancel(
+        current: OrdinalLock,
+        options: MethodCallOptions<OrdinalLock>
+    ): Promise<ContractTransaction> {
+        const defaultAddress = await current.signer.getDefaultAddress()
+        const tx = new bsv.Transaction()
+            .addInput(current.buildContractInput())
+            .addOutput(
+                new bsv.Transaction.Output({
+                    script: bsv.Script.fromHex(
+                        Utils.buildAddressScript(hash160(current.seller))
+                    ),
+                    satoshis: 1,
                 })
             )
             .change(options.changeAddress || defaultAddress)
