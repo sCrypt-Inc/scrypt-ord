@@ -32,7 +32,7 @@ import { method, prop, assert, ByteString, sha256, Sha256 } from "scrypt-ts";
 
 import { OrdinalNFT } from "scrypt-ord";
 
-export class HashPuzzleNFT extends OrdinalNFT {
+export class HashLockNFT extends OrdinalNFT {
   @prop()
   hash: Sha256;
 
@@ -55,13 +55,13 @@ export class HashPuzzleNFT extends OrdinalNFT {
 To inscribe an NFT within a contract:
 
 ```ts
-HashPuzzleNFT.loadArtifact();
+HashLockNFT.loadArtifact();
 
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-const instance = new HashPuzzleNFT(hash);
+const instance = new HashLockNFT(hash);
 await instance.connect(getDefaultSigner());
 const inscriptionTx = await instance.inscribeText(text);
 console.log("Inscribed NFT: ", inscriptionTx.id);
@@ -107,13 +107,13 @@ console.log("Inscribed NFT: ", tx.id);
 To transfer an existing NFT, typically secured by a `P2PKH` lock, to a contract:
 
 ```ts
-HashPuzzleNFT.loadArtifact();
+HashLockNFT.loadArtifact();
 
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-const recipient = new HashPuzzleNFT(hash);
+const recipient = new HashLockNFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // Create a P2PKH object from a UTXO
@@ -135,17 +135,17 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
 console.log("Transferred NFT: ", transferTx.id);
 ```
 
-To transfer an NFT from one `HashPuzzleNFT` contract to another:
+To transfer an NFT from one `HashLockNFT` contract to another:
 
 ```ts
-HashPuzzleNFT.loadArtifact();
+HashLockNFT.loadArtifact();
 
-// Retrieve `HashPuzzleNFT` instance holding the NFT
-const nft = await HashPuzzleNFT.getLatestInstance(`origin TXID`);
+// Retrieve `HashLockNFT` instance holding the NFT
+const nft = await HashLockNFT.getLatestInstance(`origin TXID`);
 await nft.connect(getDefaultSigner());
 
 const hash = sha256(toByteString("Hello sCrypt and 1Sat Ordinals", true));
-const recipient = new HashPuzzleNFT(hash);
+const recipient = new HashLockNFT(hash);
 await recipient.connect(getDefaultSigner());
 
 // Send NFT to recipient
@@ -164,22 +164,22 @@ console.log("Transferred NFT: ", transferTx.id);
 ### Deploy FT
 
 ```ts
-HashPuzzleFT.loadArtifact();
+HashLockFT.loadArtifact();
 
 const tick = toByteString("DOGE", true);
 const max = 100000n;
 const lim = max / 10n;
 const dec = 0;
 
-const hashPuzzle = new HashPuzzleFT(
+const hashLock = new HashLockFT(
   tick,
   max,
   lim,
   dec,
   sha256(toByteString("hello, sCrypt!:0", true))
 );
-await hashPuzzle.connect(getDefaultSigner());
-await hashPuzzle.deployToken();
+await hashLock.connect(getDefaultSigner());
+await hashLock.deployToken();
 ```
 
 ### Mint and Transfer FT
@@ -187,12 +187,12 @@ await hashPuzzle.deployToken();
 ```ts
 // Minting
 const amt = 1000n;
-const mintTx = await hashPuzzle.mint(amt);
+const mintTx = await hashLock.mint(amt);
 console.log("Minted tx: ", mintTx.id);
 
 // Transfer
 for (let i = 0; i < 3; i++) {
-  const receiver = new HashPuzzleFT(
+  const receiver = new HashLockFT(
     tick,
     max,
     lim,
@@ -207,14 +207,14 @@ for (let i = 0; i < 3; i++) {
     },
   ];
 
-  const { tx } = await hashPuzzle.methods.unlock(
+  const { tx } = await hashLock.methods.unlock(
     toByteString(`hello, sCrypt!:${i}`, true),
     {
       transfer: recipients,
     }
   );
 
-  hashPuzzle = recipients[0].instance as HashPuzzleFT;
+  hashLock = recipients[0].instance as HashLockFT;
 
   console.log("Transfer tx: ", tx.id);
 }
@@ -223,13 +223,13 @@ for (let i = 0; i < 3; i++) {
 ### Transfer Existing FT to a Smart Contract (Single Input)
 
 ```ts
-HashPuzzleFT.loadArtifact();
+HashLockFT.loadArtifact();
 
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-const recipient = new HashPuzzleFT(hash);
+const recipient = new HashLockFT(hash);
 
 // create p2pkh from a utxo
 // NOTE: You can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
@@ -252,13 +252,13 @@ console.log("Transferred FT: ", transferTx.id);
 ### Transfer Existing FT to a Contract (Multiple Inputs)
 
 ```ts
-HashPuzzleFT.loadArtifact();
+HashLockFT.loadArtifact();
 
 const text = "Hello sCrypt and 1Sat Ordinals";
 const message = toByteString(text, true);
 const hash = sha256(message);
 
-const recipient = new HashPuzzleFT(hash);
+const recipient = new HashLockFT(hash);
 
 // create p2pkh from a utxo
 // NOTE: you can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
@@ -270,7 +270,7 @@ const bsv20V1P2PKHs = await BSV20V1P2PKH.getBSV20(
 await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)));
 const recipients: Array<FTReceiver> = [
   {
-    instance: new HashPuzzleFT(tick, max, lim, dec, sha256(message)),
+    instance: new HashLockFT(tick, max, lim, dec, sha256(message)),
     amt: 6n,
   },
 ];

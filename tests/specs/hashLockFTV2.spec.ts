@@ -1,37 +1,35 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import { sha256, toByteString, MethodCallOptions } from 'scrypt-ts'
-import { HashPuzzleFTV2 } from '../contracts/hashPuzzleFTV2'
+import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 import { getDefaultSigner } from '../utils/txHelper'
-
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20V2P2PKH, FTReceiver } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzleFTV2`', () => {
+describe('Test SmartContract `HashLockFTV2`', () => {
     const max = 100000n
     const dec = 0n
 
-    let hashPuzzle: HashPuzzleFTV2
+    let hashLock: HashLockFTV2
     let tokenId: string
     before(async () => {
-        HashPuzzleFTV2.loadArtifact()
-        hashPuzzle = new HashPuzzleFTV2(
+        HashLockFTV2.loadArtifact()
+        hashLock = new HashLockFTV2(
             toByteString(''),
             max,
             dec,
             sha256(toByteString('hello, sCrypt!:0', true))
         )
-        await hashPuzzle.connect(getDefaultSigner())
+        await hashLock.connect(getDefaultSigner())
 
-        tokenId = await hashPuzzle.deployToken()
+        tokenId = await hashLock.deployToken()
         console.log('token id: ', tokenId)
     })
 
-    it('transfer to an other hashPuzzle.', async () => {
+    it('transfer to an other hashLock.', async () => {
         const callContract = async () => {
             for (let i = 0; i < 3; i++) {
-                const receiver = new HashPuzzleFTV2(
+                const receiver = new HashLockFTV2(
                     toByteString(tokenId, true),
                     max,
                     dec,
@@ -45,15 +43,15 @@ describe('Test SmartContract `HashPuzzleFTV2`', () => {
                     },
                 ]
 
-                const { tx } = await hashPuzzle.methods.unlock(
+                const { tx } = await hashLock.methods.unlock(
                     toByteString(`hello, sCrypt!:${i}`, true),
                     {
                         transfer: recipients,
                     }
                 )
 
-                hashPuzzle = recipients[0].instance as unknown as HashPuzzleFTV2
-                await hashPuzzle.connect(getDefaultSigner())
+                hashLock = recipients[0].instance as unknown as HashLockFTV2
+                await hashLock.connect(getDefaultSigner())
 
                 console.log('transfer tx: ', tx.id)
             }
@@ -62,9 +60,9 @@ describe('Test SmartContract `HashPuzzleFTV2`', () => {
         await expect(callContract()).not.rejected
     })
 
-    it('transfer to an other hashPuzzle with change.', async () => {
+    it('transfer to an other hashLock with change.', async () => {
         const callContract = async () => {
-            const receiver = new HashPuzzleFTV2(
+            const receiver = new HashLockFTV2(
                 toByteString(tokenId, true),
                 max,
                 dec,
@@ -78,11 +76,11 @@ describe('Test SmartContract `HashPuzzleFTV2`', () => {
                 },
             ]
 
-            const { tx, nexts } = await hashPuzzle.methods.unlock(
+            const { tx, nexts } = await hashLock.methods.unlock(
                 toByteString(`hello, sCrypt!:3`, true),
                 {
                     transfer: recipients,
-                } as MethodCallOptions<HashPuzzleFTV2>
+                } as MethodCallOptions<HashLockFTV2>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -93,16 +91,16 @@ describe('Test SmartContract `HashPuzzleFTV2`', () => {
 
             expect(p2pkh.getAmt()).to.be.equal(1n)
 
-            hashPuzzle = recipients[0].instance as HashPuzzleFTV2
-            await hashPuzzle.connect(getDefaultSigner())
+            hashLock = recipients[0].instance as HashLockFTV2
+            await hashLock.connect(getDefaultSigner())
         }
 
         await expect(callContract()).not.rejected
     })
 
-    it('transfer to an other hashPuzzle without change.', async () => {
+    it('transfer to an other hashLock without change.', async () => {
         const callContract = async () => {
-            const receiver = new HashPuzzleFTV2(
+            const receiver = new HashLockFTV2(
                 toByteString(tokenId, true),
                 max,
                 dec,
@@ -116,12 +114,12 @@ describe('Test SmartContract `HashPuzzleFTV2`', () => {
                 },
             ]
 
-            const { tx, nexts } = await hashPuzzle.methods.unlock(
+            const { tx, nexts } = await hashLock.methods.unlock(
                 toByteString(`hello, sCrypt!`, true),
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as MethodCallOptions<HashPuzzleFTV2>
+                } as MethodCallOptions<HashLockFTV2>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -133,21 +131,21 @@ describe('Test SmartContract `HashPuzzleFTV2`', () => {
     })
 
     it('should fail when passing incorrect message', async () => {
-        const receiver = new HashPuzzleFTV2(
+        const receiver = new HashLockFTV2(
             toByteString(tokenId, true),
             max,
             dec,
-            sha256(toByteString('HashPuzzle', true))
+            sha256(toByteString('HashLock', true))
         )
         const call = async () =>
-            await hashPuzzle.methods.unlock(
+            await hashLock.methods.unlock(
                 toByteString('incorrect message', true),
                 {
                     transfer: {
                         instance: receiver,
                         amt: 9n,
                     },
-                } as MethodCallOptions<HashPuzzleFTV2>
+                } as MethodCallOptions<HashLockFTV2>
             )
         await expect(call()).to.be.rejectedWith(/hashes are not equal/)
     })

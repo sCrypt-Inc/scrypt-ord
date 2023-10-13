@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import { Addr, PubKey, findSig } from 'scrypt-ts'
-import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
+import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdNFTP2PKH } from '../scrypt-ord'
@@ -12,7 +12,7 @@ describe('Test mint a image NFT to `OrdNFTP2PKH`', () => {
     let instance: OrdNFTP2PKH
 
     before(async () => {
-        HashPuzzleNFT.loadArtifact()
+        HashLockNFT.loadArtifact()
     })
 
     it('should pass when transfer NFT', async () => {

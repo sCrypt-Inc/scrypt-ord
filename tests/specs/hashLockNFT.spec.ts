@@ -1,21 +1,21 @@
 import { expect, use } from 'chai'
 import { Addr, sha256, toByteString } from 'scrypt-ts'
-import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
+import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdNFTP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashPuzzleNFT`', () => {
+describe('Test SmartContract `HashLockNFT`', () => {
     const text = 'Hello sCrypt and 1Sat Oridinals'
     const message = toByteString(text, true)
     const hash = sha256(message)
 
-    let instance: HashPuzzleNFT
+    let instance: HashLockNFT
 
     before(async () => {
-        HashPuzzleNFT.loadArtifact()
-        instance = new HashPuzzleNFT(hash)
+        HashLockNFT.loadArtifact()
+        instance = new HashLockNFT(hash)
         await instance.connect(getDefaultSigner())
         await instance.inscribeText(text)
     })

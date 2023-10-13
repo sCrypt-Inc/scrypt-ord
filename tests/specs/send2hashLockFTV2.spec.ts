@@ -11,10 +11,10 @@ import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20V2P2PKH, fromByteString } from '../scrypt-ord'
 import { dummyBSV20V2 } from './utils'
-import { HashPuzzleFTV2 } from '../contracts/hashPuzzleFTV2'
+import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 use(chaiAsPromised)
 
-describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
+describe('Test SmartContract send FT to `HashLockFTV2`', () => {
     describe('p2pkh with post FT', () => {
         const tokenId = toByteString(
             '71b08aff9e5017b71bffc66e57e858bb6225084142e36ff60ee40d6cf6d25cf3_0',
@@ -27,16 +27,16 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         const message = toByteString(text, true)
         const hash = sha256(message)
 
-        let recipient: HashPuzzleFTV2
+        let recipient: HashLockFTV2
 
         const signer = getDefaultSigner()
 
         before(async () => {
-            HashPuzzleFTV2.loadArtifact()
-            recipient = new HashPuzzleFTV2(tokenId, max, dec, hash)
+            HashLockFTV2.loadArtifact()
+            recipient = new HashLockFTV2(tokenId, max, dec, hash)
         })
 
-        it('transfer exist FT to a HashPuzzle', async () => {
+        it('transfer exist FT to a HashLock', async () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
@@ -161,16 +161,16 @@ describe('Test SmartContract send FT to `HashPuzzleFTV2`', () => {
         const message = toByteString(text, true)
         const hash = sha256(message)
 
-        let recipient: HashPuzzleFTV2
+        let recipient: HashLockFTV2
 
         const signer = getDefaultSigner()
 
         before(async () => {
-            HashPuzzleFTV2.loadArtifact()
-            recipient = new HashPuzzleFTV2(tick, max, lim, hash)
+            HashLockFTV2.loadArtifact()
+            recipient = new HashLockFTV2(tick, max, lim, hash)
         })
 
-        it('transfer exist FT to a HashPuzzle', async () => {
+        it('transfer exist FT to a HashLock', async () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo

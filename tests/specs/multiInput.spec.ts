@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
 import {
     Addr,
@@ -12,7 +11,7 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
-import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
+import { HashLockFT } from '../contracts/hashLockFT'
 import { getDefaultSigner } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
@@ -32,10 +31,10 @@ describe('Test multi inputs and outputs', () => {
     const dec = 0n
 
     before(async () => {
-        HashPuzzleFT.loadArtifact()
+        HashLockFT.loadArtifact()
     })
 
-    it('should transfer 2 BSV20V1P2PKH to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 2 BSV20V1P2PKH to 1 hashLock successfully.', async () => {
         const transferBSV20 = async () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
@@ -49,7 +48,7 @@ describe('Test multi inputs and outputs', () => {
             await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)))
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashPuzzleFT(
+                    instance: new HashLockFT(
                         tick,
                         max,
                         lim,
@@ -72,7 +71,7 @@ describe('Test multi inputs and outputs', () => {
         return expect(transferBSV20()).not.be.rejected
     })
 
-    it('should transfer 2 BSV20V1P2PKH to 2 hashPuzzle successfully.', async () => {
+    it('should transfer 2 BSV20V1P2PKH to 2 hashLock successfully.', async () => {
         const transferBSV20 = async () => {
             const signer = getDefaultSigner()
             const address = await signer.getDefaultAddress()
@@ -88,7 +87,7 @@ describe('Test multi inputs and outputs', () => {
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashPuzzleFT(
+                    instance: new HashLockFT(
                         tick,
                         max,
                         lim,
@@ -98,7 +97,7 @@ describe('Test multi inputs and outputs', () => {
                     amt: 6n,
                 },
                 {
-                    instance: new HashPuzzleFT(
+                    instance: new HashLockFT(
                         tick,
                         max,
                         lim,
@@ -121,7 +120,7 @@ describe('Test multi inputs and outputs', () => {
         return expect(transferBSV20()).not.be.rejected
     })
 
-    it('should transfer 1 BSV20V1P2PKH and 1 hashPuzzle to 1 hashPuzzle successfully.', async () => {
+    it('should transfer 1 BSV20V1P2PKH and 1 hashLock to 1 hashLock successfully.', async () => {
         const transferBSV20 = async () => {
             const message1 = toByteString('1:hello, sCrypt!', true)
             const message2 = toByteString('2:hello, sCrypt!', true)
@@ -134,7 +133,7 @@ describe('Test multi inputs and outputs', () => {
 
             await sender0.connect(signer)
 
-            const sender1 = new HashPuzzleFT(
+            const sender1 = new HashLockFT(
                 tick,
                 max,
                 lim,
@@ -146,7 +145,7 @@ describe('Test multi inputs and outputs', () => {
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashPuzzleFT(
+                    instance: new HashLockFT(
                         tick,
                         max,
                         lim,
@@ -156,7 +155,7 @@ describe('Test multi inputs and outputs', () => {
                     amt: 6n,
                 },
                 {
-                    instance: new HashPuzzleFT(
+                    instance: new HashLockFT(
                         tick,
                         max,
                         lim,
@@ -183,10 +182,7 @@ describe('Test multi inputs and outputs', () => {
 
             sender0.bindTxBuilder(
                 'unlock',
-                async (
-                    current: BSV20V1P2PKH,
-                    options: MethodCallOptions<BSV20V1P2PKH>
-                ): Promise<ContractTransaction> => {
+                async (current: BSV20V1P2PKH): Promise<ContractTransaction> => {
                     const tx = new bsv.Transaction()
                     const nexts: StatefulNext<SmartContract>[] = []
 
@@ -262,8 +258,8 @@ describe('Test multi inputs and outputs', () => {
             sender1.bindTxBuilder(
                 'unlock',
                 async (
-                    current: HashPuzzleFT,
-                    options: MethodCallOptions<HashPuzzleFT>
+                    current: HashLockFT,
+                    options: MethodCallOptions<HashLockFT>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx) {
                         const tx = options.partialContractTx.tx

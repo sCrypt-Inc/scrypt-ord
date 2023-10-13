@@ -1,19 +1,13 @@
 import { method, prop, assert, ByteString, sha256, Sha256 } from 'scrypt-ts'
 
-import { BSV20V1 } from '../scrypt-ord'
+import { BSV20V2 } from '../scrypt-ord'
 
-export class HashPuzzleFT extends BSV20V1 {
+export class HashLockFTV2 extends BSV20V2 {
     @prop()
     hash: Sha256
 
-    constructor(
-        tick: ByteString,
-        max: bigint,
-        lim: bigint,
-        dec: bigint,
-        hash: Sha256
-    ) {
-        super(tick, max, lim, dec)
+    constructor(id: ByteString, max: bigint, dec: bigint, hash: Sha256) {
+        super(id, max, dec)
         this.init(...arguments)
         this.hash = hash
     }

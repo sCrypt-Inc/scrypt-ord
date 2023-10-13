@@ -32,9 +32,6 @@ async function main() {
     const mintTx = await p2pkh.inscribeImage(image, ContentType.PNG)
     console.log(`Mint tx: ${mintTx.id}`)
 
-    // for now, the contract instance holds the image inscription
-    // this inscription can be transferred only when the hash puzzle is solved
-
     const receiver = new OrdNFTP2PKH(Addr(address.toByteString()))
 
     const { tx: transferTx } = await p2pkh.methods.unlock(

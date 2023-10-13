@@ -7,7 +7,7 @@ import {
     toByteString,
     Addr,
 } from 'scrypt-ts'
-import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
+import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdNFTP2PKH } from '../scrypt-ord'
@@ -16,11 +16,11 @@ import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterNFT } from '../contracts/counterNFT'
 use(chaiAsPromised)
 
-const chain = 'P2PKH -> HashPuzzle -> Counter -> Counter -> HashPuzzle -> P2PKH'
+const chain = 'P2PKH -> HashLock -> Counter -> Counter -> HashLock -> P2PKH'
 
 describe(`Chain NFT Test: ${chain}`, () => {
     before(async () => {
-        HashPuzzleNFT.loadArtifact()
+        HashLockNFT.loadArtifact()
         CounterNFT.loadArtifact()
     })
 
@@ -33,31 +33,28 @@ describe(`Chain NFT Test: ${chain}`, () => {
         return p2pkh
     }
 
-    async function toHashPuzzle(p2pkh: OrdNFTP2PKH): Promise<HashPuzzleNFT> {
-        const hashPuzzle = new HashPuzzleNFT(hash)
-        await hashPuzzle.connect(getDefaultSigner())
+    async function toHashLock(p2pkh: OrdNFTP2PKH): Promise<HashLockNFT> {
+        const hashLock = new HashLockNFT(hash)
+        await hashLock.connect(getDefaultSigner())
         const { tx } = await p2pkh.methods.unlock(
             (sigResps) => findSig(sigResps, myPublicKey),
             PubKey(myPublicKey.toByteString()),
             {
-                transfer: hashPuzzle,
+                transfer: hashLock,
                 pubKeyOrAddrToSign: myPublicKey,
             } as MethodCallOptions<OrdNFTP2PKH>
         )
-        console.log('[1] P2PKH -> HashPuzzle:', tx.id)
-        return hashPuzzle
+        console.log('[1] P2PKH -> HashLock:', tx.id)
+        return hashLock
     }
 
-    async function toCounter(hashPuzzle: HashPuzzleNFT): Promise<CounterNFT> {
+    async function toCounter(hashLock: HashLockNFT): Promise<CounterNFT> {
         const counter = new CounterNFT(0n)
         await counter.connect(getDefaultSigner())
-        const { tx } = await hashPuzzle.methods.unlock(
-            toByteString(text, true),
-            {
-                transfer: counter,
-            } as MethodCallOptions<HashPuzzleNFT>
-        )
-        console.log('[2] HashPuzzle -> Counter:', tx.id)
+        const { tx } = await hashLock.methods.unlock(toByteString(text, true), {
+            transfer: counter,
+        } as MethodCallOptions<HashLockNFT>)
+        console.log('[2] HashLock -> Counter:', tx.id)
         return counter
     }
 
@@ -71,43 +68,38 @@ describe(`Chain NFT Test: ${chain}`, () => {
         return nextInstance
     }
 
-    async function toHashPuzzleAgain(
-        counter: CounterNFT
-    ): Promise<HashPuzzleNFT> {
-        const hashPuzzle = new HashPuzzleNFT(hash)
-        await hashPuzzle.connect(getDefaultSigner())
+    async function toHashLockAgain(counter: CounterNFT): Promise<HashLockNFT> {
+        const hashLock = new HashLockNFT(hash)
+        await hashLock.connect(getDefaultSigner())
 
-        const script = toByteString(hashPuzzle.lockingScript.toHex())
+        const script = toByteString(hashLock.lockingScript.toHex())
         const { tx } = await counter.methods.withdraw(script)
-        console.log('[4] Counter -> HashPuzzle:', tx.id)
+        console.log('[4] Counter -> HashLock:', tx.id)
 
-        hashPuzzle.from = {
+        hashLock.from = {
             tx,
             outputIndex: 0,
         }
-        return hashPuzzle
+        return hashLock
     }
 
-    async function toP2PKH(hashPuzzle: HashPuzzleNFT) {
+    async function toP2PKH(hashLock: HashLockNFT) {
         const p2pkh = new OrdNFTP2PKH(Addr(myAddress.toByteString()))
         await p2pkh.connect(getDefaultSigner())
-        const { tx } = await hashPuzzle.methods.unlock(
-            toByteString(text, true),
-            {
-                transfer: p2pkh,
-            } as MethodCallOptions<HashPuzzleNFT>
-        )
-        console.log('[5] HashPuzzle -> P2PKH:', tx.id)
+        const { tx } = await hashLock.methods.unlock(toByteString(text, true), {
+            transfer: p2pkh,
+        } as MethodCallOptions<HashLockNFT>)
+        console.log('[5] HashLock -> P2PKH:', tx.id)
     }
 
     it('should pass', async () => {
         const call = async () => {
             const p2pkh = await createP2PKH()
-            const hashPuzzle = await toHashPuzzle(p2pkh)
-            const counter = await toCounter(hashPuzzle)
+            const hashLock = await toHashLock(p2pkh)
+            const counter = await toCounter(hashLock)
             const counterAgain = await toCounterAgain(counter)
-            const hashPuzzleAgain = await toHashPuzzleAgain(counterAgain)
-            await toP2PKH(hashPuzzleAgain)
+            const hashLockAgain = await toHashLockAgain(counterAgain)
+            await toP2PKH(hashLockAgain)
         }
         await expect(call()).not.to.be.rejected
     })

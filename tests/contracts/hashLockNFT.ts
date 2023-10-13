@@ -1,13 +1,13 @@
 import { method, prop, assert, ByteString, sha256, Sha256 } from 'scrypt-ts'
 
-import { BSV20V2 } from '../scrypt-ord'
+import { OrdinalNFT } from '../scrypt-ord'
 
-export class HashPuzzleFTV2 extends BSV20V2 {
+export class HashLockNFT extends OrdinalNFT {
     @prop()
     hash: Sha256
 
-    constructor(id: ByteString, max: bigint, dec: bigint, hash: Sha256) {
-        super(id, max, dec)
+    constructor(hash: Sha256) {
+        super()
         this.init(...arguments)
         this.hash = hash
     }

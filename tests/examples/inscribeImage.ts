@@ -8,7 +8,7 @@ import {
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { join } from 'path'
-import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
+import { HashLockNFT } from '../contracts/hashLockNFT'
 import { ContentType, OrdNFTP2PKH, OrdProvider } from '../scrypt-ord'
 
 /**
@@ -27,33 +27,33 @@ function readImage(): string {
 }
 
 async function main() {
-    HashPuzzleNFT.loadArtifact('./artifacts/contracts/hashPuzzleNFT.json')
+    HashLockNFT.loadArtifact('./artifacts/contracts/hashLockNFT.json')
 
     // create contract instance
     const message = toByteString('Hello sCrpyt', true)
     const hash = sha256(message)
-    const hashPuzzle = new HashPuzzleNFT(hash)
-    await hashPuzzle.connect(getSigner())
+    const hashLock = new HashLockNFT(hash)
+    await hashLock.connect(getSigner())
 
     // read image data
     const image = readImage()
 
     // inscribe image into contract instance
-    const mintTx = await hashPuzzle.inscribeImage(image, ContentType.PNG)
+    const mintTx = await hashLock.inscribeImage(image, ContentType.PNG)
     console.log(`Mint tx: ${mintTx.id}`)
 
-    const inscription = hashPuzzle.getInscription().content as Buffer
+    const inscription = hashLock.getInscription().content as Buffer
 
     writeFileSync('inscription.png', inscription)
 
     // for now, the contract instance holds the image inscription
-    // this inscription can be transferred only when the hash puzzle is solved
+    // this inscription can be transferred only when the hash lock is solved
     const address = myAddress
     const receiver = new OrdNFTP2PKH(Addr(address.toByteString()))
 
-    const { tx: transferTx } = await hashPuzzle.methods.unlock(message, {
+    const { tx: transferTx } = await hashLock.methods.unlock(message, {
         transfer: receiver,
-    } as MethodCallOptions<HashPuzzleNFT>)
+    } as MethodCallOptions<HashLockNFT>)
     console.log(`Transfer tx: ${transferTx.id}`)
 }
 

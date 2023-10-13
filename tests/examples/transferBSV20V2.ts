@@ -7,7 +7,7 @@ import {
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { BSV20V2P2PKH, OrdProvider } from '../scrypt-ord'
-import { HashPuzzleFTV2 } from '../contracts/hashPuzzleFTV2'
+import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 /**
  * @returns mainnet signer
  */
@@ -16,7 +16,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashPuzzleFTV2.loadArtifact('./artifacts/contracts/hashPuzzleFTV2.json')
+    HashLockFTV2.loadArtifact('./artifacts/contracts/hashLockFTV2.json')
 
     // BSV20 fields
     const max = 21000000n
@@ -26,9 +26,9 @@ async function main() {
 
     const message = toByteString('Hello sCrpyt', true)
     const hash = sha256(message)
-    const hashPuzzle = new HashPuzzleFTV2(toByteString(''), max, dec, hash)
-    await hashPuzzle.connect(signer)
-    const tokenId = await hashPuzzle.deployToken()
+    const hashLock = new HashLockFTV2(toByteString(''), max, dec, hash)
+    await hashLock.connect(signer)
+    const tokenId = await hashLock.deployToken()
 
     console.log(`tokenId: ${tokenId}`)
     const receiver = {
@@ -38,11 +38,11 @@ async function main() {
             dec,
             Addr(myAddress.toByteString())
         ),
-        amt: hashPuzzle.getAmt(),
+        amt: hashLock.getAmt(),
     }
-    const { tx } = await hashPuzzle.methods.unlock(message, {
+    const { tx } = await hashLock.methods.unlock(message, {
         transfer: receiver,
-    } as MethodCallOptions<HashPuzzleFTV2>)
+    } as MethodCallOptions<HashLockFTV2>)
     console.log(`Transfer tx: ${tx.id}`)
 }
 

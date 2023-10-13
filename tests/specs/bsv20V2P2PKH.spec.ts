@@ -1,20 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-
 import { getDefaultSigner } from '../utils/txHelper'
-
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20V2P2PKH } from '../scrypt-ord'
 import {
     PubKey,
     findSig,
-    toHex,
     Addr,
     toByteString,
     fromByteString,
     ByteString,
 } from 'scrypt-ts'
-import { dummyBSV20, dummyBSV20V2 } from './utils'
+import { dummyBSV20V2 } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract `BSV20V2P2PKH`', () => {

@@ -7,29 +7,29 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
-import { HashPuzzleNFT } from '../contracts/hashPuzzleNFT'
+import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { OrdNFTP2PKH } from '../scrypt-ord'
 import { dummyP2PKH, dummyNFT } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
+describe('Test SmartContract send NFT to `HashLockNFT`', () => {
     describe('p2pkh with post NFT', () => {
         const text = 'Hello sCrypt and 1Sat Ordinals'
         const message = toByteString(text, true)
         const hash = sha256(message)
 
-        let recipient: HashPuzzleNFT
+        let recipient: HashLockNFT
 
         const signer = getDefaultSigner()
 
         before(async () => {
-            HashPuzzleNFT.loadArtifact()
-            recipient = new HashPuzzleNFT(hash)
+            HashLockNFT.loadArtifact()
+            recipient = new HashLockNFT(hash)
         })
 
-        it('transfer exist NFT to a HashPuzzle', async () => {
+        it('transfer exist NFT to a HashLock', async () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
@@ -67,16 +67,16 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         const message = toByteString(text, true)
         const hash = sha256(message)
 
-        let recipient: HashPuzzleNFT
+        let recipient: HashLockNFT
 
         const signer = getDefaultSigner()
 
         before(async () => {
-            HashPuzzleNFT.loadArtifact()
-            recipient = new HashPuzzleNFT(hash)
+            HashLockNFT.loadArtifact()
+            recipient = new HashLockNFT(hash)
         })
 
-        it('transfer exist NFT to a HashPuzzle', async () => {
+        it('transfer exist NFT to a HashLock', async () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
@@ -114,16 +114,16 @@ describe('Test SmartContract send NFT to `HashPuzzleNFT`', () => {
         const message = toByteString(text, true)
         const hash = sha256(message)
 
-        let recipient: HashPuzzleNFT
+        let recipient: HashLockNFT
 
         const signer = getDefaultSigner()
 
         before(async () => {
-            HashPuzzleNFT.loadArtifact()
-            recipient = new HashPuzzleNFT(hash)
+            HashLockNFT.loadArtifact()
+            recipient = new HashLockNFT(hash)
         })
 
-        it('transfer exist NFT to a HashPuzzle', async () => {
+        it('transfer exist NFT to a HashLock', async () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo

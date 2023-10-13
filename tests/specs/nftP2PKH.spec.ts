@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-
 import { getDefaultSigner } from '../utils/txHelper'
-
 import chaiAsPromised from 'chai-as-promised'
 import { ContentType, OrdNFTP2PKH } from '../scrypt-ord'
-import { PubKey, findSig, toHex, Addr } from 'scrypt-ts'
+import { PubKey, findSig, Addr } from 'scrypt-ts'
 import { dummyNFT, dummyP2PKH } from './utils'
 use(chaiAsPromised)
 

@@ -8,7 +8,7 @@ import {
     fromByteString,
     Addr,
 } from 'scrypt-ts'
-import { HashPuzzleFT } from '../contracts/hashPuzzleFT'
+import { HashLockFT } from '../contracts/hashLockFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20V1P2PKH } from '../scrypt-ord'
@@ -17,11 +17,11 @@ import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterFT } from '../contracts/counterFT'
 use(chaiAsPromised)
 
-const chain = 'P2PKH -> HashPuzzle -> Counter -> Counter -> HashPuzzle -> P2PKH'
+const chain = 'P2PKH -> HashLock -> Counter -> Counter -> HashLock -> P2PKH'
 
 describe(`Chain FT Test: ${chain}`, () => {
     before(async () => {
-        HashPuzzleFT.loadArtifact()
+        HashLockFT.loadArtifact()
         CounterFT.loadArtifact()
     })
 
@@ -34,10 +34,10 @@ describe(`Chain FT Test: ${chain}`, () => {
     const dec = 0n
 
     const tokenInP2PKH = 1000n
-    const tokenToHashPuzzle = 800n
+    const tokenToHashLock = 800n
     const tokenToCounter = 700n
     const tokenToCounterAgain = 650n
-    const tokenToHashPuzzleAgain = 300n
+    const tokenToHashLockAgain = 300n
     const tokenToP2PKH = 120n
 
     async function createP2PKH(): Promise<BSV20V1P2PKH> {
@@ -48,55 +48,55 @@ describe(`Chain FT Test: ${chain}`, () => {
         return p2pkh
     }
 
-    async function toHashPuzzle(p2pkh: BSV20V1P2PKH): Promise<HashPuzzleFT> {
+    async function toHashLock(p2pkh: BSV20V1P2PKH): Promise<HashLockFT> {
         const totalAmount = tokenInP2PKH
-        const transferAmount = tokenToHashPuzzle
+        const transferAmount = tokenToHashLock
         const changeAmount = totalAmount - transferAmount
 
-        const hashPuzzle = new HashPuzzleFT(tick, max, lim, dec, hash)
-        await hashPuzzle.connect(getDefaultSigner())
+        const hashLock = new HashLockFT(tick, max, lim, dec, hash)
+        await hashLock.connect(getDefaultSigner())
 
         const { tx, nexts } = await p2pkh.methods.unlock(
             (sigResps) => findSig(sigResps, myPublicKey),
             PubKey(myPublicKey.toByteString()),
             {
                 transfer: {
-                    instance: hashPuzzle,
+                    instance: hashLock,
                     amt: transferAmount,
                 },
                 pubKeyOrAddrToSign: myPublicKey,
             } as MethodCallOptions<BSV20V1P2PKH>
         )
-        console.log('[1] P2PKH -> HashPuzzle:', tx.id)
+        console.log('[1] P2PKH -> HashLock:', tx.id)
 
         expect(nexts.length).to.equal(2)
 
-        expect(hashPuzzle.getAmt()).to.equal(transferAmount)
+        expect(hashLock.getAmt()).to.equal(transferAmount)
 
         const tokenChange = nexts[1].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
-        return hashPuzzle
+        return hashLock
     }
 
-    async function toCounter(hashPuzzle: HashPuzzleFT): Promise<CounterFT> {
-        const totalAmount = tokenToHashPuzzle
+    async function toCounter(hashLock: HashLockFT): Promise<CounterFT> {
+        const totalAmount = tokenToHashLock
         const transferAmount = tokenToCounter
         const changeAmount = totalAmount - transferAmount
 
         const counter = new CounterFT(tick, max, lim, dec, 0n)
         await counter.connect(getDefaultSigner())
 
-        const { tx, nexts } = await hashPuzzle.methods.unlock(
+        const { tx, nexts } = await hashLock.methods.unlock(
             toByteString(text, true),
             {
                 transfer: {
                     instance: counter,
                     amt: transferAmount,
                 },
-            } as MethodCallOptions<HashPuzzleFT>
+            } as MethodCallOptions<HashLockFT>
         )
-        console.log('[2] HashPuzzle -> Counter:', tx.id)
+        console.log('[2] HashLock -> Counter:', tx.id)
 
         expect(nexts.length).to.equal(2)
 
@@ -134,19 +134,17 @@ describe(`Chain FT Test: ${chain}`, () => {
         return nextInstance
     }
 
-    async function toHashPuzzleAgain(
-        counter: CounterFT
-    ): Promise<HashPuzzleFT> {
+    async function toHashLockAgain(counter: CounterFT): Promise<HashLockFT> {
         const totalAmount = tokenToCounterAgain
-        const hashPuzzleAmount = tokenToHashPuzzleAgain
+        const hashLockAmount = tokenToHashLockAgain
         const counterAmount = 100n
-        const changeAmount = totalAmount - hashPuzzleAmount - counterAmount
+        const changeAmount = totalAmount - hashLockAmount - counterAmount
 
         const nextInstance = counter.next()
         nextInstance.incCounter()
 
-        const hashPuzzle = new HashPuzzleFT(tick, max, lim, dec, hash)
-        await hashPuzzle.connect(getDefaultSigner())
+        const hashLock = new HashLockFT(tick, max, lim, dec, hash)
+        await hashLock.connect(getDefaultSigner())
 
         const { tx, nexts } = await counter.methods.inc(counterAmount, {
             transfer: [
@@ -155,25 +153,25 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: counterAmount,
                 },
                 {
-                    instance: hashPuzzle,
-                    amt: hashPuzzleAmount,
+                    instance: hashLock,
+                    amt: hashLockAmount,
                 },
             ],
         } as MethodCallOptions<CounterFT>)
-        console.log('[4] Counter -> HashPuzzle:', tx.id)
+        console.log('[4] Counter -> HashLock:', tx.id)
 
         expect(nexts.length).to.equal(3)
 
         expect(nextInstance.getAmt()).to.equal(counterAmount)
-        expect(hashPuzzle.getAmt()).to.equal(hashPuzzleAmount)
+        expect(hashLock.getAmt()).to.equal(hashLockAmount)
 
         const tokenChange = nexts[2].instance as BSV20V1P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
-        return hashPuzzle
+        return hashLock
     }
 
-    async function toP2PKH(hashPuzzle: HashPuzzleFT) {
+    async function toP2PKH(hashLock: HashLockFT) {
         const p2pkh = new BSV20V1P2PKH(
             tick,
             max,
@@ -183,7 +181,7 @@ describe(`Chain FT Test: ${chain}`, () => {
         )
         await p2pkh.connect(getDefaultSigner())
 
-        const { tx, nexts } = await hashPuzzle.methods.unlock(
+        const { tx, nexts } = await hashLock.methods.unlock(
             toByteString(text, true),
             {
                 transfer: {
@@ -191,9 +189,9 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: tokenToP2PKH,
                 },
                 skipTokenChange: true,
-            } as MethodCallOptions<HashPuzzleFT>
+            } as MethodCallOptions<HashLockFT>
         )
-        console.log('[5] HashPuzzle -> P2PKH:', tx.id)
+        console.log('[5] HashLock -> P2PKH:', tx.id)
 
         expect(nexts.length).to.equal(1)
         expect(p2pkh.getAmt()).to.equal(tokenToP2PKH)
@@ -202,11 +200,11 @@ describe(`Chain FT Test: ${chain}`, () => {
     it('should pass', async () => {
         const call = async () => {
             const p2pkh = await createP2PKH()
-            const hashPuzzle = await toHashPuzzle(p2pkh)
-            const counter = await toCounter(hashPuzzle)
+            const hashLock = await toHashLock(p2pkh)
+            const counter = await toCounter(hashLock)
             const counterAgain = await toCounterAgain(counter)
-            const hashPuzzleAgain = await toHashPuzzleAgain(counterAgain)
-            await toP2PKH(hashPuzzleAgain)
+            const hashLockAgain = await toHashLockAgain(counterAgain)
+            await toP2PKH(hashLockAgain)
         }
         await expect(call()).not.to.be.rejected
     })

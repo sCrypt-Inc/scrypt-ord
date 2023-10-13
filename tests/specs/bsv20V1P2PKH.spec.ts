@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect, use } from 'chai'
-
 import { getDefaultSigner } from '../utils/txHelper'
-
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20V1P2PKH } from '../scrypt-ord'
 import { PubKey, findSig, Addr, toByteString } from 'scrypt-ts'
