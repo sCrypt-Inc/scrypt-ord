@@ -27,7 +27,7 @@ function readImage(): string {
 }
 
 async function main() {
-    HashLockNFT.loadArtifact('./artifacts/contracts/hashLockNFT.json')
+    HashLockNFT.loadArtifact('tests/artifacts/contracts/hashLockNFT.json')
 
     // create contract instance
     const message = toByteString('Hello sCrpyt', true)

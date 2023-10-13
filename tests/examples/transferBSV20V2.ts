@@ -16,7 +16,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashLockFTV2.loadArtifact('./artifacts/contracts/hashLockFTV2.json')
+    HashLockFTV2.loadArtifact('tests/artifacts/contracts/hashLockFTV2.json')
 
     // BSV20 fields
     const max = 21000000n

@@ -17,7 +17,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashLockFT.loadArtifact('./artifacts/contracts/hashLockFT.json')
+    HashLockFT.loadArtifact('tests/artifacts/contracts/hashLockFT.json')
 
     // BSV20 fields
     const tick = toByteString('VIVO', true)
