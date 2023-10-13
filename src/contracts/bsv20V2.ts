@@ -23,7 +23,7 @@ import { fromByteString } from '../utils'
 import { ORDMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
 
 /**
- * A base class implementing the bsv20 v1 protocol
+ * A base class implementing the bsv20 v2 protocol
  */
 export abstract class BSV20V2 extends SmartContract {
     /** Ticker: identifier of the bsv-20 */
