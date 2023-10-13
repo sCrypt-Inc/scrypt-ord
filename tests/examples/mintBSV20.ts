@@ -20,7 +20,7 @@ async function main() {
     HashLockFT.loadArtifact('tests/artifacts/contracts/hashLockFT.json')
 
     // BSV20 fields
-    const tick = toByteString('VIVO', true)
+    const tick = toByteString('HELLO', true)
     const max = 21000000n
     const lim = 1337n
     const dec = 0n
