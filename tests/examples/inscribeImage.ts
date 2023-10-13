@@ -30,7 +30,7 @@ async function main() {
     HashPuzzleNFT.loadArtifact('./artifacts/contracts/hashPuzzleNFT.json')
 
     // create contract instance
-    const message = toByteString('Hello sCrpyt', true)
+    const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
     const hashPuzzle = new HashPuzzleNFT(hash)
     await hashPuzzle.connect(getSigner())
