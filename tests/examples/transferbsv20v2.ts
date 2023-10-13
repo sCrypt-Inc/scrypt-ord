@@ -24,7 +24,7 @@ async function main() {
 
     const signer = getSigner()
 
-    const message = toByteString('Hello sCrpyt', true)
+    const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
     const hashPuzzle = new HashPuzzleFTV2(toByteString(''), max, dec, hash)
     await hashPuzzle.connect(signer)
