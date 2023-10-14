@@ -9,16 +9,16 @@ npm i scrypt-ord
 ```
 
 
-## `OrdProvider`
+## `OrdiProvider`
 
-When you use sCrypt 1Sat Ordinals SDK, we recommend that you use `OrdProvider` to create `Signer`. This allows your transactions to be indexed faster.
+When you use sCrypt 1Sat Ordinals SDK, we recommend that you use `OrdiProvider` to create `Signer`. This allows your transactions to be indexed faster.
 
 
 ```ts
 export function getDefaultSigner(): TestWallet {
     return new TestWallet(
         myPrivateKey,
-        new OrdProvider(bsv.Networks.mainnet)
+        new OrdiProvider(bsv.Networks.mainnet)
     )
 }
 ```
