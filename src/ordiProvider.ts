@@ -16,7 +16,7 @@ import { OneSatApis } from './1satApis'
  * The OrdProvider is backed by [gorillapool]{@link https://v3.ordinals.gorillapool.io/api/docs},
  *
  */
-export class OrdProvider extends Provider {
+export class OrdiProvider extends Provider {
     private network: bsv.Networks.Network = bsv.Networks.mainnet
 
     private _provider: Provider

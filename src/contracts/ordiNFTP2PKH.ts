@@ -20,7 +20,7 @@ import { OrdinalNFT } from './ordinalNFT'
 
 const P2PKHScriptLen = 50
 
-export class OrdNFTP2PKH extends OrdinalNFT {
+export class OrdiNFTP2PKH extends OrdinalNFT {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
@@ -126,7 +126,7 @@ export class OrdNFTP2PKH extends OrdinalNFT {
         }
 
         const instance = (
-            this as unknown as typeof OrdNFTP2PKH
+            this as unknown as typeof OrdiNFTP2PKH
         ).fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
@@ -136,7 +136,7 @@ export class OrdNFTP2PKH extends OrdinalNFT {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'OrdNFTP2PKH',
+    contract: 'OrdiNFTP2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],
@@ -174,4 +174,4 @@ const desc = {
     sourceMapFile: '',
 }
 
-OrdNFTP2PKH.loadArtifact(desc)
+OrdiNFTP2PKH.loadArtifact(desc)

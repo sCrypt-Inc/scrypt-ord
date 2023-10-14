@@ -3,7 +3,7 @@ import { sha256, toByteString, bsv, Addr } from 'scrypt-ts'
 import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdNFTP2PKH } from '../scrypt-ord'
+import { OrdiNFTP2PKH } from '../scrypt-ord'
 import { myAddress } from '../utils/privateKey'
 use(chaiAsPromised)
 
@@ -27,7 +27,7 @@ describe('Test fromTx for SmartContract `HashLockNFT`', () => {
         await hashLock.connect(getDefaultSigner())
 
         const addr = Addr(myAddress.toByteString())
-        const receiver = new OrdNFTP2PKH(addr)
+        const receiver = new OrdiNFTP2PKH(addr)
         const call = async () =>
             await hashLock.methods.unlock(message, {
                 transfer: receiver,

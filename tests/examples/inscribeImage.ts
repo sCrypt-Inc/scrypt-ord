@@ -9,13 +9,13 @@ import {
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { join } from 'path'
 import { HashLockNFT } from '../contracts/hashLockNFT'
-import { ContentType, OrdNFTP2PKH, OrdProvider } from '../scrypt-ord'
+import { ContentType, OrdiNFTP2PKH, OrdiProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(myPrivateKey, new OrdProvider())
+    return new TestWallet(myPrivateKey, new OrdiProvider())
 }
 
 /**
@@ -49,7 +49,7 @@ async function main() {
     // for now, the contract instance holds the image inscription
     // this inscription can be transferred only when the hash lock is solved
     const address = myAddress
-    const receiver = new OrdNFTP2PKH(Addr(address.toByteString()))
+    const receiver = new OrdiNFTP2PKH(Addr(address.toByteString()))
 
     const { tx: transferTx } = await hashLock.methods.unlock(message, {
         transfer: receiver,

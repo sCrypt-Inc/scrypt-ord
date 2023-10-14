@@ -2,7 +2,7 @@ import { DummyProvider, TestWallet, bsv } from 'scrypt-ts'
 import { myPrivateKey } from './privateKey'
 
 import * as dotenv from 'dotenv'
-import { OrdProvider } from '../scrypt-ord'
+import { OrdiProvider } from '../scrypt-ord'
 
 // Load the .env file
 dotenv.config()
@@ -10,12 +10,12 @@ dotenv.config()
 const wallets: Record<string, TestWallet> = {
     testnet: new TestWallet(
         myPrivateKey,
-        new OrdProvider(bsv.Networks.testnet)
+        new OrdiProvider(bsv.Networks.testnet)
     ),
     local: new TestWallet(myPrivateKey, new DummyProvider()),
     mainnet: new TestWallet(
         myPrivateKey,
-        new OrdProvider(bsv.Networks.mainnet)
+        new OrdiProvider(bsv.Networks.mainnet)
     ),
 }
 export function getDefaultSigner(

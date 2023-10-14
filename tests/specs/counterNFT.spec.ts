@@ -4,7 +4,7 @@ import { CounterNFT } from '../contracts/counterNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myAddress } from '../utils/privateKey'
-import { OrdNFTP2PKH } from '../scrypt-ord'
+import { OrdiNFTP2PKH } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterNFT`', () => {
@@ -48,7 +48,7 @@ describe('Test SmartContract `CounterNFT`', () => {
     })
 
     it('should pass when calling `withdraw`', async () => {
-        const receiver = new OrdNFTP2PKH(Addr(myAddress.toByteString()))
+        const receiver = new OrdiNFTP2PKH(Addr(myAddress.toByteString()))
         const call = async () =>
             await instance.methods.withdraw(
                 toByteString(receiver.lockingScript.toHex())

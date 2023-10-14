@@ -10,7 +10,7 @@ import {
 import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdNFTP2PKH } from '../scrypt-ord'
+import { OrdiNFTP2PKH } from '../scrypt-ord'
 import { dummyP2PKH, dummyNFT } from './utils'
 use(chaiAsPromised)
 
@@ -33,9 +33,11 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdNFTP2PKH.fromUTXO(dummyNFT(address, 'hello world'))
+            const p2pkh = OrdiNFTP2PKH.fromUTXO(
+                dummyNFT(address, 'hello world')
+            )
             // or create p2pkh from origin
-            // const p2pkh = OrdNFTP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OrdiNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -45,7 +47,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdNFTP2PKH>
+                } as MethodCallOptions<OrdiNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -56,7 +58,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
-                    transfer: new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
+                    transfer: new OrdiNFTP2PKH(Addr(ordAddress.toByteString())),
                 })
             await expect(call()).not.to.be.rejected
         })
@@ -80,9 +82,11 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdNFTP2PKH.fromUTXO(dummyNFT(address, 'hello world'))
+            const p2pkh = OrdiNFTP2PKH.fromUTXO(
+                dummyNFT(address, 'hello world')
+            )
             // or create p2pkh from origin
-            // const p2pkh = OrdNFTP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OrdiNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -92,7 +96,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdNFTP2PKH>
+                } as MethodCallOptions<OrdiNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -103,7 +107,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
-                    transfer: new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
+                    transfer: new OrdiNFTP2PKH(Addr(ordAddress.toByteString())),
                 })
             await expect(call()).not.to.be.rejected
         })
@@ -127,9 +131,9 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = OrdNFTP2PKH.fromUTXO(dummyP2PKH(address))
+            const p2pkh = OrdiNFTP2PKH.fromUTXO(dummyP2PKH(address))
             // or create p2pkh from origin
-            // const p2pkh = OrdNFTP2PKH.getLatestInstance(`origin`);
+            // const p2pkh = OrdiNFTP2PKH.getLatestInstance(`origin`);
 
             await p2pkh.connect(signer)
 
@@ -139,7 +143,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdNFTP2PKH>
+                } as MethodCallOptions<OrdiNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -150,7 +154,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
-                    transfer: new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
+                    transfer: new OrdiNFTP2PKH(Addr(ordAddress.toByteString())),
                 })
             await expect(call()).not.to.be.rejected
         })

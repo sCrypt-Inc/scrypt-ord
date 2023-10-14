@@ -2,13 +2,13 @@ import { readFileSync } from 'fs'
 import { TestWallet, Addr, MethodCallOptions, findSig, PubKey } from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { join } from 'path'
-import { ContentType, OrdNFTP2PKH, OrdProvider } from '../scrypt-ord'
+import { ContentType, OrdiNFTP2PKH, OrdiProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(myPrivateKey, new OrdProvider())
+    return new TestWallet(myPrivateKey, new OrdiProvider())
 }
 
 /**
@@ -22,7 +22,7 @@ function readImage(): string {
 async function main() {
     const address = myAddress
 
-    const p2pkh = new OrdNFTP2PKH(Addr(address.toByteString()))
+    const p2pkh = new OrdiNFTP2PKH(Addr(address.toByteString()))
     await p2pkh.connect(getSigner())
 
     // read image data
@@ -32,7 +32,7 @@ async function main() {
     const mintTx = await p2pkh.inscribeImage(image, ContentType.PNG)
     console.log(`Mint tx: ${mintTx.id}`)
 
-    const receiver = new OrdNFTP2PKH(Addr(address.toByteString()))
+    const receiver = new OrdiNFTP2PKH(Addr(address.toByteString()))
 
     const { tx: transferTx } = await p2pkh.methods.unlock(
         (sigResponses) => findSig(sigResponses, myPublicKey),
@@ -40,7 +40,7 @@ async function main() {
         {
             transfer: receiver,
             pubKeyOrAddrToSign: myPublicKey,
-        } as MethodCallOptions<OrdNFTP2PKH>
+        } as MethodCallOptions<OrdiNFTP2PKH>
     )
     console.log(`Transfer tx: ${transferTx.id}`)
 }

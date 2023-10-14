@@ -3,7 +3,7 @@ import { Addr, sha256, toByteString } from 'scrypt-ts'
 import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdNFTP2PKH, ContentType } from '../scrypt-ord'
+import { OrdiNFTP2PKH, ContentType } from '../scrypt-ord'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 use(chaiAsPromised)
@@ -30,7 +30,7 @@ describe('Test inscribe an image NFT to `HashLockNFT`', () => {
         const ordAddress = await instance.signer.getDefaultAddress()
         const call = async () => {
             const { tx } = await instance.methods.unlock(message, {
-                transfer: new OrdNFTP2PKH(Addr(ordAddress.toByteString())),
+                transfer: new OrdiNFTP2PKH(Addr(ordAddress.toByteString())),
             })
             console.log('transfer tx: ', tx.id)
         }

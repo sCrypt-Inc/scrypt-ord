@@ -1,12 +1,12 @@
 import { TestWallet } from 'scrypt-ts'
 import { myPrivateKey } from '../utils/privateKey'
-import { BSV20V1P2PKH, OrdProvider } from '../scrypt-ord'
+import { BSV20V1P2PKH, OrdiProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(myPrivateKey, new OrdProvider())
+    return new TestWallet(myPrivateKey, new OrdiProvider())
 }
 
 async function main() {

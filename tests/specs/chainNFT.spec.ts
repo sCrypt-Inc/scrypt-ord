@@ -10,7 +10,7 @@ import {
 import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdNFTP2PKH } from '../scrypt-ord'
+import { OrdiNFTP2PKH } from '../scrypt-ord'
 import { dummyNFT } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterNFT } from '../contracts/counterNFT'
@@ -27,13 +27,13 @@ describe(`Chain NFT Test: ${chain}`, () => {
     const text = 'Hello sCrypt!'
     const hash = sha256(toByteString(text, true))
 
-    async function createP2PKH(): Promise<OrdNFTP2PKH> {
-        const p2pkh = OrdNFTP2PKH.fromUTXO(dummyNFT(myAddress, text))
+    async function createP2PKH(): Promise<OrdiNFTP2PKH> {
+        const p2pkh = OrdiNFTP2PKH.fromUTXO(dummyNFT(myAddress, text))
         await p2pkh.connect(getDefaultSigner())
         return p2pkh
     }
 
-    async function toHashLock(p2pkh: OrdNFTP2PKH): Promise<HashLockNFT> {
+    async function toHashLock(p2pkh: OrdiNFTP2PKH): Promise<HashLockNFT> {
         const hashLock = new HashLockNFT(hash)
         await hashLock.connect(getDefaultSigner())
         const { tx } = await p2pkh.methods.unlock(
@@ -42,7 +42,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
             {
                 transfer: hashLock,
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<OrdNFTP2PKH>
+            } as MethodCallOptions<OrdiNFTP2PKH>
         )
         console.log('[1] P2PKH -> HashLock:', tx.id)
         return hashLock
@@ -84,7 +84,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
     }
 
     async function toP2PKH(hashLock: HashLockNFT) {
-        const p2pkh = new OrdNFTP2PKH(Addr(myAddress.toByteString()))
+        const p2pkh = new OrdiNFTP2PKH(Addr(myAddress.toByteString()))
         await p2pkh.connect(getDefaultSigner())
         const { tx } = await hashLock.methods.unlock(toByteString(text, true), {
             transfer: p2pkh,

@@ -6,13 +6,13 @@ import {
     MethodCallOptions,
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
-import { BSV20V2P2PKH, OrdProvider } from '../scrypt-ord'
+import { BSV20V2P2PKH, OrdiProvider } from '../scrypt-ord'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 /**
  * @returns mainnet signer
  */
 function getSigner() {
-    return new TestWallet(myPrivateKey, new OrdProvider())
+    return new TestWallet(myPrivateKey, new OrdiProvider())
 }
 
 async function main() {
