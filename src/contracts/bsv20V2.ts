@@ -20,7 +20,7 @@ import {
 
 import { Ordinal } from './ordinal'
 import { fromByteString } from '../utils'
-import { ORDMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
+import { OrdiMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
 
 /**
  * A base class implementing the bsv20 v2 protocol
@@ -160,7 +160,7 @@ export abstract class BSV20V2 extends SmartContract {
             options_: MethodCallOptions<BSV20V2>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as ORDMethodCallOptions<BSV20V2>
+            const options = options_ as OrdiMethodCallOptions<BSV20V2>
             const recipients = options.transfer as
                 | Array<FTReceiver>
                 | FTReceiver

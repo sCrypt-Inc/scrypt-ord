@@ -16,7 +16,7 @@ import {
     StatefulNext,
     UTXO,
 } from 'scrypt-ts'
-import { Inscription, NFTReceiver, ORDMethodCallOptions } from '../types'
+import { Inscription, NFTReceiver, OrdiMethodCallOptions } from '../types'
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { ContentType } from '../contentType'
@@ -87,7 +87,7 @@ export abstract class OrdinalNFT extends SmartContract {
             options_: MethodCallOptions<OrdinalNFT>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as ORDMethodCallOptions<OrdinalNFT>
+            const options = options_ as OrdiMethodCallOptions<OrdinalNFT>
 
             // bsv change address
             const changeAddress = await current.signer.getDefaultAddress()
