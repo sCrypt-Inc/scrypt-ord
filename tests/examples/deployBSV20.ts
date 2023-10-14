@@ -24,7 +24,7 @@ async function main() {
     const dec = 0n
 
     const signer = getSigner()
-    const message = toByteString('Hello sCrpyt', true)
+    const message = toByteString('Hello sCrypt', true)
 
     await signer.connect()
 

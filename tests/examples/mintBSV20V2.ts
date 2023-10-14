@@ -24,7 +24,7 @@ async function main() {
     const dec = 0n
 
     // create contract instance
-    const message = toByteString('Hello sCrpyt', true)
+    const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
     const hashLock = new HashLockFTV2(toByteString(''), max, dec, hash)
     await hashLock.connect(getSigner())

@@ -30,7 +30,7 @@ async function main() {
     HashLockNFT.loadArtifact('tests/artifacts/contracts/hashLockNFT.json')
 
     // create contract instance
-    const message = toByteString('Hello sCrpyt', true)
+    const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
     const hashLock = new HashLockNFT(hash)
     await hashLock.connect(getSigner())
