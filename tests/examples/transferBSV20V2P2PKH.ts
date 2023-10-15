@@ -3,7 +3,7 @@ import {
     toByteString,
     Addr,
     findSig,
-    MethodCallOptions,
+    OrdiMethodCallOptions,
     PubKey,
 } from 'scrypt-ts'
 import { myPrivateKey, myPublicKey } from '../utils/privateKey'
@@ -39,7 +39,7 @@ async function main() {
         {
             transfer: [],
             pubKeyOrAddrToSign: myPublicKey,
-        } as MethodCallOptions<BSV20V2P2PKH>
+        } as OrdiMethodCallOptions<BSV20V2P2PKH>
     )
 
     console.log(`Transfer tx: ${tx.id}`)

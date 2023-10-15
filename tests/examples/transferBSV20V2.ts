@@ -3,7 +3,7 @@ import {
     toByteString,
     Addr,
     sha256,
-    MethodCallOptions,
+    OrdiMethodCallOptions,
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { BSV20V2P2PKH, OrdiProvider } from '../scrypt-ord'
@@ -42,7 +42,7 @@ async function main() {
     }
     const { tx } = await hashLock.methods.unlock(message, {
         transfer: receiver,
-    } as MethodCallOptions<HashLockFTV2>)
+    } as OrdiMethodCallOptions<HashLockFTV2>)
     console.log(`Transfer tx: ${tx.id}`)
 }
 

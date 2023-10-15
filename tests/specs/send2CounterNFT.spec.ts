@@ -1,14 +1,8 @@
 import { expect, use } from 'chai'
-import {
-    MethodCallOptions,
-    Addr,
-    PubKey,
-    findSig,
-    toByteString,
-} from 'scrypt-ts'
+import { Addr, PubKey, findSig, toByteString } from 'scrypt-ts'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdiNFTP2PKH } from '../scrypt-ord'
+import { OrdiMethodCallOptions, OrdiNFTP2PKH } from '../scrypt-ord'
 import { dummyNFT, dummyP2PKH } from './utils'
 import { CounterNFT } from '../contracts/counterNFT'
 import { myAddress, myPublicKey } from '../utils/privateKey'
@@ -29,7 +23,7 @@ describe('Test SmartContract send FT to `CounterNFT`', () => {
             {
                 transfer: counter,
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<OrdiNFTP2PKH>
+            } as OrdiMethodCallOptions<OrdiNFTP2PKH>
         )
         console.log('transfer NFT:', tx.id)
         return counter

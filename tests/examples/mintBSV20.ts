@@ -3,7 +3,7 @@ import {
     toByteString,
     sha256,
     Addr,
-    MethodCallOptions,
+    OrdiMethodCallOptions,
 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { HashLockFT } from '../contracts/hashLockFT'
@@ -57,7 +57,7 @@ async function main() {
                 amt: 5n,
             },
         ],
-    } as MethodCallOptions<HashLockFT>)
+    } as OrdiMethodCallOptions<HashLockFT>)
     console.log(`Transfer tx: ${transferTx.id}`)
 }
 

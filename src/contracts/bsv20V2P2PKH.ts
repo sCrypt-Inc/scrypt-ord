@@ -13,7 +13,6 @@ import {
     toByteString,
     pubKey2Addr,
     ByteString,
-    MethodCallOptions,
     findSig,
     ContractTransaction,
     StatefulNext,
@@ -29,6 +28,7 @@ import {
     BSV20V2_JSON,
     BSV20V2_TRANSFER_JSON,
     FTReceiver,
+    OrdiMethodCallOptions,
 } from '../types'
 import { BSV20V2 } from './bsv20V2'
 
@@ -283,7 +283,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
                 'unlock',
                 async (
                     current: BSV20V2P2PKH,
-                    options: MethodCallOptions<BSV20V2P2PKH>
+                    options: OrdiMethodCallOptions<BSV20V2P2PKH>
                 ): Promise<ContractTransaction> => {
                     const tx = options.partialContractTx.tx
                     tx.addInput(current.buildContractInput())
@@ -307,7 +307,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
                     },
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV20V2P2PKH>
             )
         }
 

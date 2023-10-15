@@ -1,9 +1,10 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, PubKey, findSig } from 'scrypt-ts'
+import { PubKey, findSig } from 'scrypt-ts'
 import { PermissionedNFT } from '../contracts/permissionedNFT'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey } from '../utils/privateKey'
+import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `PermissionedNFT`', () => {
@@ -39,7 +40,7 @@ describe('Test SmartContract `PermissionedNFT`', () => {
                 {
                     transfer: nextInstance,
                     pubKeyOrAddrToSign: [alicePublicKey, issuerPublicKey],
-                } as MethodCallOptions<PermissionedNFT>
+                } as OrdiMethodCallOptions<PermissionedNFT>
             )
 
         await expect(call()).not.to.be.rejected

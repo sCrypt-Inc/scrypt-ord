@@ -1,9 +1,10 @@
 import { expect, use } from 'chai'
-import { Addr, toHex, PubKey, findSig, MethodCallOptions } from 'scrypt-ts'
+import { Addr, toHex, PubKey, findSig } from 'scrypt-ts'
 import { OrdinalLock } from '../contracts/ordinalLock'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myAddress, myPublicKey } from '../utils/privateKey'
+import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `OrdinalLock`', () => {
@@ -31,7 +32,7 @@ describe('Test SmartContract `OrdinalLock`', () => {
                 (sigResps) => findSig(sigResps, sellerPublicKey),
                 {
                     pubKeyOrAddrToSign: sellerPublicKey,
-                } as MethodCallOptions<OrdinalLock>
+                } as OrdiMethodCallOptions<OrdinalLock>
             )
         await expect(call()).not.to.be.rejected
     })

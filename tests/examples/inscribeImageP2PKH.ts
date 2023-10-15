@@ -1,5 +1,11 @@
 import { readFileSync } from 'fs'
-import { TestWallet, Addr, MethodCallOptions, findSig, PubKey } from 'scrypt-ts'
+import {
+    TestWallet,
+    Addr,
+    OrdiMethodCallOptions,
+    findSig,
+    PubKey,
+} from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { join } from 'path'
 import { ContentType, OrdiNFTP2PKH, OrdiProvider } from '../scrypt-ord'
@@ -40,7 +46,7 @@ async function main() {
         {
             transfer: receiver,
             pubKeyOrAddrToSign: myPublicKey,
-        } as MethodCallOptions<OrdiNFTP2PKH>
+        } as OrdiMethodCallOptions<OrdiNFTP2PKH>
     )
     console.log(`Transfer tx: ${transferTx.id}`)
 }

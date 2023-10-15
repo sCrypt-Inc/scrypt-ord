@@ -5,7 +5,6 @@ import {
     Utils,
     hash256,
     assert,
-    MethodCallOptions,
     ContractTransaction,
     bsv,
     PubKey,
@@ -13,7 +12,7 @@ import {
     Sig,
     SigHash,
 } from 'scrypt-ts'
-import { OrdinalNFT } from '../scrypt-ord'
+import { OrdiMethodCallOptions, OrdinalNFT } from '../scrypt-ord'
 
 export class OrdinalLock extends OrdinalNFT {
     @prop()
@@ -53,7 +52,7 @@ export class OrdinalLock extends OrdinalNFT {
 
     static async buildTxForPurchase(
         current: OrdinalLock,
-        options: MethodCallOptions<OrdinalLock>,
+        options: OrdiMethodCallOptions<OrdinalLock>,
         receiver: Addr
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()
@@ -85,7 +84,7 @@ export class OrdinalLock extends OrdinalNFT {
 
     static async buildTxForCancel(
         current: OrdinalLock,
-        options: MethodCallOptions<OrdinalLock>
+        options: OrdiMethodCallOptions<OrdinalLock>
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()
         const tx = new bsv.Transaction()

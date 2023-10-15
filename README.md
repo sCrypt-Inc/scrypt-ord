@@ -129,7 +129,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<OrdiNFTP2PKH>
+  } as OrdiMethodCallOptions<OrdiNFTP2PKH>
 );
 
 console.log("Transferred NFT: ", transferTx.id);
@@ -243,7 +243,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as MethodCallOptions<BSV20V1P2PKH>
+  } as OrdiMethodCallOptions<BSV20V1P2PKH>
 );
 
 console.log("Transferred FT: ", transferTx.id);

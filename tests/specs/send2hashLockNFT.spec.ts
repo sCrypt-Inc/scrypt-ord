@@ -1,16 +1,9 @@
 import { expect, use } from 'chai'
-import {
-    Addr,
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    sha256,
-    toByteString,
-} from 'scrypt-ts'
+import { Addr, PubKey, findSig, sha256, toByteString } from 'scrypt-ts'
 import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdiNFTP2PKH } from '../scrypt-ord'
+import { OrdiMethodCallOptions, OrdiNFTP2PKH } from '../scrypt-ord'
 import { dummyP2PKH, dummyNFT } from './utils'
 use(chaiAsPromised)
 
@@ -47,7 +40,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdiNFTP2PKH>
+                } as OrdiMethodCallOptions<OrdiNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -96,7 +89,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdiNFTP2PKH>
+                } as OrdiMethodCallOptions<OrdiNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)
@@ -143,7 +136,7 @@ describe('Test SmartContract send NFT to `HashLockNFT`', () => {
                 {
                     transfer: recipient,
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<OrdiNFTP2PKH>
+                } as OrdiMethodCallOptions<OrdiNFTP2PKH>
             )
 
             console.log('transfer NFT: ', transferTx.id)

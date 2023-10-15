@@ -14,7 +14,6 @@ import {
     pubKey2Addr,
     ByteString,
     fromByteString,
-    MethodCallOptions,
     findSig,
     ContractTransaction,
     StatefulNext,
@@ -24,7 +23,7 @@ import {
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { BSV20V1 } from './bsv20V1'
-import { BSV20V1_JSON, FTReceiver } from '../types'
+import { BSV20V1_JSON, FTReceiver, OrdiMethodCallOptions } from '../types'
 
 const P2PKHScriptLen = 50
 
@@ -265,7 +264,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
                 'unlock',
                 async (
                     current: BSV20V1P2PKH,
-                    options: MethodCallOptions<BSV20V1P2PKH>
+                    options: OrdiMethodCallOptions<BSV20V1P2PKH>
                 ): Promise<ContractTransaction> => {
                     const tx = options.partialContractTx.tx
                     tx.addInput(current.buildContractInput())
@@ -289,7 +288,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
                     },
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<BSV20V1P2PKH>
+                } as OrdiMethodCallOptions<BSV20V1P2PKH>
             )
         }
 

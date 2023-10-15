@@ -1,9 +1,9 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, bsv, toByteString } from 'scrypt-ts'
+import { bsv, toByteString } from 'scrypt-ts'
 import { CounterFT } from '../contracts/counterFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test fromTx for SmartContract `CounterFT`', () => {
@@ -43,7 +43,7 @@ describe('Test fromTx for SmartContract `CounterFT`', () => {
                     instance: nextInstance,
                     amt: transferAmount,
                 },
-            } as MethodCallOptions<CounterFT>
+            } as OrdiMethodCallOptions<CounterFT>
         )
 
         expect(nexts.length).to.equal(2)

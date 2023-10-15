@@ -1,6 +1,5 @@
 import { expect, use } from 'chai'
 import {
-    MethodCallOptions,
     PubKey,
     findSig,
     sha256,
@@ -11,7 +10,7 @@ import {
 import { HashLockFT } from '../contracts/hashLockFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20V1P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 import { dummyBSV20 } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterFT } from '../contracts/counterFT'
@@ -65,7 +64,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: transferAmount,
                 },
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<BSV20V1P2PKH>
+            } as OrdiMethodCallOptions<BSV20V1P2PKH>
         )
         console.log('[1] P2PKH -> HashLock:', tx.id)
 
@@ -94,7 +93,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                     instance: counter,
                     amt: transferAmount,
                 },
-            } as MethodCallOptions<HashLockFT>
+            } as OrdiMethodCallOptions<HashLockFT>
         )
         console.log('[2] HashLock -> Counter:', tx.id)
 
@@ -121,7 +120,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                 instance: nextInstance,
                 amt: transferAmount,
             },
-        } as MethodCallOptions<CounterFT>)
+        } as OrdiMethodCallOptions<CounterFT>)
         console.log('[3] Counter -> Counter:', tx.id)
 
         expect(nexts.length).to.equal(2)
@@ -157,7 +156,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: hashLockAmount,
                 },
             ],
-        } as MethodCallOptions<CounterFT>)
+        } as OrdiMethodCallOptions<CounterFT>)
         console.log('[4] Counter -> HashLock:', tx.id)
 
         expect(nexts.length).to.equal(3)
@@ -189,7 +188,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: tokenToP2PKH,
                 },
                 skipTokenChange: true,
-            } as MethodCallOptions<HashLockFT>
+            } as OrdiMethodCallOptions<HashLockFT>
         )
         console.log('[5] HashLock -> P2PKH:', tx.id)
 

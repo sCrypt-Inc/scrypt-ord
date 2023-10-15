@@ -1,9 +1,10 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, PubKey, findSig, toByteString } from 'scrypt-ts'
+import { PubKey, findSig, toByteString } from 'scrypt-ts'
 import { PermissionedFT } from '../contracts/permissionedFT'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey } from '../utils/privateKey'
+import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `PermissionedFT`', () => {
@@ -50,7 +51,7 @@ describe('Test SmartContract `PermissionedFT`', () => {
                 (sigResps) => findSig(sigResps, issuerPublicKey),
                 {
                     pubKeyOrAddrToSign: [alicePublicKey, issuerPublicKey],
-                } as MethodCallOptions<PermissionedFT>
+                } as OrdiMethodCallOptions<PermissionedFT>
             )
 
         await expect(call()).not.to.be.rejected

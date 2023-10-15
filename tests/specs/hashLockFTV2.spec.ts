@@ -1,9 +1,9 @@
 import { expect, use } from 'chai'
-import { sha256, toByteString, MethodCallOptions } from 'scrypt-ts'
+import { sha256, toByteString } from 'scrypt-ts'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V2P2PKH, FTReceiver } from '../scrypt-ord'
+import { BSV20V2P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashLockFTV2`', () => {
@@ -80,7 +80,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                 toByteString(`hello, sCrypt!:3`, true),
                 {
                     transfer: recipients,
-                } as MethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockFTV2>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -119,7 +119,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as MethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockFTV2>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -145,7 +145,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                         instance: receiver,
                         amt: 9n,
                     },
-                } as MethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockFTV2>
             )
         await expect(call()).to.be.rejectedWith(/hashes are not equal/)
     })
