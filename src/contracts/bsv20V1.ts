@@ -7,11 +7,9 @@ import {
     SmartContract,
     toByteString,
     Utils,
-    assert,
     Addr,
     prop,
     bsv,
-    MethodCallOptions,
     ContractTransaction,
     StatefulNext,
     UTXO,
@@ -168,15 +166,14 @@ export abstract class BSV20V1 extends SmartContract {
         return Ordinal.getInscription(this.getPrependNOPScript())
     }
 
-    protected override getDefaultTxBuilder(
+    protected override getDefaultTxBuilder<T extends SmartContract>(
         methodName: string
-    ): MethodCallTxBuilder<this> {
+    ): MethodCallTxBuilder<T> {
         return async function (
             current: BSV20V1,
-            options_: MethodCallOptions<BSV20V1>,
+            options: OrdiMethodCallOptions<BSV20V1>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as OrdiMethodCallOptions<BSV20V1>
             const recipients = options.transfer as
                 | Array<FTReceiver>
                 | FTReceiver
@@ -277,7 +274,7 @@ export abstract class BSV20V1 extends SmartContract {
                 atInputIndex: 0,
                 nexts: nexts,
             })
-        }
+        } as unknown as MethodCallTxBuilder<T>
     }
 
     static override fromUTXO<T extends SmartContract>(

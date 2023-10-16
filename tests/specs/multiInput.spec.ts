@@ -2,7 +2,6 @@ import { expect, use } from 'chai'
 import {
     Addr,
     ContractTransaction,
-    MethodCallOptions,
     PubKey,
     SmartContract,
     StatefulNext,
@@ -20,6 +19,7 @@ import {
     FTReceiver,
     fromByteString,
     BSV20V1,
+    OrdiMethodCallOptions,
 } from '../scrypt-ord'
 import { dummyBSV20 } from './utils'
 use(chaiAsPromised)
@@ -252,14 +252,14 @@ describe('Test multi inputs and outputs', () => {
                 {
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as MethodCallOptions<BSV20V1P2PKH>
+                } as OrdiMethodCallOptions<BSV20V1P2PKH>
             )
 
             sender1.bindTxBuilder(
                 'unlock',
                 async (
                     current: HashLockFT,
-                    options: MethodCallOptions<HashLockFT>
+                    options: OrdiMethodCallOptions<HashLockFT>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx) {
                         const tx = options.partialContractTx.tx
@@ -281,7 +281,7 @@ describe('Test multi inputs and outputs', () => {
                 transfer: recipients,
                 pubKeyOrAddrToSign: ordPubKey,
                 multiContractCall: true,
-            } as MethodCallOptions<BSV20V1P2PKH>)
+            } as OrdiMethodCallOptions<BSV20V1P2PKH>)
 
             const { tx } = await SmartContract.multiContractCall(
                 partialContractTx,

@@ -1,15 +1,10 @@
 import { expect, use } from 'chai'
-import {
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    toByteString,
-    toHex,
-} from 'scrypt-ts'
+import { PubKey, findSig, toByteString, toHex } from 'scrypt-ts'
 import { PermissionedFTV2 } from '../contracts/permissionedFTV2'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey } from '../utils/privateKey'
+import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `PermissionedFTV2`', () => {
@@ -52,7 +47,7 @@ describe('Test SmartContract `PermissionedFTV2`', () => {
                 (sigResps) => findSig(sigResps, issuerPublicKey),
                 {
                     pubKeyOrAddrToSign: [alicePublicKey, issuerPublicKey],
-                } as MethodCallOptions<PermissionedFTV2>
+                } as OrdiMethodCallOptions<PermissionedFTV2>
             )
 
             console.log('tranfer tx:', tx.id)

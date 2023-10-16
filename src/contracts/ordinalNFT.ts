@@ -11,7 +11,6 @@ import {
     prop,
     bsv,
     MethodCallTxBuilder,
-    MethodCallOptions,
     ContractTransaction,
     StatefulNext,
     UTXO,
@@ -79,16 +78,14 @@ export abstract class OrdinalNFT extends SmartContract {
         return Ordinal.getInscription(this.getPrependNOPScript())
     }
 
-    protected override getDefaultTxBuilder(
+    protected override getDefaultTxBuilder<T extends SmartContract>(
         methodName: string
-    ): MethodCallTxBuilder<this> {
+    ): MethodCallTxBuilder<T> {
         return async function (
             current: OrdinalNFT,
-            options_: MethodCallOptions<OrdinalNFT>,
+            options: OrdiMethodCallOptions<OrdinalNFT>,
             ...args
         ): Promise<ContractTransaction> {
-            const options = options_ as OrdiMethodCallOptions<OrdinalNFT>
-
             // bsv change address
             const changeAddress = await current.signer.getDefaultAddress()
 
@@ -140,7 +137,7 @@ export abstract class OrdinalNFT extends SmartContract {
                 atInputIndex: 0,
                 nexts: nexts,
             })
-        }
+        } as unknown as MethodCallTxBuilder<T>
     }
 
     static override fromUTXO<T extends SmartContract>(

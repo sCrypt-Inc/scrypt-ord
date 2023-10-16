@@ -1,13 +1,10 @@
-import {
-    TestWallet,
-    toByteString,
-    Addr,
-    MethodCallOptions,
-    findSig,
-    PubKey,
-} from 'scrypt-ts'
+import { TestWallet, toByteString, Addr, findSig, PubKey } from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
-import { BSV20V1P2PKH, OrdiProvider } from '../scrypt-ord'
+import {
+    BSV20V1P2PKH,
+    OrdiProvider,
+    OrdiMethodCallOptions,
+} from '../scrypt-ord'
 /**
  * @returns mainnet signer
  */
@@ -53,7 +50,7 @@ async function main() {
         {
             transfer: receiver,
             pubKeyOrAddrToSign: myPublicKey,
-        } as MethodCallOptions<BSV20V1P2PKH>
+        } as OrdiMethodCallOptions<BSV20V1P2PKH>
     )
 
     console.log(`Transfer tx: ${transferTx.id}`)

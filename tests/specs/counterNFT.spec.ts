@@ -1,10 +1,10 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, Addr, toByteString } from 'scrypt-ts'
+import { Addr, toByteString } from 'scrypt-ts'
 import { CounterNFT } from '../contracts/counterNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myAddress } from '../utils/privateKey'
-import { OrdiNFTP2PKH } from '../scrypt-ord'
+import { OrdiNFTP2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterNFT`', () => {
@@ -34,7 +34,7 @@ describe('Test SmartContract `CounterNFT`', () => {
                 const { tx: callTx } = await currentInstance.methods.incOnchain(
                     {
                         transfer: nextInstance,
-                    } as MethodCallOptions<CounterNFT>
+                    } as OrdiMethodCallOptions<CounterNFT>
                 )
 
                 console.log('Contract CounterNFT called: ', callTx.id)

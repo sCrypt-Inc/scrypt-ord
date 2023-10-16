@@ -1,12 +1,11 @@
-import {
-    bsv,
-    TestWallet,
-    toByteString,
-    Addr,
-    MethodCallOptions,
-} from 'scrypt-ts'
+import { bsv, TestWallet, toByteString, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
-import { BSV20V1P2PKH, OrdiProvider } from '../scrypt-ord'
+import {
+    BSV20V1P2PKH,
+    OrdiProvider,
+    OrdiMethodCallOptions,
+    FTReceiver,
+} from '../scrypt-ord'
 import { HashLockFT } from '../contracts/hashLockFT'
 /**
  * @returns mainnet signer
@@ -36,7 +35,7 @@ async function main() {
 
     await hashLock.connect(signer)
 
-    const receiver = {
+    const receiver: FTReceiver = {
         instance: new BSV20V1P2PKH(
             tick,
             max,
@@ -49,7 +48,7 @@ async function main() {
 
     const { tx } = await hashLock.methods.unlock(message, {
         transfer: receiver,
-    } as MethodCallOptions<HashLockFT>)
+    } as OrdiMethodCallOptions<HashLockFT>)
 
     console.log(`Transfer tx: ${tx.id}`)
 }

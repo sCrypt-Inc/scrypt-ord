@@ -1,15 +1,12 @@
 import { expect, use } from 'chai'
-import {
-    Addr,
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    sha256,
-    toByteString,
-} from 'scrypt-ts'
+import { Addr, PubKey, findSig, sha256, toByteString } from 'scrypt-ts'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V2P2PKH, fromByteString } from '../scrypt-ord'
+import {
+    BSV20V2P2PKH,
+    OrdiMethodCallOptions,
+    fromByteString,
+} from '../scrypt-ord'
 import { dummyBSV20V2 } from './utils'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 use(chaiAsPromised)
@@ -57,7 +54,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                         },
                     ],
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV20V2P2PKH>
             )
 
             console.log('transfer FT: ', transferTx.id)
@@ -94,7 +91,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                             },
                         ],
                         pubKeyOrAddrToSign: wrongPubKey,
-                    } as MethodCallOptions<BSV20V2P2PKH>
+                    } as OrdiMethodCallOptions<BSV20V2P2PKH>
                 )
             await expect(call()).to.be.rejectedWith(/signature check failed/)
         })
@@ -191,7 +188,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                         },
                     ],
                     pubKeyOrAddrToSign: pubkey,
-                } as MethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV20V2P2PKH>
             )
 
             console.log('transfer FT: ', transferTx.id)

@@ -1,15 +1,14 @@
 import { readFileSync, writeFileSync } from 'fs'
-import {
-    TestWallet,
-    toByteString,
-    sha256,
-    Addr,
-    MethodCallOptions,
-} from 'scrypt-ts'
+import { TestWallet, toByteString, sha256, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { join } from 'path'
 import { HashLockNFT } from '../contracts/hashLockNFT'
-import { ContentType, OrdiNFTP2PKH, OrdiProvider } from '../scrypt-ord'
+import {
+    ContentType,
+    OrdiMethodCallOptions,
+    OrdiNFTP2PKH,
+    OrdiProvider,
+} from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
@@ -53,7 +52,7 @@ async function main() {
 
     const { tx: transferTx } = await hashLock.methods.unlock(message, {
         transfer: receiver,
-    } as MethodCallOptions<HashLockNFT>)
+    } as OrdiMethodCallOptions<HashLockNFT>)
     console.log(`Transfer tx: ${transferTx.id}`)
 }
 

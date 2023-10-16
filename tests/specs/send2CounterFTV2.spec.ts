@@ -1,14 +1,12 @@
 import { expect, use } from 'chai'
-import {
-    Addr,
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    toByteString,
-} from 'scrypt-ts'
+import { Addr, PubKey, findSig, toByteString } from 'scrypt-ts'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V2P2PKH, fromByteString } from '../scrypt-ord'
+import {
+    BSV20V2P2PKH,
+    OrdiMethodCallOptions,
+    fromByteString,
+} from '../scrypt-ord'
 import { dummyBSV20V2 } from './utils'
 import { CounterFTV2 } from '../contracts/counterFTV2'
 import { myAddress, myPublicKey } from '../utils/privateKey'
@@ -51,7 +49,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
                     },
                 ],
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<BSV20V2P2PKH>
+            } as OrdiMethodCallOptions<BSV20V2P2PKH>
         )
         console.log('transfer FT:', tx.id)
 
@@ -93,7 +91,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
                     amt: p2pkhAmount,
                 },
             ],
-        } as MethodCallOptions<CounterFTV2>)
+        } as OrdiMethodCallOptions<CounterFTV2>)
         console.log('transfer FT: ', tx.id)
 
         expect(nexts.length).to.equal(3)

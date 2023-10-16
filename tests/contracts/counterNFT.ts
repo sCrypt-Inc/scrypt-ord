@@ -4,7 +4,6 @@ import {
     assert,
     hash256,
     Utils,
-    MethodCallOptions,
     bsv,
     ContractTransaction,
     int2ByteString,
@@ -12,7 +11,7 @@ import {
     ByteString,
 } from 'scrypt-ts'
 
-import { OrdinalNFT } from '../scrypt-ord'
+import { OrdiMethodCallOptions, OrdinalNFT } from '../scrypt-ord'
 
 export class CounterNFT extends OrdinalNFT {
     @prop(true)
@@ -74,7 +73,7 @@ export class CounterNFT extends OrdinalNFT {
 
     static async buildTxForWithdraw(
         current: CounterNFT,
-        options: MethodCallOptions<CounterNFT>,
+        options: OrdiMethodCallOptions<CounterNFT>,
         outputScript: ByteString
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()

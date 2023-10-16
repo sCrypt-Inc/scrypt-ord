@@ -54,14 +54,15 @@ export type BSV20V2_JSON = BSV20V2_DEPLOY_MINT_JSON | BSV20V2_TRANSFER_JSON
 
 export type BSV20_JSON = BSV20V1_JSON | BSV20V2_JSON
 
-export type FTReceiver = {
+export interface FTReceiver {
     instance: SmartContract
     amt: bigint
 }
 
 export type NFTReceiver = SmartContract
 
-export interface OrdiMethodCallOptions<T> extends MethodCallOptions<T> {
+export interface OrdiMethodCallOptions<T extends SmartContract>
+    extends MethodCallOptions<T> {
     transfer: Array<FTReceiver> | FTReceiver | NFTReceiver
     tokenChangeAddress?: bsv.Address
     skipTokenChange?: boolean

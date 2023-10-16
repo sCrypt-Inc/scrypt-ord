@@ -7,13 +7,12 @@ import {
     hash256,
     ByteString,
     toByteString,
-    MethodCallOptions,
     ContractTransaction,
     bsv,
     toHex,
 } from 'scrypt-ts'
 
-import { BSV20V2 } from '../scrypt-ord'
+import { BSV20V2, OrdiMethodCallOptions } from '../scrypt-ord'
 
 export class PermissionedFTV2 extends BSV20V2 {
     @prop()
@@ -81,7 +80,7 @@ export class PermissionedFTV2 extends BSV20V2 {
 
     static async buildTxForTransfer(
         current: PermissionedFTV2,
-        options: MethodCallOptions<PermissionedFTV2>,
+        options: OrdiMethodCallOptions<PermissionedFTV2>,
         recipient: PubKey,
         tokenTransferAmount: bigint,
         tokenChangeAmount: bigint

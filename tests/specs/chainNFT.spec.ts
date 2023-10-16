@@ -1,16 +1,9 @@
 import { expect, use } from 'chai'
-import {
-    MethodCallOptions,
-    PubKey,
-    findSig,
-    sha256,
-    toByteString,
-    Addr,
-} from 'scrypt-ts'
+import { PubKey, findSig, sha256, toByteString, Addr } from 'scrypt-ts'
 import { HashLockNFT } from '../contracts/hashLockNFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { OrdiNFTP2PKH } from '../scrypt-ord'
+import { OrdiNFTP2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 import { dummyNFT } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterNFT } from '../contracts/counterNFT'
@@ -42,7 +35,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
             {
                 transfer: hashLock,
                 pubKeyOrAddrToSign: myPublicKey,
-            } as MethodCallOptions<OrdiNFTP2PKH>
+            } as OrdiMethodCallOptions<OrdiNFTP2PKH>
         )
         console.log('[1] P2PKH -> HashLock:', tx.id)
         return hashLock
@@ -53,7 +46,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
         await counter.connect(getDefaultSigner())
         const { tx } = await hashLock.methods.unlock(toByteString(text, true), {
             transfer: counter,
-        } as MethodCallOptions<HashLockNFT>)
+        } as OrdiMethodCallOptions<HashLockNFT>)
         console.log('[2] HashLock -> Counter:', tx.id)
         return counter
     }
@@ -63,7 +56,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
         nextInstance.counter++
         const { tx } = await counter.methods.incOnchain({
             transfer: nextInstance,
-        } as MethodCallOptions<CounterNFT>)
+        } as OrdiMethodCallOptions<CounterNFT>)
         console.log('[3] Counter -> Counter:', tx.id)
         return nextInstance
     }
@@ -88,7 +81,7 @@ describe(`Chain NFT Test: ${chain}`, () => {
         await p2pkh.connect(getDefaultSigner())
         const { tx } = await hashLock.methods.unlock(toByteString(text, true), {
             transfer: p2pkh,
-        } as MethodCallOptions<HashLockNFT>)
+        } as OrdiMethodCallOptions<HashLockNFT>)
         console.log('[5] HashLock -> P2PKH:', tx.id)
     }
 
