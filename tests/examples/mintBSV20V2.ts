@@ -1,13 +1,11 @@
-import {
-    TestWallet,
-    toByteString,
-    sha256,
-    Addr,
-    OrdiMethodCallOptions,
-} from 'scrypt-ts'
+import { TestWallet, toByteString, sha256, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
-import { BSV20V2P2PKH, OrdiProvider } from '../scrypt-ord'
+import {
+    BSV20V2P2PKH,
+    OrdiProvider,
+    OrdiMethodCallOptions,
+} from '../scrypt-ord'
 
 /**
  * @returns mainnet signer

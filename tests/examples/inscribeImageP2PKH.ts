@@ -1,14 +1,13 @@
 import { readFileSync } from 'fs'
-import {
-    TestWallet,
-    Addr,
-    OrdiMethodCallOptions,
-    findSig,
-    PubKey,
-} from 'scrypt-ts'
+import { TestWallet, Addr, findSig, PubKey } from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 import { join } from 'path'
-import { ContentType, OrdiNFTP2PKH, OrdiProvider } from '../scrypt-ord'
+import {
+    ContentType,
+    OrdiNFTP2PKH,
+    OrdiProvider,
+    OrdiMethodCallOptions,
+} from '../scrypt-ord'
 
 /**
  * @returns mainnet signer

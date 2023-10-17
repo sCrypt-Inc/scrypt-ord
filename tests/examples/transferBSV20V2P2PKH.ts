@@ -1,13 +1,10 @@
-import {
-    TestWallet,
-    toByteString,
-    Addr,
-    findSig,
-    OrdiMethodCallOptions,
-    PubKey,
-} from 'scrypt-ts'
+import { TestWallet, toByteString, Addr, findSig, PubKey } from 'scrypt-ts'
 import { myPrivateKey, myPublicKey } from '../utils/privateKey'
-import { BSV20V2P2PKH, OrdiProvider } from '../scrypt-ord'
+import {
+    BSV20V2P2PKH,
+    OrdiProvider,
+    OrdiMethodCallOptions,
+} from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
