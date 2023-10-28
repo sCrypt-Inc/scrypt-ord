@@ -16,7 +16,7 @@ export class OneSatApis {
         OneSatApis.network = network
     }
 
-    static fetchUTXOByOutpoint(outpoint: string): UTXO | null {
+    static fetchUTXOByOutpoint(outpoint: string): Promise<UTXO | null> {
         const url = `${this.apiBase}/txos/${outpoint}?script=true`
 
         return superagent
