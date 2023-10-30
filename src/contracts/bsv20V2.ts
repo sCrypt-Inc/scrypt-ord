@@ -157,7 +157,7 @@ export abstract class BSV20V2 extends SmartContract {
         return async function (
             current: BSV20V2,
             options: OrdiMethodCallOptions<BSV20V2>,
-            ...args
+            ...args: any[]
         ): Promise<ContractTransaction> {
             const recipients = options.transfer as
                 | Array<FTReceiver>

@@ -74,8 +74,12 @@ export abstract class OrdinalNFT extends SmartContract {
         })
     }
 
-    getInscription(): Inscription {
-        return Ordinal.getInscription(this.getPrependNOPScript())
+    getInscription(): Inscription | null {
+        const nopScript = this.getPrependNOPScript()
+        if (nopScript) {
+            return Ordinal.getInscription(nopScript)
+        }
+        return null
     }
 
     protected override getDefaultTxBuilder<T extends SmartContract>(
@@ -84,7 +88,7 @@ export abstract class OrdinalNFT extends SmartContract {
         return async function (
             current: OrdinalNFT,
             options: OrdiMethodCallOptions<OrdinalNFT>,
-            ...args
+            ...args: any[]
         ): Promise<ContractTransaction> {
             // bsv change address
             const changeAddress = await current.signer.getDefaultAddress()

@@ -163,7 +163,12 @@ export abstract class BSV20V1 extends SmartContract {
     }
 
     getInscription(): Inscription {
-        return Ordinal.getInscription(this.getPrependNOPScript())
+        const nopScript = this.getPrependNOPScript()
+
+        if (!nopScript) {
+            throw new Error('No inscription found!')
+        }
+        return Ordinal.getInscription(nopScript)
     }
 
     protected override getDefaultTxBuilder<T extends SmartContract>(
@@ -172,7 +177,7 @@ export abstract class BSV20V1 extends SmartContract {
         return async function (
             current: BSV20V1,
             options: OrdiMethodCallOptions<BSV20V1>,
-            ...args
+            ...args: any[]
         ): Promise<ContractTransaction> {
             const recipients = options.transfer as
                 | Array<FTReceiver>

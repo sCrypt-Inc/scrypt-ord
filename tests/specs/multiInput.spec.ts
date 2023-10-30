@@ -2,6 +2,7 @@ import { expect, use } from 'chai'
 import {
     Addr,
     ContractTransaction,
+    MethodCallOptions,
     PubKey,
     SmartContract,
     StatefulNext,
@@ -250,6 +251,7 @@ describe('Test multi inputs and outputs', () => {
                 (sigResps) => findSig(sigResps, ordPubKey),
                 PubKey(ordPubKey.toByteString()),
                 {
+                    transfer: [],
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
                 } as OrdiMethodCallOptions<BSV20V1P2PKH>
@@ -259,7 +261,7 @@ describe('Test multi inputs and outputs', () => {
                 'unlock',
                 async (
                     current: HashLockFT,
-                    options: OrdiMethodCallOptions<HashLockFT>
+                    options: MethodCallOptions<HashLockFT>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx) {
                         const tx = options.partialContractTx.tx
