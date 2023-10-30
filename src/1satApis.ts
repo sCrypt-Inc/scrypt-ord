@@ -1,7 +1,7 @@
 import { UTXO, bsv } from 'scrypt-ts'
 
 import superagent from 'superagent'
-import { handlerApiError } from './utils'
+import { handlerApiError, isBSV20v2 } from './utils'
 
 export class OneSatApis {
     private static network: bsv.Networks.Network = bsv.Networks.mainnet
@@ -16,12 +16,12 @@ export class OneSatApis {
         OneSatApis.network = network
     }
 
-    static fetchUTXOByOutpoint(outpoint: string): UTXO | null {
+    static fetchUTXOByOutpoint(outpoint: string): Promise<UTXO | null> {
         const url = `${this.apiBase}/txos/${outpoint}?script=true`
 
         return superagent
             .get(url)
-            .then(function (response) {
+            .then(function (response: superagent.Response) {
                 // handle success
                 const script = Buffer.from(
                     response.body.script,
@@ -46,7 +46,7 @@ export class OneSatApis {
 
         const res = await superagent
             .get(url)
-            .then(function (response) {
+            .then(function (response: superagent.Response) {
                 // handle success
                 return response.body
             })
@@ -77,43 +77,22 @@ export class OneSatApis {
         address: string,
         tick: string
     ): Promise<Array<UTXO>> {
-        const url = `${this.apiBase}/bsv20/${address}/tick/${tick}`
+        const url = isBSV20v2(tick)
+            ? `${this.apiBase}/bsv20/${address}/id/${tick}`
+            : `${this.apiBase}/bsv20/${address}/tick/${tick}`
 
         return superagent
             .get(url)
-            .then(function (response) {
+            .then(async function (response: superagent.Response) {
                 // handle success
                 if (Array.isArray(response.body)) {
-                    return Promise.all(
+                    const utxos = await Promise.all(
                         response.body.map((utxo) => {
                             return OneSatApis.fetchUTXOByOutpoint(utxo.outpoint)
                         })
                     )
-                }
-                return []
-            })
-            .catch(function (error) {
-                handlerApiError(error)
-                return []
-            })
-    }
 
-    static fetchBSV20V2Utxos(
-        address: string,
-        id: string
-    ): Promise<Array<UTXO>> {
-        const url = `${this.apiBase}/bsv20/${address}/id/${id}`
-
-        return superagent
-            .get(url)
-            .then(function (response) {
-                // handle success
-                if (Array.isArray(response.body)) {
-                    return Promise.all(
-                        response.body.map((utxo) => {
-                            return OneSatApis.fetchUTXOByOutpoint(utxo.outpoint)
-                        })
-                    )
+                    return utxos.filter((u) => u !== null) as Array<UTXO>
                 }
                 return []
             })
@@ -127,7 +106,7 @@ export class OneSatApis {
         const url = `${this.apiBase}/tx/${txid}/submit`
         return superagent
             .post(url)
-            .then(function (response) {
+            .then(function (response: superagent.Response) {
                 // handle success
                 if (response.status !== 204) {
                     throw new Error(`invalid status: ${response.status}`)

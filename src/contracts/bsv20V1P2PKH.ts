@@ -18,6 +18,8 @@ import {
     ContractTransaction,
     StatefulNext,
     Signer,
+    SignatureResponse,
+    MethodCallOptions,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
@@ -97,14 +99,19 @@ export class BSV20V1P2PKH extends BSV20V1 {
 
     override getAmt() {
         const nop = this.getNopScript()
-        return Ordinal.getAmt(nop, fromByteString(this.tick))
+        if (nop) {
+            return Ordinal.getAmt(nop, fromByteString(this.tick))
+        }
+
+        throw new Error('No inscription script!')
     }
 
     static override fromLockingScript(script: string): SmartContract {
         const ls = bsv.Script.fromHex(script)
 
-        if (!this.getDelegateClazz()) {
-            throw new Error('no DelegateClazz found!')
+        const DelegateClazz = this.getDelegateClazz()
+        if (!DelegateClazz) {
+            throw new Error('No DelegateClazz found!')
         }
 
         let rawP2PKH = ''
@@ -115,7 +122,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
             rawP2PKH = script.slice(Number(Ordinal.sizeOfOrdinal(script)) * 2)
         }
 
-        const delegateInstance = this.getDelegateClazz().fromHex(rawP2PKH)
+        const delegateInstance = DelegateClazz.fromHex(rawP2PKH)
 
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
@@ -158,8 +165,8 @@ export class BSV20V1P2PKH extends BSV20V1 {
         return instance
     }
 
-    static fromOutPoint(outPoint: string): BSV20V1P2PKH {
-        const utxo = OneSatApis.fetchUTXOByOutpoint(outPoint)
+    static async fromOutPoint(outPoint: string): Promise<BSV20V1P2PKH> {
+        const utxo = await OneSatApis.fetchUTXOByOutpoint(outPoint)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
@@ -264,23 +271,27 @@ export class BSV20V1P2PKH extends BSV20V1 {
                 'unlock',
                 async (
                     current: BSV20V1P2PKH,
-                    options: OrdiMethodCallOptions<BSV20V1P2PKH>
+                    options: MethodCallOptions<BSV20V1P2PKH>
                 ): Promise<ContractTransaction> => {
-                    const tx = options.partialContractTx.tx
-                    tx.addInput(current.buildContractInput())
+                    if (options.partialContractTx?.tx) {
+                        const tx = options.partialContractTx.tx
+                        tx.addInput(current.buildContractInput())
 
-                    return Promise.resolve({
-                        tx: tx,
-                        atInputIndex: i,
-                        nexts,
-                    })
+                        return Promise.resolve({
+                            tx: tx,
+                            atInputIndex: i,
+                            nexts,
+                        })
+                    }
+                    throw new Error('No partialContractTx found!')
                 }
             )
 
             await p2pkh.methods.unlock(
-                (sigResps) => findSig(sigResps, ordPubKey),
+                (sigResps: SignatureResponse[]) => findSig(sigResps, ordPubKey),
                 PubKey(ordPubKey.toByteString()),
                 {
+                    transfer: [],
                     partialContractTx: {
                         tx: tx,
                         atInputIndex: 0,

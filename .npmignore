@@ -17,3 +17,5 @@ tests/
 .prettierignore
 tsconfig-scryptTS.json
 scrypt.index.json
+logo.png
+out/

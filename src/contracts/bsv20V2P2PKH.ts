@@ -19,6 +19,8 @@ import {
     Signer,
     toHex,
     fromByteString,
+    SignatureResponse,
+    MethodCallOptions,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
@@ -118,13 +120,18 @@ export class BSV20V2P2PKH extends BSV20V2 {
 
     override getAmt() {
         const nop = this.getNopScript()
-        return Ordinal.getAmtV2(nop)
+        if (nop) {
+            return Ordinal.getAmtV2(nop)
+        }
+
+        throw new Error('No inscription script!')
     }
 
     static override fromLockingScript(script: string): SmartContract {
         const ls = bsv.Script.fromHex(script)
 
-        if (!this.getDelegateClazz()) {
+        const DelegateClazz = this.getDelegateClazz()
+        if (!DelegateClazz) {
             throw new Error('no DelegateClazz found!')
         }
 
@@ -136,7 +143,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
             rawP2PKH = script.slice(Number(Ordinal.sizeOfOrdinal(script)) * 2)
         }
 
-        const delegateInstance = this.getDelegateClazz().fromHex(rawP2PKH)
+        const delegateInstance = DelegateClazz.fromHex(rawP2PKH)
 
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
@@ -178,8 +185,8 @@ export class BSV20V2P2PKH extends BSV20V2 {
         return instance
     }
 
-    static fromOutPoint(outPoint: string): BSV20V2P2PKH {
-        const utxo = OneSatApis.fetchUTXOByOutpoint(outPoint)
+    static async fromOutPoint(outPoint: string): Promise<BSV20V2P2PKH> {
+        const utxo = await OneSatApis.fetchUTXOByOutpoint(outPoint)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
@@ -196,7 +203,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
         id: string,
         address: string
     ): Promise<Array<BSV20V2P2PKH>> {
-        const bsv20Utxos = await OneSatApis.fetchBSV20V2Utxos(address, id)
+        const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, id)
         return bsv20Utxos.map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
     }
 
@@ -283,23 +290,28 @@ export class BSV20V2P2PKH extends BSV20V2 {
                 'unlock',
                 async (
                     current: BSV20V2P2PKH,
-                    options: OrdiMethodCallOptions<BSV20V2P2PKH>
+                    options: MethodCallOptions<BSV20V2P2PKH>
                 ): Promise<ContractTransaction> => {
-                    const tx = options.partialContractTx.tx
-                    tx.addInput(current.buildContractInput())
+                    if (options.partialContractTx?.tx) {
+                        const tx = options.partialContractTx.tx
+                        tx.addInput(current.buildContractInput())
 
-                    return Promise.resolve({
-                        tx: tx,
-                        atInputIndex: i,
-                        nexts,
-                    })
+                        return Promise.resolve({
+                            tx: tx,
+                            atInputIndex: i,
+                            nexts,
+                        })
+                    }
+
+                    throw new Error('No partialContractTx found!')
                 }
             )
 
             await p2pkh.methods.unlock(
-                (sigResps) => findSig(sigResps, ordPubKey),
+                (sigResps: SignatureResponse[]) => findSig(sigResps, ordPubKey),
                 PubKey(toHex(ordPubKey)),
                 {
+                    transfer: [],
                     partialContractTx: {
                         tx: tx,
                         atInputIndex: 0,

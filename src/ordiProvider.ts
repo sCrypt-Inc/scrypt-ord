@@ -1,7 +1,6 @@
 import {
     bsv,
     Provider,
-    ProviderEvent,
     TransactionResponse,
     TxHash,
     UtxoQueryOptions,
@@ -37,10 +36,10 @@ export class OrdiProvider extends Provider {
     async connect(): Promise<this> {
         try {
             await this._provider.connect()
-            this.emit(ProviderEvent.Connected, true)
+            this.emit('connected', true)
         } catch (error) {
             await this._provider.connect()
-            this.emit(ProviderEvent.Connected, false)
+            this.emit('connected', false)
         }
 
         return Promise.resolve(this)
@@ -48,7 +47,7 @@ export class OrdiProvider extends Provider {
 
     updateNetwork(network: bsv.Networks.Network): void {
         this.network = network
-        this.emit(ProviderEvent.NetworkChange, network)
+        this.emit('networkChange', network)
     }
 
     getNetwork(): bsv.Networks.Network {
@@ -63,15 +62,7 @@ export class OrdiProvider extends Provider {
 
             return txid
         } catch (error) {
-            if (
-                error.response?.type === 'application/json' &&
-                error.response?.body
-            ) {
-                throw new Error(
-                    `OrdProvider ERROR: ${JSON.stringify(error.response?.body)}`
-                )
-            }
-            throw new Error(`OrdProvider ERROR: ${error.message}`)
+            throw new Error(`OrdProvider ERROR: ${error}`)
         }
     }
 

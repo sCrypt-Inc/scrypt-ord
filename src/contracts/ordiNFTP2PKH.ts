@@ -84,7 +84,8 @@ export class OrdiNFTP2PKH extends OrdinalNFT {
     static override fromLockingScript(script: string): SmartContract {
         const ls = bsv.Script.fromHex(script)
 
-        if (!this.getDelegateClazz()) {
+        const DelegateClazz = this.getDelegateClazz()
+        if (!DelegateClazz) {
             throw new Error('no DelegateClazz found!')
         }
 
@@ -98,7 +99,7 @@ export class OrdiNFTP2PKH extends OrdinalNFT {
             rawP2PKH = script
         }
 
-        const delegateInstance = this.getDelegateClazz().fromHex(rawP2PKH)
+        const delegateInstance = DelegateClazz.fromHex(rawP2PKH)
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {

@@ -12,3 +12,7 @@ export function fromByteString(bs: ByteString): string {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function handlerApiError(e: Error) {}
+
+export function isBSV20v2(tick: string) {
+    return /^[a-fA-F0-9]{64}_\d+$/.test(tick)
+}
