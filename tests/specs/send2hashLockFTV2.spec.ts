@@ -153,7 +153,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
     describe('p2pkh with prepend FT', () => {
         const tick = toByteString('DOGE', true)
         const max = 100000n
-        const lim = max / 10n
+        const dec = 10n
         const text = 'Hello sCrypt and 1Sat Ordinals'
         const message = toByteString(text, true)
         const hash = sha256(message)
@@ -164,7 +164,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
 
         before(async () => {
             HashLockFTV2.loadArtifact()
-            recipient = new HashLockFTV2(tick, max, lim, hash)
+            recipient = new HashLockFTV2(tick, max, dec, hash)
         })
 
         it('transfer exist FT to a HashLock', async () => {
@@ -204,7 +204,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                             instance: new BSV20V2P2PKH(
                                 tick,
                                 max,
-                                lim,
+                                dec,
                                 Addr(ordAddress.toByteString())
                             ),
                             amt: 9n,

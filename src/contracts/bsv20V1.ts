@@ -14,6 +14,7 @@ import {
     StatefulNext,
     UTXO,
     MethodCallTxBuilder,
+    assert,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
@@ -49,6 +50,8 @@ export abstract class BSV20V1 extends SmartContract {
         this.lim = lim
         this.dec = dec
         this.isBSV20V1 = true
+        assert(this.max <= 18446744073709551615n)
+        assert(this.dec <= 18)
     }
 
     @method()

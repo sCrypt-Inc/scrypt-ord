@@ -42,6 +42,8 @@ export abstract class BSV20V2 extends SmartContract {
         this.max = max
         this.dec = dec
         this.id = id
+        assert(this.max <= 18446744073709551615n)
+        assert(this.dec <= 18)
     }
 
     @method()
