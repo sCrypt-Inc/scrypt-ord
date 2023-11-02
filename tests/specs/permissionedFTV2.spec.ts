@@ -9,6 +9,7 @@ use(chaiAsPromised)
 
 describe('Test SmartContract `PermissionedFTV2`', () => {
     const max = 1000n
+    const sym = toByteString('MEME', true)
     const dec = 0n
     const amount = max
     const tokenTransferAmount = 10n
@@ -25,6 +26,7 @@ describe('Test SmartContract `PermissionedFTV2`', () => {
 
         instance = new PermissionedFTV2(
             toByteString(''),
+            sym,
             max,
             dec,
             PubKey(toHex(issuerPublicKey)),

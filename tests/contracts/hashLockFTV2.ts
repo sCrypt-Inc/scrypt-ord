@@ -6,8 +6,14 @@ export class HashLockFTV2 extends BSV20V2 {
     @prop()
     hash: Sha256
 
-    constructor(id: ByteString, max: bigint, dec: bigint, hash: Sha256) {
-        super(id, max, dec)
+    constructor(
+        id: ByteString,
+        sym: ByteString,
+        max: bigint,
+        dec: bigint,
+        hash: Sha256
+    ) {
+        super(id, sym, max, dec)
         this.init(...arguments)
         this.hash = hash
     }

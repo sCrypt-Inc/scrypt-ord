@@ -41,8 +41,14 @@ export class BSV20V2P2PKH extends BSV20V2 {
     @prop()
     readonly addr: Addr
 
-    constructor(id: ByteString, amt: bigint, dec: bigint, addr: Addr) {
-        super(id, amt, dec)
+    constructor(
+        id: ByteString,
+        sym: ByteString,
+        amt: bigint,
+        dec: bigint,
+        addr: Addr
+    ) {
+        super(id, sym, amt, dec)
         this.init(...arguments)
         this.addr = addr
     }
@@ -59,7 +65,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
     }
 
     override init(...args: any[]) {
-        const [id, _, __, addr] = args
+        const [id, _, __, ___, addr] = args
         this.id = id
         super.init(addr)
     }
@@ -158,6 +164,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
         // we can't  get max, and lim from the bsv20 insciption script.
         const instance = new this(
             toByteString(bsv20.id, true),
+            toByteString('', true),
             -1n,
             -1n,
             Addr(args[0] as ByteString)
@@ -234,6 +241,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
         const nexts: StatefulNext<SmartContract>[] = []
 
         const id = senders[0].getTokenId()
+        const sym = senders[0].sym
 
         for (let i = 0; i < receivers.length; i++) {
             const receiver = receivers[i]
@@ -261,6 +269,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
         if (tokenChangeAmt > 0n) {
             const p2pkh = new BSV20V2P2PKH(
                 toByteString(id, true),
+                sym,
                 senders[0].max,
                 senders[0].dec,
                 Addr(ordPubKey.toAddress().toByteString())

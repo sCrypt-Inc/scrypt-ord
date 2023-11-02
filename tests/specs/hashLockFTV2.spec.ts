@@ -9,6 +9,7 @@ use(chaiAsPromised)
 describe('Test SmartContract `HashLockFTV2`', () => {
     const max = 100000n
     const dec = 0n
+    const sym = toByteString('MEME', true)
 
     let hashLock: HashLockFTV2
     let tokenId: string
@@ -16,6 +17,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
         HashLockFTV2.loadArtifact()
         hashLock = new HashLockFTV2(
             toByteString(''),
+            sym,
             max,
             dec,
             sha256(toByteString('hello, sCrypt!:0', true))
@@ -31,6 +33,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
             for (let i = 0; i < 3; i++) {
                 const receiver = new HashLockFTV2(
                     toByteString(tokenId, true),
+                    sym,
                     max,
                     dec,
                     sha256(toByteString(`hello, sCrypt!:${i + 1}`, true))
@@ -64,6 +67,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
         const callContract = async () => {
             const receiver = new HashLockFTV2(
                 toByteString(tokenId, true),
+                sym,
                 max,
                 dec,
                 sha256(toByteString(`hello, sCrypt!`, true))
@@ -102,6 +106,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
         const callContract = async () => {
             const receiver = new HashLockFTV2(
                 toByteString(tokenId, true),
+                sym,
                 max,
                 dec,
                 sha256(toByteString(`hello, sCrypt!`, true))
@@ -133,6 +138,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
     it('should fail when passing incorrect message', async () => {
         const receiver = new HashLockFTV2(
             toByteString(tokenId, true),
+            sym,
             max,
             dec,
             sha256(toByteString('HashLock', true))

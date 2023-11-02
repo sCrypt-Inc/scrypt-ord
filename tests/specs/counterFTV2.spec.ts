@@ -10,12 +10,13 @@ describe('Test SmartContract `CounterFTV2`', () => {
     let instance: CounterFTV2
 
     let tokenId: string
+    const sym = toByteString('MEME', true)
     before(async () => {
         CounterFTV2.loadArtifact()
 
         const max = 100000n
         const dec = 0n
-        instance = new CounterFTV2(toByteString(''), max, dec, 0n)
+        instance = new CounterFTV2(toByteString(''), sym, max, dec, 0n)
         await instance.connect(getDefaultSigner())
         tokenId = await instance.deployToken()
     })

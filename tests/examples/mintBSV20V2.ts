@@ -15,20 +15,23 @@ function getSigner() {
 }
 
 async function main() {
-    HashLockFTV2.loadArtifact('tests/artifacts/contracts/hashLockFTV2.json')
+    HashLockFTV2.loadArtifact('./artifacts/contracts/hashLockFTV2.json')
 
     // BSV20 fields
-    const max = 10n
+    const max = 10000n
     const dec = 0n
+    const sym = toByteString('MEME', true)
 
     // create contract instance
     const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
-    const hashLock = new HashLockFTV2(toByteString(''), max, dec, hash)
+    const hashLock = new HashLockFTV2(toByteString(''), sym, max, dec, hash)
     await hashLock.connect(getSigner())
 
     // deploy the new BSV20V2 token
-    const tokenId = await hashLock.deployToken()
+    const tokenId = await hashLock.deployToken({
+        name: 'MEME TOKEN',
+    })
     console.log(`tokenId: ${tokenId}`)
 
     // for now, the contract instance holds the BSV20V2 token
@@ -36,6 +39,7 @@ async function main() {
     const addressAlice = Addr(myAddress.toByteString())
     const alice = new BSV20V2P2PKH(
         toByteString(tokenId, true),
+        sym,
         max,
         dec,
         addressAlice
@@ -43,6 +47,7 @@ async function main() {
     const addressBob = Addr(myAddress.toByteString())
     const bob = new BSV20V2P2PKH(
         toByteString(tokenId, true),
+        sym,
         max,
         dec,
         addressBob

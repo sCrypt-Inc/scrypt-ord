@@ -15,6 +15,7 @@ use(chaiAsPromised)
 
 describe('Test SmartContract `BSV20V2P2PKH`', () => {
     let tokenId: ByteString
+    const sym: ByteString = toByteString('1SAT', true)
     const max = 100000n
     const dec = 0n
 
@@ -25,6 +26,7 @@ describe('Test SmartContract `BSV20V2P2PKH`', () => {
             const address = await signer.getDefaultAddress()
             bsv20V2P2PKH = new BSV20V2P2PKH(
                 toByteString(''),
+                sym,
                 max,
                 dec,
                 Addr(address.toByteString())
@@ -43,6 +45,7 @@ describe('Test SmartContract `BSV20V2P2PKH`', () => {
                     {
                         instance: new BSV20V2P2PKH(
                             tokenId,
+                            sym,
                             max,
                             dec,
                             Addr(address.toByteString())
@@ -92,6 +95,7 @@ describe('Test SmartContract `BSV20V2P2PKH`', () => {
                     {
                         instance: new BSV20V2P2PKH(
                             tokenId,
+                            sym,
                             max,
                             dec,
                             Addr(address.toByteString())
@@ -137,6 +141,7 @@ describe('Test SmartContract `BSV20V2P2PKH`', () => {
                     {
                         instance: new BSV20V2P2PKH(
                             tokenId,
+                            sym,
                             max,
                             dec,
                             Addr(address.toByteString())
