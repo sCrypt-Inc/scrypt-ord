@@ -23,12 +23,13 @@ export class PermissionedFTV2 extends BSV20V2 {
 
     constructor(
         id: ByteString,
+        sym: ByteString,
         max: bigint,
         dec: bigint,
         issuer: PubKey,
         owner: PubKey
     ) {
-        super(id, max, dec)
+        super(id, sym, max, dec)
         this.init(...arguments)
         this.issuer = issuer
         this.owner = owner

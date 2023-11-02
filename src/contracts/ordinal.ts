@@ -270,14 +270,26 @@ export class Ordinal extends SmartContractLib {
         })
     }
 
-    static createDeployV2(amt: bigint, dec: bigint): bsv.Script {
+    static createDeployV2(
+        sym: string,
+        amt: bigint,
+        dec: bigint,
+        metaInfo?: Record<string, string>
+    ): bsv.Script {
         return Ordinal.create({
-            content: JSON.stringify({
-                p: 'bsv-20',
-                op: 'deploy+mint',
-                amt: amt.toString().replace(/n/, ''),
-                dec: dec.toString().replace(/n/, ''),
-            }),
+            content: JSON.stringify(
+                Object.assign(
+                    {},
+                    {
+                        p: 'bsv-20',
+                        op: 'deploy+mint',
+                        sym,
+                        amt: amt.toString().replace(/n/, ''),
+                        dec: dec.toString().replace(/n/, ''),
+                    },
+                    metaInfo ? metaInfo : {}
+                )
+            ),
             contentType: ContentType.BSV20,
         })
     }

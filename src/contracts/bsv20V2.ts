@@ -37,11 +37,16 @@ export abstract class BSV20V2 extends SmartContract {
     /** Decimals: set decimal precision, defaults to 0. This is different from BRC20 which defaults to 18. */
     readonly dec: bigint
 
-    constructor(id: ByteString, max: bigint, dec: bigint) {
+    @prop()
+    /** Decimals: set decimal precision, defaults to 0. This is different from BRC20 which defaults to 18. */
+    readonly sym: ByteString
+
+    constructor(id: ByteString, sym: ByteString, max: bigint, dec: bigint) {
         super(...arguments)
         this.max = max
         this.dec = dec
         this.id = id
+        this.sym = sym
         assert(this.max <= 18446744073709551615n)
         assert(this.dec <= 18)
     }
@@ -118,14 +123,21 @@ export abstract class BSV20V2 extends SmartContract {
         throw new Error('token id is not initialized!')
     }
 
-    async deployToken(): Promise<string> {
+    async deployToken(metaInfo?: Record<string, string>): Promise<string> {
         if (this.id !== toByteString('')) {
             throw new Error(
                 'contract instance to deploy token should not have a id!'
             )
         }
 
-        this.prependNOPScript(Ordinal.createDeployV2(this.max, this.dec))
+        this.prependNOPScript(
+            Ordinal.createDeployV2(
+                fromByteString(this.sym),
+                this.max,
+                this.dec,
+                metaInfo
+            )
+        )
 
         const tx = await this.deploy(1)
         return `${tx.id}_0`
@@ -220,6 +232,7 @@ export abstract class BSV20V2 extends SmartContract {
                 const { BSV20V2P2PKH } = require('./bsv20V2P2PKH')
                 const p2pkh = new BSV20V2P2PKH(
                     toByteString(current.getTokenId(), true),
+                    current.sym,
                     current.max,
                     current.dec,
                     Addr(tokenChangeAddress.toByteString())

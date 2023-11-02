@@ -15,11 +15,13 @@ function getSigner() {
 
 async function main() {
     const signer = getSigner()
+    const sym = toByteString('MEME', true)
 
     await signer.connect()
     const address = await signer.getDefaultAddress()
     const p2pkh = new BSV20V2P2PKH(
         toByteString(''),
+        sym,
         10000000n,
         0n,
         Addr(address.toByteString())

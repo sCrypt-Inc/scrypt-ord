@@ -19,12 +19,13 @@ async function main() {
     // BSV20 fields
     const max = 21000000n
     const dec = 0n
+    const sym = toByteString('MEME', true)
 
     const signer = getSigner()
 
     const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
-    const hashLock = new HashLockFTV2(toByteString(''), max, dec, hash)
+    const hashLock = new HashLockFTV2(toByteString(''), sym, max, dec, hash)
     await hashLock.connect(signer)
     const tokenId = await hashLock.deployToken()
 
@@ -32,6 +33,7 @@ async function main() {
     const receiver = {
         instance: new BSV20V2P2PKH(
             toByteString(tokenId, true),
+            sym,
             max,
             dec,
             Addr(myAddress.toByteString())
