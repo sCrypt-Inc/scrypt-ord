@@ -1,15 +1,17 @@
 dist: focal
 language: node_js
-node_js:
-  - 16
 
 cache:
   npm: false
 
-os:
-  - linux
-  - osx
-  - windows
+jobs:
+  include:
+    - os: osx
+      node_js: 16
+    - os: linux
+      node_js: 18
+    - os: windows
+      node_js: 20
 
 script:
   - echo "PRIVATE_KEY=$PRIVATE_KEY" > ./tests/.env
