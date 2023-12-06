@@ -3,7 +3,7 @@ import { PubKey, findSig, toByteString } from 'scrypt-ts'
 import { PermissionedFT } from '../contracts/permissionedFT'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { myPublicKey } from '../utils/privateKey'
+import { myPublicKey, myPrivateKey } from '../utils/privateKey'
 import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
@@ -34,7 +34,7 @@ describe('Test SmartContract `PermissionedFT`', () => {
             PubKey(alicePublicKey.toByteString())
         )
         await instance.connect(
-            getDefaultSigner([alicePrivateKey, bobPrivateKey])
+            getDefaultSigner([myPrivateKey, alicePrivateKey, bobPrivateKey])
         )
 
         await instance.deployToken()

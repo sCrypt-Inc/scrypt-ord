@@ -219,10 +219,17 @@ export class BSV20V2P2PKH extends BSV20V2 {
 
     static async transfer(
         senders: Array<BSV20V2P2PKH>,
-        signer: Signer,
-        receivers: Array<FTReceiver>
+        feeSigner: Signer,
+        receivers: Array<FTReceiver>,
+        tokenChangeAddress: bsv.Address
     ) {
-        const ordPubKey = await signer.getDefaultPubKey()
+        if (
+            !senders.every(
+                (sender) => sender.getTokenId() === senders[0].getTokenId()
+            )
+        ) {
+            throw new Error('The TokenId of all senders must be the same!')
+        }
 
         const totalTokenAmt = senders.reduce((acc, sender) => {
             acc += BigInt(sender.getAmt())
@@ -275,7 +282,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
                 sym,
                 senders[0].max,
                 senders[0].dec,
-                Addr(ordPubKey.toAddress().toByteString())
+                Addr(tokenChangeAddress.toByteString())
             )
 
             p2pkh.setAmt(tokenChangeAmt)
@@ -294,7 +301,9 @@ export class BSV20V2P2PKH extends BSV20V2 {
             })
         }
 
-        tx.change(ordPubKey.toAddress())
+        const bsvAddress = await feeSigner.getDefaultAddress()
+
+        tx.change(bsvAddress)
 
         for (let i = 0; i < senders.length; i++) {
             const p2pkh = senders[i]
@@ -318,10 +327,11 @@ export class BSV20V2P2PKH extends BSV20V2 {
                     throw new Error('No partialContractTx found!')
                 }
             )
+            const pubkey = await p2pkh.signer.getDefaultPubKey()
 
             await p2pkh.methods.unlock(
-                (sigResps: SignatureResponse[]) => findSig(sigResps, ordPubKey),
-                PubKey(toHex(ordPubKey)),
+                (sigResps: SignatureResponse[]) => findSig(sigResps, pubkey),
+                PubKey(pubkey.toByteString()),
                 {
                     transfer: [],
                     partialContractTx: {
@@ -329,7 +339,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
                         atInputIndex: 0,
                         nexts: [],
                     },
-                    pubKeyOrAddrToSign: ordPubKey,
+                    pubKeyOrAddrToSign: pubkey,
                     multiContractCall: true,
                 } as OrdiMethodCallOptions<BSV20V2P2PKH>
             )
@@ -341,7 +351,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
                 atInputIndex: 0,
                 nexts: nexts,
             },
-            signer
+            feeSigner
         )
     }
 }
