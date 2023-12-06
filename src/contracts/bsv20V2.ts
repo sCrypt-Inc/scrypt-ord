@@ -74,10 +74,18 @@ export abstract class BSV20V2 extends SmartContract {
         id: ByteString,
         amt: bigint
     ): ByteString {
-        const transferScript =
-            BSV20V2.createTransferInsciption(id, amt) +
-            Utils.buildPublicKeyHashScript(address)
+        const transferScript = BSV20V2.buildTransferScript(address, id, amt)
         return Utils.buildOutput(transferScript, 1n)
+    }
+
+    @method()
+    static buildTransferScript(
+        address: Addr,
+        id: ByteString,
+        amt: bigint
+    ): ByteString {
+        return BSV20V2.createTransferInsciption(id, amt) +
+            Utils.buildPublicKeyHashScript(address)
     }
 
     @method()
@@ -178,9 +186,9 @@ export abstract class BSV20V2 extends SmartContract {
                 | FTReceiver
             const tokenChangeAmt = Array.isArray(recipients)
                 ? current.getAmt() -
-                  recipients.reduce((acc, receiver) => {
-                      return (acc += receiver.amt)
-                  }, 0n)
+                recipients.reduce((acc, receiver) => {
+                    return (acc += receiver.amt)
+                }, 0n)
                 : current.getAmt() - recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
