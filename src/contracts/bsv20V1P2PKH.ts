@@ -190,15 +190,26 @@ export class BSV20V1P2PKH extends BSV20V1 {
         return bsv20Utxos.map((utxo) => BSV20V1P2PKH.fromUTXO(utxo))
     }
 
+    /**
+     * Transfer BSV20 tokens which held by multiple BSV20V1P2PKH instances
+     * @param senders BSV20V1P2PKH instances
+     * @param feeSigner used to sign UTXOs that pay transaction fees
+     * @param receivers token receiving contract
+     * @param tokenChangeAddress Token change address
+     * @param sendersPubkey The sender’s public key. By default, the default public key of the Signer connected to BSV20V1P2PKH is used.
+     * @returns
+     */
     static async transfer(
         senders: Array<BSV20V1P2PKH>,
         feeSigner: Signer,
         receivers: Array<FTReceiver>,
-        tokenChangeAddress: bsv.Address
+        tokenChangeAddress: bsv.Address,
+        sendersPubkey?: Array<bsv.PublicKey>
     ) {
         if (!senders.every((sender) => sender.tick === senders[0].tick)) {
             throw new Error('The tick of all senders must be the same!')
         }
+        sendersPubkey = sendersPubkey || []
 
         const totalTokenAmt = senders.reduce((acc, sender) => {
             acc += BigInt(sender.getAmt())
@@ -295,7 +306,8 @@ export class BSV20V1P2PKH extends BSV20V1 {
                 }
             )
 
-            const pubkey = await p2pkh.signer.getDefaultPubKey()
+            const pubkey =
+                sendersPubkey[i] || (await p2pkh.signer.getDefaultPubKey())
 
             await p2pkh.methods.unlock(
                 (sigResps: SignatureResponse[]) => findSig(sigResps, pubkey),
