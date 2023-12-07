@@ -306,4 +306,10 @@ export abstract class BSV20V2 extends SmartContract {
         instance.from = utxo
         return instance
     }
+
+    override next(opt?: { refCloneProps?: string[] }): this {
+        const cloned = super.next(opt)
+        cloned.prependNOPScript(this.getPrependNOPScript())
+        return cloned
+    }
 }
