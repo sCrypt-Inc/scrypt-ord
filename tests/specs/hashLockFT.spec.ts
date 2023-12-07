@@ -136,6 +136,27 @@ describe('Test SmartContract `HashLockFT`', () => {
         await expect(callContract()).not.rejected
     })
 
+    it('transfer without receiver.', async () => {
+        const callContract = async () => {
+            const { tx, nexts } = await hashLock.methods.unlock(
+                toByteString(`hello, sCrypt!`, true),
+                {
+                    skipTokenChange: false,
+                } as OrdiMethodCallOptions<HashLockFT>
+            )
+
+            console.log('transfer tx: ', tx.id)
+
+            expect(nexts.length === 1).to.be.true
+
+            expect(nexts[0].instance instanceof BSV20V1P2PKH).to.be.true
+
+            expect(nexts[0].instance.getAmt() === 9n).to.be.true
+        }
+
+        await expect(callContract()).not.rejected
+    })
+
     it('should fail when passing incorrect message', async () => {
         const receiver = new HashLockFT(
             tick,

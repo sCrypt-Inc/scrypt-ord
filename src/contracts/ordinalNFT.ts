@@ -119,6 +119,8 @@ export abstract class OrdinalNFT extends SmartContract {
                     balance: 1,
                     atOutputIndex: nexts.length,
                 })
+            } else {
+                throw new Error('No NFTReceiver found!')
             }
 
             tx.change(changeAddress)

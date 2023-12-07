@@ -63,7 +63,7 @@ export type NFTReceiver = SmartContract
 
 export interface OrdiMethodCallOptions<T extends SmartContract>
     extends MethodCallOptions<T> {
-    transfer: Array<FTReceiver> | FTReceiver | NFTReceiver
+    transfer?: Array<FTReceiver> | FTReceiver | NFTReceiver
     tokenChangeAddress?: bsv.Address
     skipTokenChange?: boolean
 }
