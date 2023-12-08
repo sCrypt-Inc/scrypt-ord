@@ -190,7 +190,7 @@ export abstract class BSV20V1 extends SmartContract {
             options: OrdiMethodCallOptions<BSV20V1>,
             ...args: any[]
         ): Promise<ContractTransaction> {
-            const recipients = options.transfer as
+            const recipients = (options.transfer || []) as
                 | Array<FTReceiver>
                 | FTReceiver
             const tokenChangeAmt = Array.isArray(recipients)
