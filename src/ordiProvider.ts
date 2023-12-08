@@ -23,7 +23,6 @@ export class OrdiProvider extends Provider {
     constructor(network?: bsv.Networks.Network) {
         super()
         this.network = network || bsv.Networks.mainnet
-        OneSatApis.setNetwork(this.network)
         this._provider = new DefaultProvider({
             network: this.network,
         })
@@ -58,7 +57,7 @@ export class OrdiProvider extends Provider {
         try {
             const txid = await this._provider.sendRawTransaction(rawTxHex)
 
-            await OneSatApis.submitTx(txid)
+            await OneSatApis.submitTx(txid, this.network)
 
             return txid
         } catch (error) {

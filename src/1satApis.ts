@@ -4,20 +4,19 @@ import superagent from 'superagent'
 import { handlerApiError, isBSV20v2 } from './utils'
 
 export class OneSatApis {
-    private static network: bsv.Networks.Network = bsv.Networks.mainnet
-
-    private static get apiBase() {
-        return OneSatApis.network === bsv.Networks.mainnet
+    private static apiBase(network: bsv.Networks.Network) {
+        return network === bsv.Networks.mainnet
             ? 'https://v3.ordinals.gorillapool.io/api'
             : 'https://testnet.ordinals.gorillapool.io/api'
     }
 
-    static setNetwork(network: bsv.Networks.Network) {
-        OneSatApis.network = network
-    }
-
-    static fetchUTXOByOutpoint(outpoint: string): Promise<UTXO | null> {
-        const url = `${this.apiBase}/txos/${outpoint}?script=true`
+    static fetchUTXOByOutpoint(
+        outpoint: string,
+        network?: bsv.Networks.Network
+    ): Promise<UTXO | null> {
+        const url = `${this.apiBase(
+            network || bsv.Networks.mainnet
+        )}/txos/${outpoint}?script=true`
 
         return superagent
             .get(url)
@@ -41,8 +40,13 @@ export class OneSatApis {
             })
     }
 
-    static async fetchLatestByOrigin(origin: string): Promise<UTXO | null> {
-        const url = `${this.apiBase}/inscriptions/${origin}/latest?script=true`
+    static async fetchLatestByOrigin(
+        origin: string,
+        network?: bsv.Networks.Network
+    ): Promise<UTXO | null> {
+        const url = `${this.apiBase(
+            network || bsv.Networks.mainnet
+        )}/inscriptions/${origin}/latest?script=true`
 
         const res = await superagent
             .get(url)
@@ -77,9 +81,14 @@ export class OneSatApis {
         address: string,
         tick: string
     ): Promise<Array<UTXO>> {
+        const network = bsv.Address.fromString(address).network
         const url = isBSV20v2(tick)
-            ? `${this.apiBase}/bsv20/${address}/id/${tick}`
-            : `${this.apiBase}/bsv20/${address}/tick/${tick}`
+            ? `${this.apiBase(
+                  network || bsv.Networks.mainnet
+              )}/bsv20/${address}/id/${tick}`
+            : `${this.apiBase(
+                  network || bsv.Networks.mainnet
+              )}/bsv20/${address}/tick/${tick}`
 
         return superagent
             .get(url)
@@ -88,7 +97,10 @@ export class OneSatApis {
                 if (Array.isArray(response.body)) {
                     const utxos = await Promise.all(
                         response.body.map((utxo) => {
-                            return OneSatApis.fetchUTXOByOutpoint(utxo.outpoint)
+                            return OneSatApis.fetchUTXOByOutpoint(
+                                utxo.outpoint,
+                                network
+                            )
                         })
                     )
 
@@ -102,8 +114,36 @@ export class OneSatApis {
             })
     }
 
-    static submitTx(txid: string): Promise<void> {
-        const url = `${this.apiBase}/tx/${txid}/submit`
+    static postTx(
+        rawtx: string,
+        network?: bsv.Networks.Network
+    ): Promise<string> {
+        const url = `${this.apiBase(network || bsv.Networks.mainnet)}/tx`
+        return superagent
+            .post(url)
+            .send({
+                rawtx: Buffer.from(rawtx, 'hex').toString('base64'),
+            })
+            .then(function (response: superagent.Response) {
+                // handle success
+                if (response.status !== 200) {
+                    throw new Error(`invalid status: ${response.status}`)
+                }
+
+                return response.body
+            })
+            .catch(function (error) {
+                handlerApiError(error)
+                return
+            })
+    }
+    static submitTx(
+        txid: string,
+        network?: bsv.Networks.Network
+    ): Promise<void> {
+        const url = `${this.apiBase(
+            network || bsv.Networks.mainnet
+        )}/tx/${txid}/submit`
         return superagent
             .post(url)
             .then(function (response: superagent.Response) {

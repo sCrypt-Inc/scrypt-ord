@@ -192,8 +192,11 @@ export class BSV20V2P2PKH extends BSV20V2 {
         return instance
     }
 
-    static async fromOutPoint(outPoint: string): Promise<BSV20V2P2PKH> {
-        const utxo = await OneSatApis.fetchUTXOByOutpoint(outPoint)
+    static async fromOutPoint(
+        outPoint: string,
+        network?: bsv.Networks.Network
+    ): Promise<BSV20V2P2PKH> {
+        const utxo = await OneSatApis.fetchUTXOByOutpoint(outPoint, network)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }

@@ -163,9 +163,10 @@ export abstract class OrdinalNFT extends SmartContract {
 
     static async getLatestInstance<T extends SmartContract>(
         this: new (...args: any[]) => T,
-        origin: string
+        origin: string,
+        network?: bsv.Networks.Network
     ): Promise<T> {
-        const utxo = await OneSatApis.fetchLatestByOrigin(origin)
+        const utxo = await OneSatApis.fetchLatestByOrigin(origin, network)
 
         if (utxo === null) {
             throw new Error('no utxo found')
