@@ -1,6 +1,6 @@
 {
   "name": "scrypt-ord",
-  "version": "1.0.12",
+  "version": "1.0.13-test.2",
   "description": "A sCrypt office 1Sats Ordinals SDK.",
   "main": "dist/index.js",
   "types": "src/index.ts",

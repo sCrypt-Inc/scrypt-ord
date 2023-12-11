@@ -46,6 +46,7 @@ export class OrdiProvider extends Provider {
 
     updateNetwork(network: bsv.Networks.Network): void {
         this.network = network
+        this._provider.updateNetwork(network)
         this.emit('networkChange', network)
     }
 
