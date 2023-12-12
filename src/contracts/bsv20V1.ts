@@ -78,8 +78,10 @@ export abstract class BSV20V1 extends SmartContract {
         tick: ByteString,
         amt: bigint
     ): ByteString {
-        return BSV20V1.createTransferInsciption(tick, amt) +
+        return (
+            BSV20V1.createTransferInsciption(tick, amt) +
             Utils.buildPublicKeyHashScript(address)
+        )
     }
 
     @method()
@@ -136,6 +138,8 @@ export abstract class BSV20V1 extends SmartContract {
             throw new Error(`no utxo found for address: ${address}`)
         }
 
+        const feePerKb = (await this.provider?.getFeePerKb()) as number
+
         const deployTx = new bsv.Transaction()
             .from(utxos)
             .addOutput(
@@ -151,6 +155,7 @@ export abstract class BSV20V1 extends SmartContract {
                     satoshis: 1,
                 })
             )
+            .feePerKb(feePerKb)
             .change(address)
 
         return this.signer.signAndsendTransaction(deployTx)
@@ -195,9 +200,9 @@ export abstract class BSV20V1 extends SmartContract {
                 | FTReceiver
             const tokenChangeAmt = Array.isArray(recipients)
                 ? current.getAmt() -
-                recipients.reduce((acc, receiver) => {
-                    return (acc += receiver.amt)
-                }, 0n)
+                  recipients.reduce((acc, receiver) => {
+                      return (acc += receiver.amt)
+                  }, 0n)
                 : current.getAmt() - recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
@@ -270,6 +275,8 @@ export abstract class BSV20V1 extends SmartContract {
                 })
             }
 
+            const feePerKb = await current.provider?.getFeePerKb()
+            tx.feePerKb(feePerKb as number)
             tx.change(changeAddress)
 
             if (options.sequence !== undefined) {

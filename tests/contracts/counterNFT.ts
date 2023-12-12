@@ -81,6 +81,8 @@ export class CounterNFT extends OrdinalNFT {
         const nextInstance = current.next()
         nextInstance.incCounter()
 
+        const feePerKb = await current.provider?.getFeePerKb()
+
         const tx = new bsv.Transaction()
             .addInput(current.buildContractInput())
             .addOutput(
@@ -95,6 +97,7 @@ export class CounterNFT extends OrdinalNFT {
                     satoshis: current.balance,
                 })
             )
+            .feePerKb(feePerKb as number)
             .change(options.changeAddress || defaultAddress)
 
         return {

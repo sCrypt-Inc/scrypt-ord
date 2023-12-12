@@ -282,6 +282,8 @@ export class BSV20V1P2PKH extends BSV20V1 {
 
         const bsvAddress = await feeSigner.getDefaultAddress()
 
+        const feePerKb = await feeSigner.provider?.getFeePerKb()
+        tx.feePerKb(feePerKb as number)
         tx.change(bsvAddress)
 
         for (let i = 0; i < senders.length; i++) {
