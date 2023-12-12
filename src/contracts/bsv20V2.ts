@@ -84,8 +84,10 @@ export abstract class BSV20V2 extends SmartContract {
         id: ByteString,
         amt: bigint
     ): ByteString {
-        return BSV20V2.createTransferInsciption(id, amt) +
+        return (
+            BSV20V2.createTransferInsciption(id, amt) +
             Utils.buildPublicKeyHashScript(address)
+        )
     }
 
     @method()
@@ -186,9 +188,9 @@ export abstract class BSV20V2 extends SmartContract {
                 | FTReceiver
             const tokenChangeAmt = Array.isArray(recipients)
                 ? current.getAmt() -
-                recipients.reduce((acc, receiver) => {
-                    return (acc += receiver.amt)
-                }, 0n)
+                  recipients.reduce((acc, receiver) => {
+                      return (acc += receiver.amt)
+                  }, 0n)
                 : current.getAmt() - recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
@@ -261,6 +263,8 @@ export abstract class BSV20V2 extends SmartContract {
                 })
             }
 
+            const feePerKb = await current.provider?.getFeePerKb()
+            tx.feePerKb(feePerKb as number)
             tx.change(changeAddress)
 
             if (options.sequence !== undefined) {
@@ -305,5 +309,11 @@ export abstract class BSV20V2 extends SmartContract {
         ).fromLockingScript(utxo.script, {}, nopScript) as T
         instance.from = utxo
         return instance
+    }
+
+    override next(opt?: { refCloneProps?: string[] }): this {
+        const cloned = super.next(opt)
+        cloned.prependNOPScript(this.getPrependNOPScript())
+        return cloned
     }
 }

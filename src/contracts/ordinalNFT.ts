@@ -119,8 +119,12 @@ export abstract class OrdinalNFT extends SmartContract {
                     balance: 1,
                     atOutputIndex: nexts.length,
                 })
+            } else {
+                throw new Error('No NFTReceiver found!')
             }
 
+            const feePerKb = await current.provider?.getFeePerKb()
+            tx.feePerKb(feePerKb as number)
             tx.change(changeAddress)
 
             if (options.sequence !== undefined) {

@@ -56,6 +56,8 @@ export class OrdinalLock extends OrdinalNFT {
         receiver: Addr
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()
+        const feePerKb = await current.provider?.getFeePerKb()
+
         const tx = new bsv.Transaction()
             .addInput(current.buildContractInput())
             .addOutput(
@@ -74,6 +76,7 @@ export class OrdinalLock extends OrdinalNFT {
                     satoshis: Number(current.amount),
                 })
             )
+            .feePerKb(feePerKb as number)
             .change(options.changeAddress || defaultAddress)
         return {
             tx,
@@ -87,6 +90,8 @@ export class OrdinalLock extends OrdinalNFT {
         options: OrdiMethodCallOptions<OrdinalLock>
     ): Promise<ContractTransaction> {
         const defaultAddress = await current.signer.getDefaultAddress()
+        const feePerKb = await current.provider?.getFeePerKb()
+
         const tx = new bsv.Transaction()
             .addInput(current.buildContractInput())
             .addOutput(
@@ -97,6 +102,7 @@ export class OrdinalLock extends OrdinalNFT {
                     satoshis: 1,
                 })
             )
+            .feePerKb(feePerKb as number)
             .change(options.changeAddress || defaultAddress)
         return {
             tx,

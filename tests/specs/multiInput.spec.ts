@@ -12,7 +12,7 @@ import {
     toByteString,
 } from 'scrypt-ts'
 import { HashLockFT } from '../contracts/hashLockFT'
-import { getDefaultSigner } from '../utils/txHelper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
 import {
@@ -63,7 +63,59 @@ describe('Test multi inputs and outputs', () => {
             const { tx } = await BSV20V1P2PKH.transfer(
                 bsv20V1P2PKHs,
                 signer,
-                recipients
+                recipients,
+                address
+            )
+
+            console.log('transfer tx:', tx.id)
+        }
+
+        return expect(transferBSV20()).not.be.rejected
+    })
+
+    it('should transfer 2 BSV20V1P2PKH to 1 hashLock successfully: with different signer', async () => {
+        const transferBSV20 = async () => {
+            const feeSigner = getDefaultSigner()
+
+            const [alicePrivateKey] = randomPrivateKey()
+            const [bobPrivateKey] = randomPrivateKey()
+
+            const aliceSigner = getDefaultSigner(alicePrivateKey)
+            const bobSigner = getDefaultSigner(bobPrivateKey)
+
+            const address = await feeSigner.getDefaultAddress()
+            const bsv20V1P2PKHs = [
+                dummyBSV20(
+                    alicePrivateKey.toAddress(),
+                    fromByteString(tick),
+                    4n
+                ),
+                dummyBSV20(bobPrivateKey.toAddress(), fromByteString(tick), 5n),
+            ].map((utxo) => BSV20V1P2PKH.fromUTXO(utxo))
+
+            const message = toByteString('hello, sCrypt!', true)
+
+            await bsv20V1P2PKHs[0].connect(aliceSigner)
+            await bsv20V1P2PKHs[1].connect(bobSigner)
+
+            const recipients: Array<FTReceiver> = [
+                {
+                    instance: new HashLockFT(
+                        tick,
+                        max,
+                        lim,
+                        dec,
+                        sha256(message)
+                    ),
+                    amt: 6n,
+                },
+            ]
+
+            const { tx } = await BSV20V1P2PKH.transfer(
+                bsv20V1P2PKHs,
+                feeSigner,
+                recipients,
+                address
             )
 
             console.log('transfer tx:', tx.id)
@@ -112,7 +164,8 @@ describe('Test multi inputs and outputs', () => {
             const { tx } = await BSV20V1P2PKH.transfer(
                 bsv20V1P2PKHs,
                 signer,
-                recipients
+                recipients,
+                address
             )
 
             console.log('transfer tx:', tx.id)

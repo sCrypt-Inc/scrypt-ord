@@ -123,8 +123,11 @@ export class PermissionedFTV2 extends BSV20V2 {
                 atOutputIndex: 1,
             })
         }
+        const feePerKb = await current.provider?.getFeePerKb()
 
-        tx.change(options.changeAddress || defaultAddress)
+        tx.feePerKb(feePerKb as number).change(
+            options.changeAddress || defaultAddress
+        )
         return { tx, atInputIndex: 0, nexts }
     }
 }

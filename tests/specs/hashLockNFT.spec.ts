@@ -31,11 +31,15 @@ describe('Test SmartContract `HashLockNFT`', () => {
 
     it('should pass when calling `unlock`, this will burn the NFT', async () => {
         const call = async () => await instance.methods.unlock(message)
-        await expect(call()).not.to.be.rejected
+        await expect(call()).to.be.rejectedWith(/No NFTReceiver found/)
     })
 
     it('should fail when passing incorrect message', async () => {
-        const call = async () => await instance.methods.unlock(toByteString(''))
+        const ordAddress = await instance.signer.getDefaultAddress()
+        const call = async () =>
+            await instance.methods.unlock(toByteString(''), {
+                transfer: new OrdiNFTP2PKH(Addr(ordAddress.toByteString())),
+            })
         await expect(call()).to.be.rejectedWith(/hashes are not equal/)
     })
 

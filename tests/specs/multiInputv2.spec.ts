@@ -12,7 +12,7 @@ import {
     toByteString,
 } from 'scrypt-ts'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
-import { getDefaultSigner } from '../utils/txHelper'
+import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import {
     BSV20V2,
@@ -20,6 +20,7 @@ import {
     FTReceiver,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
+import { dummyBSV20V2 } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
@@ -42,6 +43,53 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
         tokenId = await hashLock.deployToken()
         console.log('token id: ', tokenId)
+    })
+
+    it('should transfer 2 BSV20V2P2PKH to 1 hashLock successfully: with different signer', async () => {
+        const transferBSV20 = async () => {
+            const feeSigner = getDefaultSigner()
+
+            const [alicePrivateKey] = randomPrivateKey()
+            const [bobPrivateKey] = randomPrivateKey()
+
+            const aliceSigner = getDefaultSigner(alicePrivateKey)
+            const bobSigner = getDefaultSigner(bobPrivateKey)
+
+            const address = await feeSigner.getDefaultAddress()
+            const bsv20V1P2PKHs = [
+                dummyBSV20V2(alicePrivateKey.toAddress(), tokenId, 4n),
+                dummyBSV20V2(bobPrivateKey.toAddress(), tokenId, 5n),
+            ].map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
+
+            const message = toByteString('hello, sCrypt!', true)
+
+            await bsv20V1P2PKHs[0].connect(aliceSigner)
+            await bsv20V1P2PKHs[1].connect(bobSigner)
+
+            const recipients: Array<FTReceiver> = [
+                {
+                    instance: new HashLockFTV2(
+                        toByteString(tokenId, true),
+                        sym,
+                        max,
+                        dec,
+                        sha256(message)
+                    ),
+                    amt: 6n,
+                },
+            ]
+
+            const { tx } = await BSV20V2P2PKH.transfer(
+                bsv20V1P2PKHs,
+                feeSigner,
+                recipients,
+                address
+            )
+
+            console.log('transfer tx:', tx.id)
+        }
+
+        return expect(transferBSV20()).not.be.rejected
     })
 
     it('transfer to an other hashLock with change.', async () => {

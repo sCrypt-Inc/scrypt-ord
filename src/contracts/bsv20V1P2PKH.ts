@@ -190,12 +190,26 @@ export class BSV20V1P2PKH extends BSV20V1 {
         return bsv20Utxos.map((utxo) => BSV20V1P2PKH.fromUTXO(utxo))
     }
 
+    /**
+     * Transfer BSV20 tokens which held by multiple BSV20V1P2PKH instances
+     * @param senders BSV20V1P2PKH instances
+     * @param feeSigner used to sign UTXOs that pay transaction fees
+     * @param receivers token receiving contract
+     * @param tokenChangeAddress Token change address
+     * @param sendersPubkey The sender’s public key. By default, the default public key of the Signer connected to BSV20V1P2PKH is used.
+     * @returns
+     */
     static async transfer(
         senders: Array<BSV20V1P2PKH>,
-        signer: Signer,
-        receivers: Array<FTReceiver>
+        feeSigner: Signer,
+        receivers: Array<FTReceiver>,
+        tokenChangeAddress: bsv.Address,
+        sendersPubkey?: Array<bsv.PublicKey>
     ) {
-        const ordPubKey = await signer.getDefaultPubKey()
+        if (!senders.every((sender) => sender.tick === senders[0].tick)) {
+            throw new Error('The tick of all senders must be the same!')
+        }
+        sendersPubkey = sendersPubkey || []
 
         const totalTokenAmt = senders.reduce((acc, sender) => {
             acc += BigInt(sender.getAmt())
@@ -247,7 +261,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
                 senders[0].max,
                 senders[0].lim,
                 senders[0].dec,
-                Addr(ordPubKey.toAddress().toByteString())
+                Addr(tokenChangeAddress.toByteString())
             )
 
             p2pkh.setAmt(tokenChangeAmt)
@@ -266,7 +280,11 @@ export class BSV20V1P2PKH extends BSV20V1 {
             })
         }
 
-        tx.change(ordPubKey.toAddress())
+        const bsvAddress = await feeSigner.getDefaultAddress()
+
+        const feePerKb = await feeSigner.provider?.getFeePerKb()
+        tx.feePerKb(feePerKb as number)
+        tx.change(bsvAddress)
 
         for (let i = 0; i < senders.length; i++) {
             const p2pkh = senders[i]
@@ -290,9 +308,12 @@ export class BSV20V1P2PKH extends BSV20V1 {
                 }
             )
 
+            const pubkey =
+                sendersPubkey[i] || (await p2pkh.signer.getDefaultPubKey())
+
             await p2pkh.methods.unlock(
-                (sigResps: SignatureResponse[]) => findSig(sigResps, ordPubKey),
-                PubKey(ordPubKey.toByteString()),
+                (sigResps: SignatureResponse[]) => findSig(sigResps, pubkey),
+                PubKey(pubkey.toByteString()),
                 {
                     transfer: [],
                     partialContractTx: {
@@ -300,7 +321,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
                         atInputIndex: 0,
                         nexts: [],
                     },
-                    pubKeyOrAddrToSign: ordPubKey,
+                    pubKeyOrAddrToSign: pubkey,
                     multiContractCall: true,
                 } as OrdiMethodCallOptions<BSV20V1P2PKH>
             )
@@ -312,7 +333,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
                 atInputIndex: 0,
                 nexts: nexts,
             },
-            signer
+            feeSigner
         )
     }
 }
