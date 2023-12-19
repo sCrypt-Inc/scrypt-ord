@@ -6,7 +6,7 @@ import { handlerApiError, isBSV20v2 } from './utils'
 export class OneSatApis {
     private static apiBase(network: bsv.Networks.Network) {
         return network === bsv.Networks.mainnet
-            ? 'https://v3.ordinals.gorillapool.io/api'
+            ? 'https://ordinals.gorillapool.io/api'
             : 'https://testnet.ordinals.gorillapool.io/api'
     }
 
