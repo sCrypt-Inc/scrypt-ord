@@ -70,7 +70,9 @@ export class OrdiProvider extends Provider {
         address: AddressOption,
         options: UtxoQueryOptions
     ): Promise<UTXO[]> {
-        return this._provider.listUnspent(address, options)
+        return this._provider.listUnspent(address, options).then((utxos) => {
+            return utxos.filter((u) => u.satoshis > 1)
+        })
     }
 
     getBalance(
