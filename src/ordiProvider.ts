@@ -56,9 +56,9 @@ export class OrdiProvider extends Provider {
 
     async sendRawTransaction(rawTxHex: string): Promise<TxHash> {
         try {
-            const txid = await this._provider.sendRawTransaction(rawTxHex)
 
-            await OneSatApis.submitTx(txid, this.network)
+            const txid = await OneSatApis.postTx(rawTxHex, this.network)
+
 
             return txid
         } catch (error) {
