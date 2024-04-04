@@ -188,9 +188,9 @@ export abstract class BSV20V2 extends SmartContract {
                 | FTReceiver
             const tokenChangeAmt = Array.isArray(recipients)
                 ? current.getAmt() -
-                  recipients.reduce((acc, receiver) => {
-                      return (acc += receiver.amt)
-                  }, 0n)
+                recipients.reduce((acc, receiver) => {
+                    return (acc += receiver.amt)
+                }, 0n)
                 : current.getAmt() - recipients.amt
             if (tokenChangeAmt < 0n) {
                 throw new Error(`Not enough tokens`)
@@ -315,5 +315,30 @@ export abstract class BSV20V2 extends SmartContract {
         const cloned = super.next(opt)
         cloned.prependNOPScript(this.getPrependNOPScript())
         return cloned
+    }
+
+    /**
+     * recover a `BSV20V2` instance from the transaction
+     * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
+     * it's required to pass all their offchain raw data at this transaction moment
+     * @param tx transaction
+     * @param atOutputIndex output index of `tx`
+     * @param offchainValues the value of offchain properties, the raw data of onchain `HashedMap` and `HashedSet` properties, at this transaction moment
+     */
+    static override fromTx<T extends SmartContract>(
+        this: new (...args: any[]) => T,
+        tx: bsv.Transaction,
+        atOutputIndex: number,
+        offchainValues?: Record<string, any>
+    ): T {
+        const outputScript = tx.outputs[atOutputIndex].script
+        const nopScript = Ordinal.nopScriptFromScript(outputScript)
+        const instance = super.fromTx(
+            tx,
+            atOutputIndex,
+            offchainValues,
+            nopScript
+        )
+        return instance as T
     }
 }
