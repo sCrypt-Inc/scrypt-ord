@@ -44,7 +44,7 @@ export function dummyBSV20(
  * @param prepend put bsv20 inscription at the front of the locking script if true
  * @returns
  */
-export function dummyBSV20V2(
+export function dummyBSV21(
     addr: bsv.Address,
     id: string,
     amt: bigint,

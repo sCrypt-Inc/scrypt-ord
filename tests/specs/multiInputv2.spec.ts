@@ -20,7 +20,7 @@ import {
     FTReceiver,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
-import { dummyBSV20V2 } from './utils'
+import { dummyBSV21 } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
@@ -57,8 +57,8 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
             const address = await feeSigner.getDefaultAddress()
             const bsv20P2PKHs = [
-                dummyBSV20V2(alicePrivateKey.toAddress(), tokenId, 4n),
-                dummyBSV20V2(bobPrivateKey.toAddress(), tokenId, 5n),
+                dummyBSV21(alicePrivateKey.toAddress(), tokenId, 4n),
+                dummyBSV21(bobPrivateKey.toAddress(), tokenId, 5n),
             ].map((utxo) => BSV21P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)

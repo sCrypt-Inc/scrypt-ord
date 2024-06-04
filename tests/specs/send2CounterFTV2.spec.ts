@@ -7,7 +7,7 @@ import {
     OrdiMethodCallOptions,
     fromByteString,
 } from '../scrypt-ord'
-import { dummyBSV20V2 } from './utils'
+import { dummyBSV21 } from './utils'
 import { CounterFTV2 } from '../contracts/counterFTV2'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 use(chaiAsPromised)
@@ -106,7 +106,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
 
     it('P2PKH with inscription appended', async () => {
         const p2pkh = BSV21P2PKH.fromUTXO(
-            dummyBSV20V2(myAddress, fromByteString(tokenId), tokenInP2PKH)
+            dummyBSV21(myAddress, fromByteString(tokenId), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
 
@@ -116,7 +116,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
 
     it('P2PKH with inscription prepended', async () => {
         const p2pkh = BSV21P2PKH.fromUTXO(
-            dummyBSV20V2(myAddress, fromByteString(tokenId), tokenInP2PKH)
+            dummyBSV21(myAddress, fromByteString(tokenId), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
 

@@ -7,7 +7,7 @@ import {
     OrdiMethodCallOptions,
     fromByteString,
 } from '../scrypt-ord'
-import { dummyBSV20V2 } from './utils'
+import { dummyBSV21 } from './utils'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 use(chaiAsPromised)
 
@@ -38,7 +38,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
             const p2pkh = BSV21P2PKH.fromUTXO(
-                dummyBSV20V2(address, fromByteString(tokenId), 100n)
+                dummyBSV21(address, fromByteString(tokenId), 100n)
             )
 
             await p2pkh.connect(signer)
@@ -73,7 +73,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             const p2pkh = BSV21P2PKH.fromUTXO(
-                dummyBSV20V2(address, fromByteString(tokenId), 100n)
+                dummyBSV21(address, fromByteString(tokenId), 100n)
             )
 
             signer.addPrivateKey(wrongPrivKey)
@@ -178,7 +178,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
             const p2pkh = BSV21P2PKH.fromUTXO(
-                dummyBSV20V2(address, fromByteString(id), 100n)
+                dummyBSV21(address, fromByteString(id), 100n)
             )
 
             await p2pkh.connect(signer)
