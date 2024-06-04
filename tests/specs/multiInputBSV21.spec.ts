@@ -11,7 +11,7 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
-import { HashLockFTV2 } from '../contracts/hashLockFTV2'
+import { HashLockBSV21 } from '../contracts/hashLockBSV21'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import {
@@ -28,11 +28,11 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
     const dec = 0n
     const sym = toByteString('MEME', true)
 
-    let hashLock: HashLockFTV2
+    let hashLock: HashLockBSV21
     let tokenId: string
     before(async () => {
-        HashLockFTV2.loadArtifact()
-        hashLock = new HashLockFTV2(
+        HashLockBSV21.loadArtifact()
+        hashLock = new HashLockBSV21(
             toByteString(''),
             sym,
             max,
@@ -68,7 +68,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashLockFTV2(
+                    instance: new HashLockBSV21(
                         toByteString(tokenId, true),
                         sym,
                         max,
@@ -94,7 +94,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
     it('transfer to an other hashLock with change.', async () => {
         const callContract = async () => {
-            const receiver = new HashLockFTV2(
+            const receiver = new HashLockBSV21(
                 toByteString(tokenId, true),
                 sym,
                 max,
@@ -113,7 +113,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                 toByteString(`hello, sCrypt!:0`, true),
                 {
                     transfer: recipients,
-                } as OrdiMethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockBSV21>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -144,7 +144,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
             sender0.bindTxBuilder(
                 'unlock',
-                async (current: HashLockFTV2): Promise<ContractTransaction> => {
+                async (current: HashLockBSV21): Promise<ContractTransaction> => {
                     const tx = new bsv.Transaction()
                     const nexts: StatefulNext<SmartContract>[] = []
 
@@ -225,8 +225,8 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
             sender1.bindTxBuilder(
                 'unlock',
                 async (
-                    current: HashLockFTV2,
-                    options: MethodCallOptions<HashLockFTV2>
+                    current: HashLockBSV21,
+                    options: MethodCallOptions<HashLockBSV21>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx) {
                         const tx = options.partialContractTx.tx

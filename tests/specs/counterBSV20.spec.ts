@@ -1,23 +1,23 @@
 import { expect, use } from 'chai'
 import { toByteString } from 'scrypt-ts'
-import { CounterFT } from '../contracts/counterFT'
+import { CounterBSV20 } from '../contracts/counterBSV20'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `CounterFT`', () => {
-    let instance: CounterFT
+    let instance: CounterBSV20
 
     before(async () => {
-        CounterFT.loadArtifact()
+        CounterBSV20.loadArtifact()
 
         const tick = 'DOGE'
         const max = 100000n
         const lim = max / 10n
         const amt = lim
         const dec = 0n
-        instance = new CounterFT(toByteString(tick, true), max, lim, dec, 0n)
+        instance = new CounterBSV20(toByteString(tick, true), max, lim, dec, 0n)
         await instance.connect(getDefaultSigner())
 
         await instance.deployToken()
@@ -46,7 +46,7 @@ describe('Test SmartContract `CounterFT`', () => {
                             instance: nextInstance,
                             amt: transferAmount,
                         },
-                    } as OrdiMethodCallOptions<CounterFT>
+                    } as OrdiMethodCallOptions<CounterBSV20>
                 )
                 console.log('Contract CounterFT called: ', tx.id)
                 expect(nexts.length).to.equal(2)

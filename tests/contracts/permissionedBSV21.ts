@@ -14,7 +14,7 @@ import {
 
 import { BSV21, OrdiMethodCallOptions } from '../scrypt-ord'
 
-export class PermissionedFTV2 extends BSV21 {
+export class PermissionedBSV21 extends BSV21 {
     @prop()
     readonly issuer: PubKey
 
@@ -80,8 +80,8 @@ export class PermissionedFTV2 extends BSV21 {
     }
 
     static async buildTxForTransfer(
-        current: PermissionedFTV2,
-        options: OrdiMethodCallOptions<PermissionedFTV2>,
+        current: PermissionedBSV21,
+        options: OrdiMethodCallOptions<PermissionedBSV21>,
         recipient: PubKey,
         tokenTransferAmount: bigint,
         tokenChangeAmount: bigint

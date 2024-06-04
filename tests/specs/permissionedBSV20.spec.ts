@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import { PubKey, findSig, toByteString } from 'scrypt-ts'
-import { PermissionedFT } from '../contracts/permissionedFT'
+import { PermissionedBSV20 } from '../contracts/permissionedBSV20'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey, myPrivateKey } from '../utils/privateKey'
@@ -16,16 +16,16 @@ describe('Test SmartContract `PermissionedFT`', () => {
     const tokenChangeAmount = amount / 10n // 10
     const tokenTransferAmount = amount - tokenChangeAmount // 90
 
-    let instance: PermissionedFT
+    let instance: PermissionedBSV20
 
     const issuerPublicKey = myPublicKey
     const [alicePrivateKey, alicePublicKey, ,] = randomPrivateKey()
     const [bobPrivateKey, bobPublicKey, ,] = randomPrivateKey()
 
     before(async () => {
-        PermissionedFT.loadArtifact()
+        PermissionedBSV20.loadArtifact()
 
-        instance = new PermissionedFT(
+        instance = new PermissionedBSV20(
             toByteString(tick, true),
             max,
             lim,
@@ -51,7 +51,7 @@ describe('Test SmartContract `PermissionedFT`', () => {
                 (sigResps) => findSig(sigResps, issuerPublicKey),
                 {
                     pubKeyOrAddrToSign: [alicePublicKey, issuerPublicKey],
-                } as OrdiMethodCallOptions<PermissionedFT>
+                } as OrdiMethodCallOptions<PermissionedBSV20>
             )
 
         await expect(call()).not.to.be.rejected

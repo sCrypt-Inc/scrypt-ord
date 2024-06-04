@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import { PubKey, findSig, toByteString, toHex } from 'scrypt-ts'
-import { PermissionedFTV2 } from '../contracts/permissionedFTV2'
+import { PermissionedBSV21 } from '../contracts/permissionedBSV21'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey, myPrivateKey } from '../utils/privateKey'
@@ -15,16 +15,16 @@ describe('Test SmartContract `PermissionedFTV2`', () => {
     const tokenTransferAmount = 10n
     const tokenChangeAmount = amount - tokenTransferAmount
 
-    let instance: PermissionedFTV2
+    let instance: PermissionedBSV21
 
     const issuerPublicKey = myPublicKey
     const [alicePrivateKey, alicePublicKey, ,] = randomPrivateKey()
     const [bobPrivateKey, bobPublicKey, ,] = randomPrivateKey()
 
     before(async () => {
-        PermissionedFTV2.loadArtifact()
+        PermissionedBSV21.loadArtifact()
 
-        instance = new PermissionedFTV2(
+        instance = new PermissionedBSV21(
             toByteString(''),
             sym,
             max,
@@ -49,7 +49,7 @@ describe('Test SmartContract `PermissionedFTV2`', () => {
                 (sigResps) => findSig(sigResps, issuerPublicKey),
                 {
                     pubKeyOrAddrToSign: [alicePublicKey, issuerPublicKey],
-                } as OrdiMethodCallOptions<PermissionedFTV2>
+                } as OrdiMethodCallOptions<PermissionedBSV21>
             )
 
             console.log('tranfer tx:', tx.id)

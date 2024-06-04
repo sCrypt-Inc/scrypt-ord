@@ -11,7 +11,7 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
-import { HashLockFT } from '../contracts/hashLockFT'
+import { HashLockBSV20 } from '../contracts/hashLockBSV20'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 
 import chaiAsPromised from 'chai-as-promised'
@@ -32,7 +32,7 @@ describe('Test multi inputs and outputs', () => {
     const dec = 0n
 
     before(async () => {
-        HashLockFT.loadArtifact()
+        HashLockBSV20.loadArtifact()
     })
 
     it('should transfer 2 BSV20P2PKH to 1 hashLock successfully.', async () => {
@@ -49,7 +49,7 @@ describe('Test multi inputs and outputs', () => {
             await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)))
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashLockFT(
+                    instance: new HashLockBSV20(
                         tick,
                         max,
                         lim,
@@ -100,7 +100,7 @@ describe('Test multi inputs and outputs', () => {
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashLockFT(
+                    instance: new HashLockBSV20(
                         tick,
                         max,
                         lim,
@@ -140,7 +140,7 @@ describe('Test multi inputs and outputs', () => {
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashLockFT(
+                    instance: new HashLockBSV20(
                         tick,
                         max,
                         lim,
@@ -150,7 +150,7 @@ describe('Test multi inputs and outputs', () => {
                     amt: 6n,
                 },
                 {
-                    instance: new HashLockFT(
+                    instance: new HashLockBSV20(
                         tick,
                         max,
                         lim,
@@ -187,7 +187,7 @@ describe('Test multi inputs and outputs', () => {
 
             await sender0.connect(signer)
 
-            const sender1 = new HashLockFT(
+            const sender1 = new HashLockBSV20(
                 tick,
                 max,
                 lim,
@@ -199,7 +199,7 @@ describe('Test multi inputs and outputs', () => {
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashLockFT(
+                    instance: new HashLockBSV20(
                         tick,
                         max,
                         lim,
@@ -209,7 +209,7 @@ describe('Test multi inputs and outputs', () => {
                     amt: 6n,
                 },
                 {
-                    instance: new HashLockFT(
+                    instance: new HashLockBSV20(
                         tick,
                         max,
                         lim,
@@ -313,8 +313,8 @@ describe('Test multi inputs and outputs', () => {
             sender1.bindTxBuilder(
                 'unlock',
                 async (
-                    current: HashLockFT,
-                    options: MethodCallOptions<HashLockFT>
+                    current: HashLockBSV20,
+                    options: MethodCallOptions<HashLockBSV20>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx) {
                         const tx = options.partialContractTx.tx

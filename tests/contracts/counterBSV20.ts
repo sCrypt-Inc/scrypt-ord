@@ -1,18 +1,18 @@
 import { method, prop, assert, SigHash, hash256, ByteString } from 'scrypt-ts'
-import { BSV21 } from '../scrypt-ord'
+import { BSV20 } from '../scrypt-ord'
 
-export class CounterFTV2 extends BSV21 {
+export class CounterBSV20 extends BSV20 {
     @prop(true)
     counter: bigint
 
     constructor(
-        id: ByteString,
-        sym: ByteString,
+        tick: ByteString,
         max: bigint,
+        lim: bigint,
         dec: bigint,
         counter: bigint
     ) {
-        super(id, sym, max, dec)
+        super(tick, max, lim, dec)
         this.init(...arguments)
         this.counter = counter
     }
@@ -22,7 +22,6 @@ export class CounterFTV2 extends BSV21 {
         this.incCounter()
 
         const outputs = this.buildStateOutputFT(tokenAmt)
-
         assert(
             this.ctx.hashOutputs == hash256(outputs),
             'hashOutputs check failed'

@@ -10,7 +10,7 @@ import {
     fromByteString,
     ByteString,
 } from 'scrypt-ts'
-import { dummyBSV20V2 } from './utils'
+import { dummyBSV21 } from './utils'
 use(chaiAsPromised)
 
 describe('Test SmartContract `BSV21P2PKH`', () => {
@@ -80,7 +80,7 @@ describe('Test SmartContract `BSV21P2PKH`', () => {
             const addr = await signer.getDefaultAddress()
             // put bsv20 inscription script at the end of locking script
             bsv21P2PKH = BSV21P2PKH.fromUTXO(
-                dummyBSV20V2(addr, fromByteString(tokenId), 1n, false)
+                dummyBSV21(addr, fromByteString(tokenId), 1n, false)
             )
 
             await bsv21P2PKH.connect(signer)
@@ -128,7 +128,7 @@ describe('Test SmartContract `BSV21P2PKH`', () => {
         before(async () => {
             const addr = await signer.getDefaultAddress()
             BSV20P2PKH = BSV21P2PKH.fromUTXO(
-                dummyBSV20V2(addr, fromByteString(tokenId), 6n)
+                dummyBSV21(addr, fromByteString(tokenId), 6n)
             )
 
             await BSV20P2PKH.connect(signer)

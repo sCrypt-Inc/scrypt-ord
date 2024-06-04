@@ -6,7 +6,7 @@ import {
     OrdiMethodCallOptions,
     FTReceiver,
 } from '../scrypt-ord'
-import { HashLockFT } from '../contracts/hashLockFT'
+import { HashLockBSV20 } from '../contracts/hashLockBSV20'
 /**
  * @returns mainnet signer
  */
@@ -15,7 +15,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashLockFT.loadArtifact('tests/artifacts/contracts/hashLockFT.json')
+    HashLockBSV20.loadArtifact('tests/artifacts/contracts/hashLockFT.json')
 
     const tick = toByteString('KKK1', true)
     const max = 21000000n
@@ -31,7 +31,7 @@ async function main() {
         '28d249bc839a44585891148292635753e620fd68e71cd2939a2dd5188ca2c9ae'
     )
 
-    const hashLock = HashLockFT.fromTx(mintTx as bsv.Transaction, 0)
+    const hashLock = HashLockBSV20.fromTx(mintTx as bsv.Transaction, 0)
 
     await hashLock.connect(signer)
 
@@ -48,7 +48,7 @@ async function main() {
 
     const { tx } = await hashLock.methods.unlock(message, {
         transfer: receiver,
-    } as OrdiMethodCallOptions<HashLockFT>)
+    } as OrdiMethodCallOptions<HashLockBSV20>)
 
     console.log(`Transfer tx: ${tx.id}`)
 }

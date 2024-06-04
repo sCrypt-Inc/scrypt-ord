@@ -1,6 +1,6 @@
 import { TestWallet, toByteString, sha256, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
-import { HashLockFT } from '../contracts/hashLockFT'
+import { HashLockBSV20 } from '../contracts/hashLockBSV20'
 import {
     BSV20P2PKH,
     OrdiProvider,
@@ -15,7 +15,7 @@ function getSigner() {
 }
 
 async function main() {
-    HashLockFT.loadArtifact('tests/artifacts/contracts/hashLockFT.json')
+    HashLockBSV20.loadArtifact('tests/artifacts/contracts/hashLockFT.json')
 
     // BSV20 fields
     const tick = toByteString('HELLO', true)
@@ -26,7 +26,7 @@ async function main() {
     // create contract instance
     const message = toByteString('Hello sCrypt', true)
     const hash = sha256(message)
-    const hashLock = new HashLockFT(tick, max, lim, dec, hash)
+    const hashLock = new HashLockBSV20(tick, max, lim, dec, hash)
     await hashLock.connect(getSigner())
 
     // deploy the new BSV20 token $HELLO
@@ -55,7 +55,7 @@ async function main() {
                 amt: 5n,
             },
         ],
-    } as OrdiMethodCallOptions<HashLockFT>)
+    } as OrdiMethodCallOptions<HashLockBSV20>)
     console.log(`Transfer tx: ${transferTx.id}`)
 }
 
