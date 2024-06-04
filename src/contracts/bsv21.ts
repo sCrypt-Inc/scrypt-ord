@@ -19,7 +19,7 @@ import {
 
 import { Ordinal } from './ordinal'
 import { fromByteString } from '../utils'
-import { OrdiMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
+import { OrdiMethodCallOptions, FTReceiver, BSV21_JSON } from '../types'
 
 /**
  * A base class implementing the bsv21 protocol
@@ -121,7 +121,7 @@ export abstract class BSV21 extends SmartContract {
         const nop = this.getPrependNOPScript()
 
         if (nop) {
-            const bsv20 = Ordinal.getBsv20(nop, false) as BSV20V2_JSON
+            const bsv20 = Ordinal.getBsv20(nop, false) as BSV21_JSON
 
             if (bsv20.op === 'deploy+mint') {
                 return `${this.utxo.txId}_${this.utxo.outputIndex}`

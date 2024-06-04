@@ -25,7 +25,7 @@ import {
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import { BSV20 } from './bsv20'
-import { BSV20V1_JSON, FTReceiver, OrdiMethodCallOptions } from '../types'
+import { BSV20_JSON, FTReceiver, OrdiMethodCallOptions } from '../types'
 
 const P2PKHScriptLen = 50
 
@@ -127,7 +127,7 @@ export class BSV20P2PKH extends BSV20 {
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
             true
-        ) as BSV20V1_JSON
+        ) as BSV20_JSON
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {

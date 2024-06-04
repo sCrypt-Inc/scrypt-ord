@@ -22,7 +22,7 @@ import { fromByteString } from '../utils'
 import { OrdiMethodCallOptions, FTReceiver, Inscription } from '../types'
 
 /**
- * A base class implementing the bsv20 v1 protocol
+ * A base class implementing the bsv20 protocol
  */
 export abstract class BSV20 extends SmartContract {
     @prop(true)

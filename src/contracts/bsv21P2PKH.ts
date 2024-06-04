@@ -26,9 +26,9 @@ import {
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
 import {
-    BSV20V1_JSON,
-    BSV20V2_JSON,
-    BSV20V2_TRANSFER_JSON,
+    BSV20_JSON,
+    BSV21_JSON,
+    BSV21_TRANSFER_JSON,
     FTReceiver,
     OrdiMethodCallOptions,
 } from '../types'
@@ -112,7 +112,7 @@ export class BSV21P2PKH extends BSV21 {
         const nop = this.getNopScript()
 
         if (nop) {
-            const bsv20 = Ordinal.getBsv20(nop, false) as BSV20V2_JSON
+            const bsv20 = Ordinal.getBsv20(nop, false) as BSV21_JSON
 
             if (bsv20.op === 'deploy+mint') {
                 return `${this.utxo.txId}_${this.utxo.outputIndex}`
@@ -154,7 +154,7 @@ export class BSV21P2PKH extends BSV21 {
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
             false
-        ) as BSV20V2_TRANSFER_JSON
+        ) as BSV21_TRANSFER_JSON
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {
