@@ -10,7 +10,7 @@ import {
 import { HashLockFT } from '../contracts/hashLockFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
+import { BSV20P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 import { dummyBSV20 } from './utils'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 import { CounterFT } from '../contracts/counterFT'
@@ -39,15 +39,15 @@ describe(`Chain FT Test: ${chain}`, () => {
     const tokenToHashLockAgain = 300n
     const tokenToP2PKH = 120n
 
-    async function createP2PKH(): Promise<BSV20V1P2PKH> {
-        const p2pkh = BSV20V1P2PKH.fromUTXO(
+    async function createP2PKH(): Promise<BSV20P2PKH> {
+        const p2pkh = BSV20P2PKH.fromUTXO(
             dummyBSV20(myAddress, fromByteString(tick), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
         return p2pkh
     }
 
-    async function toHashLock(p2pkh: BSV20V1P2PKH): Promise<HashLockFT> {
+    async function toHashLock(p2pkh: BSV20P2PKH): Promise<HashLockFT> {
         const totalAmount = tokenInP2PKH
         const transferAmount = tokenToHashLock
         const changeAmount = totalAmount - transferAmount
@@ -64,7 +64,7 @@ describe(`Chain FT Test: ${chain}`, () => {
                     amt: transferAmount,
                 },
                 pubKeyOrAddrToSign: myPublicKey,
-            } as OrdiMethodCallOptions<BSV20V1P2PKH>
+            } as OrdiMethodCallOptions<BSV20P2PKH>
         )
         console.log('[1] P2PKH -> HashLock:', tx.id)
 
@@ -72,7 +72,7 @@ describe(`Chain FT Test: ${chain}`, () => {
 
         expect(hashLock.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as BSV20V1P2PKH
+        const tokenChange = nexts[1].instance as BSV20P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return hashLock
@@ -101,7 +101,7 @@ describe(`Chain FT Test: ${chain}`, () => {
 
         expect(counter.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as BSV20V1P2PKH
+        const tokenChange = nexts[1].instance as BSV20P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return counter
@@ -127,7 +127,7 @@ describe(`Chain FT Test: ${chain}`, () => {
 
         expect(nextInstance.getAmt()).to.equal(transferAmount)
 
-        const tokenChange = nexts[1].instance as BSV20V1P2PKH
+        const tokenChange = nexts[1].instance as BSV20P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return nextInstance
@@ -164,14 +164,14 @@ describe(`Chain FT Test: ${chain}`, () => {
         expect(nextInstance.getAmt()).to.equal(counterAmount)
         expect(hashLock.getAmt()).to.equal(hashLockAmount)
 
-        const tokenChange = nexts[2].instance as BSV20V1P2PKH
+        const tokenChange = nexts[2].instance as BSV20P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return hashLock
     }
 
     async function toP2PKH(hashLock: HashLockFT) {
-        const p2pkh = new BSV20V1P2PKH(
+        const p2pkh = new BSV20P2PKH(
             tick,
             max,
             lim,

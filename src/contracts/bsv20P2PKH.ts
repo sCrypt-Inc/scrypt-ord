@@ -13,42 +13,35 @@ import {
     toByteString,
     pubKey2Addr,
     ByteString,
+    fromByteString,
     findSig,
     ContractTransaction,
     StatefulNext,
     Signer,
-    toHex,
-    fromByteString,
     SignatureResponse,
     MethodCallOptions,
 } from 'scrypt-ts'
 
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
-import {
-    BSV20V1_JSON,
-    BSV20V2_JSON,
-    BSV20V2_TRANSFER_JSON,
-    FTReceiver,
-    OrdiMethodCallOptions,
-} from '../types'
-import { BSV20V2 } from './bsv20V2'
+import { BSV20 } from './bsv20'
+import { BSV20V1_JSON, FTReceiver, OrdiMethodCallOptions } from '../types'
 
 const P2PKHScriptLen = 50
 
-export class BSV20V2P2PKH extends BSV20V2 {
+export class BSV20P2PKH extends BSV20 {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
 
     constructor(
-        id: ByteString,
-        sym: ByteString,
-        amt: bigint,
+        tick: ByteString,
+        max: bigint,
+        lim: bigint,
         dec: bigint,
         addr: Addr
     ) {
-        super(id, sym, amt, dec)
+        super(tick, max, lim, dec)
         this.init(...arguments)
         this.addr = addr
     }
@@ -65,8 +58,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
     }
 
     override init(...args: any[]) {
-        const [id, _, __, ___, addr] = args
-        this.id = id
+        const [_, __, ___, ____, addr] = args
         super.init(addr)
     }
 
@@ -105,29 +97,10 @@ export class BSV20V2P2PKH extends BSV20V2 {
         }
     }
 
-    override getTokenId(): string {
-        if (this.id) {
-            return fromByteString(this.id)
-        }
-        const nop = this.getNopScript()
-
-        if (nop) {
-            const bsv20 = Ordinal.getBsv20(nop, false) as BSV20V2_JSON
-
-            if (bsv20.op === 'deploy+mint') {
-                return `${this.utxo.txId}_${this.utxo.outputIndex}`
-            } else {
-                return bsv20.id
-            }
-        }
-
-        throw new Error('token id is not initialized!')
-    }
-
     override getAmt() {
         const nop = this.getNopScript()
         if (nop) {
-            return Ordinal.getAmtV2(nop)
+            return Ordinal.getAmt(nop, fromByteString(this.tick))
         }
 
         throw new Error('No inscription script!')
@@ -138,7 +111,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
 
         const DelegateClazz = this.getDelegateClazz()
         if (!DelegateClazz) {
-            throw new Error('no DelegateClazz found!')
+            throw new Error('No DelegateClazz found!')
         }
 
         let rawP2PKH = ''
@@ -153,18 +126,18 @@ export class BSV20V2P2PKH extends BSV20V2 {
 
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
-            false
-        ) as BSV20V2_TRANSFER_JSON
+            true
+        ) as BSV20V1_JSON
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {
             return arg.value
         })
 
-        // we can't  get max, and lim from the bsv20 insciption script.
+        // we can't get max, lim, and dec from the bsv20 insciption script.
         const instance = new this(
-            toByteString(bsv20.id, true),
-            toByteString('', true),
+            toByteString(bsv20.tick, true),
+            -1n,
             -1n,
             -1n,
             Addr(args[0] as ByteString)
@@ -187,7 +160,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
             throw new Error('invalid ordinal p2pkh utxo')
         }
 
-        const instance = BSV20V2P2PKH.fromLockingScript(utxo.script) as T
+        const instance = BSV20P2PKH.fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
     }
@@ -195,52 +168,47 @@ export class BSV20V2P2PKH extends BSV20V2 {
     static async fromOutPoint(
         outPoint: string,
         network?: bsv.Networks.Network
-    ): Promise<BSV20V2P2PKH> {
+    ): Promise<BSV20P2PKH> {
         const utxo = await OneSatApis.fetchUTXOByOutpoint(outPoint, network)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
-        return BSV20V2P2PKH.fromUTXO(utxo)
+        return BSV20P2PKH.fromUTXO(utxo)
     }
 
     /**
-     * Get all unspent bsv20 p2pkh of a address by id
-     * @param id
+     * Get all unspent bsv20 p2pkh of a address by tick
+     * @param tick
      * @param address
      * @returns
      */
     static async getBSV20(
-        id: string,
+        tick: string,
         address: string
-    ): Promise<Array<BSV20V2P2PKH>> {
-        const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, id)
-        return bsv20Utxos.map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
+    ): Promise<Array<BSV20P2PKH>> {
+        const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
+        return bsv20Utxos.map((utxo) => BSV20P2PKH.fromUTXO(utxo))
     }
 
     /**
-     * Transfer BSV20 tokens which held by multiple BSV20V2P2PKH instances
-     * @param senders BSV20V2P2PKH instances
+     * Transfer BSV20 tokens which held by multiple BSV20P2PKH instances
+     * @param senders BSV20P2PKH instances
      * @param feeSigner used to sign UTXOs that pay transaction fees
      * @param receivers token receiving contract
      * @param tokenChangeAddress Token change address
-     * @param sendersPubkey The sender’s public key. By default, the default public key of the Signer connected to BSV20V2P2PKH is used.
+     * @param sendersPubkey The sender’s public key. By default, the default public key of the Signer connected to BSV20P2PKH is used.
      * @returns
      */
     static async transfer(
-        senders: Array<BSV20V2P2PKH>,
+        senders: Array<BSV20P2PKH>,
         feeSigner: Signer,
         receivers: Array<FTReceiver>,
         tokenChangeAddress: bsv.Address,
         sendersPubkey?: Array<bsv.PublicKey>
     ) {
-        if (
-            !senders.every(
-                (sender) => sender.getTokenId() === senders[0].getTokenId()
-            )
-        ) {
-            throw new Error('The TokenId of all senders must be the same!')
+        if (!senders.every((sender) => sender.tick === senders[0].tick)) {
+            throw new Error('The tick of all senders must be the same!')
         }
-
         sendersPubkey = sendersPubkey || []
 
         const totalTokenAmt = senders.reduce((acc, sender) => {
@@ -262,13 +230,12 @@ export class BSV20V2P2PKH extends BSV20V2 {
         const tx = new bsv.Transaction()
         const nexts: StatefulNext<SmartContract>[] = []
 
-        const id = senders[0].getTokenId()
-        const sym = senders[0].sym
+        const tick = senders[0].tick
 
         for (let i = 0; i < receivers.length; i++) {
             const receiver = receivers[i]
 
-            if (receiver.instance instanceof BSV20V2) {
+            if (receiver.instance instanceof BSV20) {
                 receiver.instance.setAmt(receiver.amt)
             } else {
                 throw new Error('unsupport receiver, only BSV20!')
@@ -289,10 +256,10 @@ export class BSV20V2P2PKH extends BSV20V2 {
         }
 
         if (tokenChangeAmt > 0n) {
-            const p2pkh = new BSV20V2P2PKH(
-                toByteString(id, true),
-                sym,
+            const p2pkh = new this(
+                tick,
                 senders[0].max,
+                senders[0].lim,
                 senders[0].dec,
                 Addr(tokenChangeAddress.toByteString())
             )
@@ -314,6 +281,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
         }
 
         const bsvAddress = await feeSigner.getDefaultAddress()
+
         const feePerKb = await feeSigner.provider?.getFeePerKb()
         tx.feePerKb(feePerKb as number)
         tx.change(bsvAddress)
@@ -323,8 +291,8 @@ export class BSV20V2P2PKH extends BSV20V2 {
             p2pkh.bindTxBuilder(
                 'unlock',
                 async (
-                    current: BSV20V2P2PKH,
-                    options: MethodCallOptions<BSV20V2P2PKH>
+                    current: BSV20P2PKH,
+                    options: MethodCallOptions<BSV20P2PKH>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx?.tx) {
                         const tx = options.partialContractTx.tx
@@ -336,10 +304,10 @@ export class BSV20V2P2PKH extends BSV20V2 {
                             nexts,
                         })
                     }
-
                     throw new Error('No partialContractTx found!')
                 }
             )
+
             const pubkey =
                 sendersPubkey[i] || (await p2pkh.signer.getDefaultPubKey())
 
@@ -355,7 +323,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
                     },
                     pubKeyOrAddrToSign: pubkey,
                     multiContractCall: true,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV20P2PKH>
             )
         }
 
@@ -373,7 +341,7 @@ export class BSV20V2P2PKH extends BSV20V2 {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'BSV20V2P2PKH',
+    contract: 'BSV20P2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],
@@ -411,4 +379,4 @@ const desc = {
     sourceMapFile: '',
 }
 
-BSV20V2P2PKH.loadArtifact(desc)
+BSV20P2PKH.loadArtifact(desc)

@@ -3,7 +3,7 @@ import { Addr, PubKey, findSig, sha256, toByteString } from 'scrypt-ts'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import {
-    BSV20V2P2PKH,
+    BSV21P2PKH,
     OrdiMethodCallOptions,
     fromByteString,
 } from '../scrypt-ord'
@@ -37,7 +37,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = BSV20V2P2PKH.fromUTXO(
+            const p2pkh = BSV21P2PKH.fromUTXO(
                 dummyBSV20V2(address, fromByteString(tokenId), 100n)
             )
 
@@ -54,7 +54,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                         },
                     ],
                     pubKeyOrAddrToSign: pubkey,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV21P2PKH>
             )
 
             console.log('transfer FT: ', transferTx.id)
@@ -62,7 +62,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
 
             expect(recipient.getAmt()).to.equal(15n)
 
-            const changeToken = nexts[1].instance as BSV20V2P2PKH
+            const changeToken = nexts[1].instance as BSV21P2PKH
 
             expect(changeToken.getAmt()).to.equal(85n)
         })
@@ -72,7 +72,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
 
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
-            const p2pkh = BSV20V2P2PKH.fromUTXO(
+            const p2pkh = BSV21P2PKH.fromUTXO(
                 dummyBSV20V2(address, fromByteString(tokenId), 100n)
             )
 
@@ -91,19 +91,19 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                             },
                         ],
                         pubKeyOrAddrToSign: wrongPubKey,
-                    } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                    } as OrdiMethodCallOptions<BSV21P2PKH>
                 )
             await expect(call()).to.be.rejectedWith(/signature check failed/)
         })
 
-        it('transfer FT to a BSV20V2P2PKH', async () => {
+        it('transfer FT to a BSV21P2PKH', async () => {
             await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () => {
                 const { tx, nexts } = await recipient.methods.unlock(message, {
                     transfer: [
                         {
-                            instance: new BSV20V2P2PKH(
+                            instance: new BSV21P2PKH(
                                 tokenId,
                                 sym,
                                 max,
@@ -119,7 +119,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                 // no token change
                 expect(nexts.length).to.equal(1)
 
-                const p2pkh = nexts[0].instance as BSV20V2P2PKH
+                const p2pkh = nexts[0].instance as BSV21P2PKH
 
                 expect(p2pkh.getAmt()).to.equal(15n)
             }
@@ -136,7 +136,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                     {
                         transfer: [
                             {
-                                instance: new BSV20V2P2PKH(
+                                instance: new BSV21P2PKH(
                                     tokenId,
                                     sym,
                                     max,
@@ -177,7 +177,7 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
             const address = await getDefaultSigner().getDefaultAddress()
             const pubkey = await getDefaultSigner().getDefaultPubKey()
             // create p2pkh from a utxo
-            const p2pkh = BSV20V2P2PKH.fromUTXO(
+            const p2pkh = BSV21P2PKH.fromUTXO(
                 dummyBSV20V2(address, fromByteString(id), 100n)
             )
 
@@ -194,20 +194,20 @@ describe('Test SmartContract send FT to `HashLockFTV2`', () => {
                         },
                     ],
                     pubKeyOrAddrToSign: pubkey,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV21P2PKH>
             )
 
             console.log('transfer FT: ', transferTx.id)
         })
 
-        it('transfer FT to a BSV20V2P2PKH', async () => {
+        it('transfer FT to a BSV21P2PKH', async () => {
             await recipient.connect(signer)
             const ordAddress = await recipient.signer.getDefaultAddress()
             const call = async () =>
                 await recipient.methods.unlock(message, {
                     transfer: [
                         {
-                            instance: new BSV20V2P2PKH(
+                            instance: new BSV21P2PKH(
                                 id,
                                 sym,
                                 max,

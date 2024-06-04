@@ -2,7 +2,7 @@ import { TestWallet, toByteString, sha256, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { HashLockFT } from '../contracts/hashLockFT'
 import {
-    BSV20V1P2PKH,
+    BSV20P2PKH,
     OrdiProvider,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
@@ -40,9 +40,9 @@ async function main() {
     // for now, the contract instance holds the BSV20 token
     // this token can be transferred only when the hash lock is solved
     const addressAlice = Addr(myAddress.toByteString())
-    const alice = new BSV20V1P2PKH(tick, max, lim, dec, addressAlice)
+    const alice = new BSV20P2PKH(tick, max, lim, dec, addressAlice)
     const addressBob = Addr(myAddress.toByteString())
-    const bob = new BSV20V1P2PKH(tick, max, lim, dec, addressBob)
+    const bob = new BSV20P2PKH(tick, max, lim, dec, addressBob)
 
     const { tx: transferTx } = await hashLock.methods.unlock(message, {
         transfer: [

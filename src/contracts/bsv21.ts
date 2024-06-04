@@ -22,9 +22,9 @@ import { fromByteString } from '../utils'
 import { OrdiMethodCallOptions, FTReceiver, BSV20V2_JSON } from '../types'
 
 /**
- * A base class implementing the bsv20 v2 protocol
+ * A base class implementing the bsv21 protocol
  */
-export abstract class BSV20V2 extends SmartContract {
+export abstract class BSV21 extends SmartContract {
     /** Ticker: identifier of the bsv-20 */
     @prop(true)
     id: ByteString
@@ -58,7 +58,7 @@ export abstract class BSV20V2 extends SmartContract {
         }
 
         const stateScript =
-            BSV20V2.createTransferInsciption(this.id, amt) +
+            BSV21.createTransferInsciption(this.id, amt) +
             Ordinal.removeInsciption(this.getStateScript())
         return Utils.buildOutput(stateScript, 1n)
     }
@@ -74,7 +74,7 @@ export abstract class BSV20V2 extends SmartContract {
         id: ByteString,
         amt: bigint
     ): ByteString {
-        const transferScript = BSV20V2.buildTransferScript(address, id, amt)
+        const transferScript = BSV21.buildTransferScript(address, id, amt)
         return Utils.buildOutput(transferScript, 1n)
     }
 
@@ -85,7 +85,7 @@ export abstract class BSV20V2 extends SmartContract {
         amt: bigint
     ): ByteString {
         return (
-            BSV20V2.createTransferInsciption(id, amt) +
+            BSV21.createTransferInsciption(id, amt) +
             Utils.buildPublicKeyHashScript(address)
         )
     }
@@ -179,8 +179,8 @@ export abstract class BSV20V2 extends SmartContract {
         methodName: string
     ): MethodCallTxBuilder<T> {
         return async function (
-            current: BSV20V2,
-            options: OrdiMethodCallOptions<BSV20V2>,
+            current: BSV21,
+            options: OrdiMethodCallOptions<BSV21>,
             ...args: any[]
         ): Promise<ContractTransaction> {
             const recipients = (options.transfer || []) as
@@ -205,7 +205,7 @@ export abstract class BSV20V2 extends SmartContract {
             tx.addInput(current.buildContractInput())
 
             function addReceiver(receiver: FTReceiver) {
-                if (receiver.instance instanceof BSV20V2) {
+                if (receiver.instance instanceof BSV21) {
                     receiver.instance.setAmt(receiver.amt)
                 } else {
                     throw new Error('unsupport receiver!')
@@ -239,8 +239,8 @@ export abstract class BSV20V2 extends SmartContract {
                     : await current.signer.getDefaultAddress()
 
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const { BSV20V2P2PKH } = require('./bsv20V2P2PKH')
-                const p2pkh = new BSV20V2P2PKH(
+                const { BSV21P2PKH } = require('./bsv21P2PKH')
+                const p2pkh = new BSV21P2PKH(
                     toByteString(current.getTokenId(), true),
                     current.sym,
                     current.max,
@@ -318,7 +318,7 @@ export abstract class BSV20V2 extends SmartContract {
     }
 
     /**
-     * recover a `BSV20V2` instance from the transaction
+     * recover a `BSV21` instance from the transaction
      * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
      * it's required to pass all their offchain raw data at this transaction moment
      * @param tx transaction

@@ -3,7 +3,7 @@ import { sha256, toByteString } from 'scrypt-ts'
 import { HashLockFT } from '../contracts/hashLockFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
+import { BSV20P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
 describe('Test SmartContract `HashLockFT`', () => {
@@ -92,7 +92,7 @@ describe('Test SmartContract `HashLockFT`', () => {
 
             expect(nexts.length === 2).to.be.true
 
-            const p2pkh = nexts[1].instance as BSV20V1P2PKH
+            const p2pkh = nexts[1].instance as BSV20P2PKH
 
             expect(p2pkh.getAmt()).to.be.equal(1n)
 
@@ -149,7 +149,7 @@ describe('Test SmartContract `HashLockFT`', () => {
 
             expect(nexts.length === 1).to.be.true
 
-            expect(nexts[0].instance instanceof BSV20V1P2PKH).to.be.true
+            expect(nexts[0].instance instanceof BSV20P2PKH).to.be.true
 
             expect(nexts[0].instance.getAmt() === 9n).to.be.true
         }

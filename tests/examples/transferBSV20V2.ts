@@ -1,7 +1,7 @@
 import { TestWallet, toByteString, Addr, sha256 } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import {
-    BSV20V2P2PKH,
+    BSV21P2PKH,
     OrdiProvider,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
@@ -31,7 +31,7 @@ async function main() {
 
     console.log(`tokenId: ${tokenId}`)
     const receiver = {
-        instance: new BSV20V2P2PKH(
+        instance: new BSV21P2PKH(
             toByteString(tokenId, true),
             sym,
             max,

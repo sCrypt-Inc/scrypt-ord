@@ -12,9 +12,9 @@ import {
     toHex,
 } from 'scrypt-ts'
 
-import { BSV20V2, OrdiMethodCallOptions } from '../scrypt-ord'
+import { BSV21, OrdiMethodCallOptions } from '../scrypt-ord'
 
-export class PermissionedFTV2 extends BSV20V2 {
+export class PermissionedFTV2 extends BSV21 {
     @prop()
     readonly issuer: PubKey
 

@@ -1,7 +1,7 @@
 import { TestWallet, toByteString, Addr, findSig, PubKey } from 'scrypt-ts'
 import { myAddress, myPrivateKey, myPublicKey } from '../utils/privateKey'
 import {
-    BSV20V1P2PKH,
+    BSV20P2PKH,
     OrdiProvider,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
@@ -20,7 +20,7 @@ async function main() {
 
     const signer = getSigner()
 
-    const p2pkh = new BSV20V1P2PKH(
+    const p2pkh = new BSV20P2PKH(
         tick,
         max,
         lim,
@@ -34,7 +34,7 @@ async function main() {
     console.log(`mint: ${mintTx.id}`)
 
     const receiver = {
-        instance: new BSV20V1P2PKH(
+        instance: new BSV20P2PKH(
             tick,
             max,
             lim,
@@ -50,7 +50,7 @@ async function main() {
         {
             transfer: receiver,
             pubKeyOrAddrToSign: myPublicKey,
-        } as OrdiMethodCallOptions<BSV20V1P2PKH>
+        } as OrdiMethodCallOptions<BSV20P2PKH>
     )
 
     console.log(`Transfer tx: ${transferTx.id}`)

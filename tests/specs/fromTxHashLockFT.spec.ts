@@ -3,7 +3,7 @@ import { sha256, toByteString, bsv, Addr } from 'scrypt-ts'
 import { HashLockFT } from '../contracts/hashLockFT'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20P2PKH } from '../scrypt-ord'
 import { myAddress } from '../utils/privateKey'
 use(chaiAsPromised)
 
@@ -33,7 +33,7 @@ describe('Test fromTx for SmartContract `HashLockFT`', () => {
         await hashLock.connect(getDefaultSigner())
 
         const addr = Addr(myAddress.toByteString())
-        const receiver = new BSV20V1P2PKH(tick, max, lim, dec, addr)
+        const receiver = new BSV20P2PKH(tick, max, lim, dec, addr)
         const call = async () =>
             await hashLock.methods.unlock(message, {
                 transfer: {

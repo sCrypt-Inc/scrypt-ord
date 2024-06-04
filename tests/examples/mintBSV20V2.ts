@@ -2,7 +2,7 @@ import { TestWallet, toByteString, sha256, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 import {
-    BSV20V2P2PKH,
+    BSV21P2PKH,
     OrdiProvider,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
@@ -28,16 +28,16 @@ async function main() {
     const hashLock = new HashLockFTV2(toByteString(''), sym, max, dec, hash)
     await hashLock.connect(getSigner())
 
-    // deploy the new BSV20V2 token
+    // deploy the new BSV21 token
     const tokenId = await hashLock.deployToken({
         name: 'MEME TOKEN',
     })
     console.log(`tokenId: ${tokenId}`)
 
-    // for now, the contract instance holds the BSV20V2 token
+    // for now, the contract instance holds the BSV21 token
     // this token can be transferred only when the hash lock is solved
     const addressAlice = Addr(myAddress.toByteString())
-    const alice = new BSV20V2P2PKH(
+    const alice = new BSV21P2PKH(
         toByteString(tokenId, true),
         sym,
         max,
@@ -45,7 +45,7 @@ async function main() {
         addressAlice
     )
     const addressBob = Addr(myAddress.toByteString())
-    const bob = new BSV20V2P2PKH(
+    const bob = new BSV21P2PKH(
         toByteString(tokenId, true),
         sym,
         max,

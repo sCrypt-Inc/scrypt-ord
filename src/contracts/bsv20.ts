@@ -24,9 +24,9 @@ import { OrdiMethodCallOptions, FTReceiver, Inscription } from '../types'
 /**
  * A base class implementing the bsv20 v1 protocol
  */
-export abstract class BSV20V1 extends SmartContract {
+export abstract class BSV20 extends SmartContract {
     @prop(true)
-    isBSV20V1: boolean
+    isBSV20: boolean
     /** Ticker: 4 letter identifier of the bsv-20 */
     @prop()
     readonly tick: ByteString
@@ -49,7 +49,7 @@ export abstract class BSV20V1 extends SmartContract {
         this.max = max
         this.lim = lim
         this.dec = dec
-        this.isBSV20V1 = true
+        this.isBSV20 = true
         assert(this.max <= 18446744073709551615n)
         assert(this.dec <= 18)
     }
@@ -57,7 +57,7 @@ export abstract class BSV20V1 extends SmartContract {
     @method()
     buildStateOutputFT(amt: bigint): ByteString {
         const stateScript =
-            BSV20V1.createTransferInsciption(this.tick, amt) +
+            BSV20.createTransferInsciption(this.tick, amt) +
             Ordinal.removeInsciption(this.getStateScript())
         return Utils.buildOutput(stateScript, 1n)
     }
@@ -68,7 +68,7 @@ export abstract class BSV20V1 extends SmartContract {
         tick: ByteString,
         amt: bigint
     ): ByteString {
-        const transferScript = BSV20V1.buildTransferScript(address, tick, amt)
+        const transferScript = BSV20.buildTransferScript(address, tick, amt)
         return Utils.buildOutput(transferScript, 1n)
     }
 
@@ -79,7 +79,7 @@ export abstract class BSV20V1 extends SmartContract {
         amt: bigint
     ): ByteString {
         return (
-            BSV20V1.createTransferInsciption(tick, amt) +
+            BSV20.createTransferInsciption(tick, amt) +
             Utils.buildPublicKeyHashScript(address)
         )
     }
@@ -191,8 +191,8 @@ export abstract class BSV20V1 extends SmartContract {
         methodName: string
     ): MethodCallTxBuilder<T> {
         return async function (
-            current: BSV20V1,
-            options: OrdiMethodCallOptions<BSV20V1>,
+            current: BSV20,
+            options: OrdiMethodCallOptions<BSV20>,
             ...args: any[]
         ): Promise<ContractTransaction> {
             const recipients = (options.transfer || []) as
@@ -217,7 +217,7 @@ export abstract class BSV20V1 extends SmartContract {
             tx.addInput(current.buildContractInput())
 
             function addReceiver(receiver: FTReceiver) {
-                if (receiver.instance instanceof BSV20V1) {
+                if (receiver.instance instanceof BSV20) {
                     receiver.instance.setAmt(receiver.amt)
                 } else {
                     throw new Error('unsupport receiver!')
@@ -251,8 +251,8 @@ export abstract class BSV20V1 extends SmartContract {
                     : await current.signer.getDefaultAddress()
 
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const { BSV20V1P2PKH } = require('./bsv20V1P2PKH')
-                const p2pkh = new BSV20V1P2PKH(
+                const { BSV20P2PKH } = require('./bsv20P2PKH')
+                const p2pkh = new BSV20P2PKH(
                     current.tick,
                     current.max,
                     current.lim,
@@ -324,7 +324,7 @@ export abstract class BSV20V1 extends SmartContract {
     }
 
     /**
-     * recover a `BSV20V1` instance from the transaction
+     * recover a `BSV20` instance from the transaction
      * if the contract contains onchain properties of type `HashedMap` or `HashedSet`
      * it's required to pass all their offchain raw data at this transaction moment
      * @param tx transaction

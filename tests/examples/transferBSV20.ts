@@ -1,6 +1,6 @@
 import { TestWallet } from 'scrypt-ts'
 import { myPrivateKey } from '../utils/privateKey'
-import { BSV20V1P2PKH, OrdiProvider } from '../scrypt-ord'
+import { BSV20P2PKH, OrdiProvider } from '../scrypt-ord'
 
 /**
  * @returns mainnet signer
@@ -22,9 +22,9 @@ async function main() {
 
     const address = await signer.getDefaultAddress()
 
-    const p2pkhs = await BSV20V1P2PKH.getBSV20('VIVO', address.toString())
+    const p2pkhs = await BSV20P2PKH.getBSV20('VIVO', address.toString())
 
-    const { tx } = await BSV20V1P2PKH.transfer(p2pkhs, signer, [])
+    const { tx } = await BSV20P2PKH.transfer(p2pkhs, signer, [])
 
     console.log(`Transfer tx: ${tx.id}`)
 }

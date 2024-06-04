@@ -1,12 +1,12 @@
 import { expect, use } from 'chai'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V1P2PKH } from '../scrypt-ord'
+import { BSV20P2PKH } from '../scrypt-ord'
 import { PubKey, findSig, Addr, toByteString } from 'scrypt-ts'
 import { dummyBSV20 } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract `BSV20V1P2PKH`', () => {
+describe('Test SmartContract `BSV20P2PKH`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
@@ -15,11 +15,11 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
     describe('hold bsv20', () => {
         const amt = 1000n
 
-        let instance: BSV20V1P2PKH
+        let instance: BSV20P2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const address = await signer.getDefaultAddress()
-            instance = new BSV20V1P2PKH(
+            instance = new BSV20P2PKH(
                 tick,
                 max,
                 lim,
@@ -38,7 +38,7 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
 
                 const recipients = [
                     {
-                        instance: new BSV20V1P2PKH(
+                        instance: new BSV20P2PKH(
                             tick,
                             max,
                             lim,
@@ -69,12 +69,12 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
     })
 
     describe('from v1 utxo', () => {
-        let instance: BSV20V1P2PKH
+        let instance: BSV20P2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
             // put bsv20 inscription script at the end of locking script
-            instance = BSV20V1P2PKH.fromUTXO(
+            instance = BSV20P2PKH.fromUTXO(
                 dummyBSV20(addr, 'OOO1', 1n, false)
             )
 
@@ -88,7 +88,7 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
                 const ordPubKey = await signer.getDefaultPubKey()
                 const recipients = [
                     {
-                        instance: new BSV20V1P2PKH(
+                        instance: new BSV20P2PKH(
                             tick,
                             max,
                             lim,
@@ -108,7 +108,7 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
                 )
 
                 console.log('transfer tx: ', tx.id)
-                const receiver = recipients[0].instance as BSV20V1P2PKH
+                const receiver = recipients[0].instance as BSV20P2PKH
 
                 expect(receiver.getAmt()).to.equal(1n)
             }
@@ -118,11 +118,11 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
     })
 
     describe('from v2 utxo', () => {
-        let instance: BSV20V1P2PKH
+        let instance: BSV20P2PKH
         const signer = getDefaultSigner()
         before(async () => {
             const addr = await signer.getDefaultAddress()
-            instance = BSV20V1P2PKH.fromUTXO(dummyBSV20(addr, tick, 6n))
+            instance = BSV20P2PKH.fromUTXO(dummyBSV20(addr, tick, 6n))
 
             await instance.connect(signer)
         })
@@ -132,7 +132,7 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
                 const address = await signer.getDefaultAddress()
                 const recipients = [
                     {
-                        instance: new BSV20V1P2PKH(
+                        instance: new BSV20P2PKH(
                             tick,
                             max,
                             lim,
@@ -153,7 +153,7 @@ describe('Test SmartContract `BSV20V1P2PKH`', () => {
                 )
 
                 console.log('transfer tx: ', tx.id)
-                const receiver = recipients[0].instance as BSV20V1P2PKH
+                const receiver = recipients[0].instance as BSV20P2PKH
 
                 expect(receiver.getAmt()).to.equal(2n)
             }

@@ -15,8 +15,8 @@ import { HashLockFTV2 } from '../contracts/hashLockFTV2'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import {
-    BSV20V2,
-    BSV20V2P2PKH,
+    BSV21,
+    BSV21P2PKH,
     FTReceiver,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
@@ -45,7 +45,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
         console.log('token id: ', tokenId)
     })
 
-    it('should transfer 2 BSV20V2P2PKH to 1 hashLock successfully: with different signer', async () => {
+    it('should transfer 2 BSV21P2PKH to 1 hashLock successfully: with different signer', async () => {
         const transferBSV20 = async () => {
             const feeSigner = getDefaultSigner()
 
@@ -56,15 +56,15 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
             const bobSigner = getDefaultSigner(bobPrivateKey)
 
             const address = await feeSigner.getDefaultAddress()
-            const bsv20V1P2PKHs = [
+            const bsv20P2PKHs = [
                 dummyBSV20V2(alicePrivateKey.toAddress(), tokenId, 4n),
                 dummyBSV20V2(bobPrivateKey.toAddress(), tokenId, 5n),
-            ].map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
+            ].map((utxo) => BSV21P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)
 
-            await bsv20V1P2PKHs[0].connect(aliceSigner)
-            await bsv20V1P2PKHs[1].connect(bobSigner)
+            await bsv20P2PKHs[0].connect(aliceSigner)
+            await bsv20P2PKHs[1].connect(bobSigner)
 
             const recipients: Array<FTReceiver> = [
                 {
@@ -79,8 +79,8 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                 },
             ]
 
-            const { tx } = await BSV20V2P2PKH.transfer(
-                bsv20V1P2PKHs,
+            const { tx } = await BSV21P2PKH.transfer(
+                bsv20P2PKHs,
                 feeSigner,
                 recipients,
                 address
@@ -120,7 +120,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
             expect(nexts.length === 2).to.be.true
 
-            const p2pkh = nexts[1].instance as BSV20V2P2PKH
+            const p2pkh = nexts[1].instance as BSV21P2PKH
 
             expect(p2pkh.getAmt()).to.be.equal(99000n)
 
@@ -151,7 +151,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     for (let i = 0; i < recipients.length; i++) {
                         const receiver = recipients[i]
 
-                        if (receiver.instance instanceof BSV20V2) {
+                        if (receiver.instance instanceof BSV21) {
                             receiver.instance.setAmt(receiver.amt)
                         } else {
                             throw new Error('unsupport receiver, only BSV20!')
@@ -172,7 +172,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     }
 
                     if (tokenChangeAmt > 0n) {
-                        const p2pkh = new BSV20V2P2PKH(
+                        const p2pkh = new BSV21P2PKH(
                             toByteString(tokenId, true),
                             sym,
                             max,
@@ -219,7 +219,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     ],
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV21P2PKH>
             )
 
             sender1.bindTxBuilder(
@@ -251,7 +251,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     transfer: recipients,
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV21P2PKH>
             )
 
             const { tx: finalTx } = await SmartContract.multiContractCall(

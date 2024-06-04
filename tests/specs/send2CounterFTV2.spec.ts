@@ -3,7 +3,7 @@ import { Addr, PubKey, findSig, toByteString } from 'scrypt-ts'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import {
-    BSV20V2P2PKH,
+    BSV21P2PKH,
     OrdiMethodCallOptions,
     fromByteString,
 } from '../scrypt-ord'
@@ -30,7 +30,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
     })
 
     async function transferToCounter(
-        p2pkh: BSV20V2P2PKH
+        p2pkh: BSV21P2PKH
     ): Promise<CounterFTV2> {
         const counter = new CounterFTV2(tokenId, sym, max, dec, 0n)
         await counter.connect(getDefaultSigner())
@@ -50,7 +50,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
                     },
                 ],
                 pubKeyOrAddrToSign: myPublicKey,
-            } as OrdiMethodCallOptions<BSV20V2P2PKH>
+            } as OrdiMethodCallOptions<BSV21P2PKH>
         )
         console.log('transfer FT:', tx.id)
 
@@ -59,7 +59,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
         // output #0, token receiver, counter instance
         expect(counter.getAmt()).to.equal(transferAmount)
         // output #1, token change, ordP2PKH instance
-        const tokenChange = nexts[1].instance as BSV20V2P2PKH
+        const tokenChange = nexts[1].instance as BSV21P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
 
         return counter
@@ -74,7 +74,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
         const nextInstance = counter.next()
         nextInstance.incCounter()
 
-        const p2pkh = new BSV20V2P2PKH(
+        const p2pkh = new BSV21P2PKH(
             tokenId,
             sym,
             max,
@@ -100,12 +100,12 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
         expect(nextInstance.getAmt()).to.equal(counterAmount)
         expect(p2pkh.getAmt()).to.eq(p2pkhAmount)
 
-        const tokenChange = nexts[2].instance as BSV20V2P2PKH
+        const tokenChange = nexts[2].instance as BSV21P2PKH
         expect(tokenChange.getAmt()).to.equal(changeAmount)
     }
 
     it('P2PKH with inscription appended', async () => {
-        const p2pkh = BSV20V2P2PKH.fromUTXO(
+        const p2pkh = BSV21P2PKH.fromUTXO(
             dummyBSV20V2(myAddress, fromByteString(tokenId), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())
@@ -115,7 +115,7 @@ describe('Test SmartContract send FT to `CounterFTV2`', () => {
     })
 
     it('P2PKH with inscription prepended', async () => {
-        const p2pkh = BSV20V2P2PKH.fromUTXO(
+        const p2pkh = BSV21P2PKH.fromUTXO(
             dummyBSV20V2(myAddress, fromByteString(tokenId), tokenInP2PKH)
         )
         await p2pkh.connect(getDefaultSigner())

@@ -1,7 +1,7 @@
 import { bsv, TestWallet, toByteString, Addr } from 'scrypt-ts'
 import { myAddress, myPrivateKey } from '../utils/privateKey'
 import {
-    BSV20V1P2PKH,
+    BSV20P2PKH,
     OrdiProvider,
     OrdiMethodCallOptions,
     FTReceiver,
@@ -36,7 +36,7 @@ async function main() {
     await hashLock.connect(signer)
 
     const receiver: FTReceiver = {
-        instance: new BSV20V1P2PKH(
+        instance: new BSV20P2PKH(
             tick,
             max,
             lim,
