@@ -24,12 +24,12 @@ import {
 
 import { Ordinal } from './ordinal'
 import { OneSatApis } from '../1satApis'
-import { BSV20V1 } from './bsv20V1'
-import { BSV20V1_JSON, FTReceiver, OrdiMethodCallOptions } from '../types'
+import { BSV20 } from './bsv20'
+import { BSV20_JSON, FTReceiver, OrdiMethodCallOptions } from '../types'
 
 const P2PKHScriptLen = 50
 
-export class BSV20V1P2PKH extends BSV20V1 {
+export class BSV20P2PKH extends BSV20 {
     // Address of the recipient.
     @prop()
     readonly addr: Addr
@@ -127,7 +127,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
         const bsv20 = Ordinal.getBsv20(
             bsv.Script.fromHex(script),
             true
-        ) as BSV20V1_JSON
+        ) as BSV20_JSON
 
         // recreate instance
         const args = delegateInstance.ctorArgs().map((arg) => {
@@ -160,7 +160,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
             throw new Error('invalid ordinal p2pkh utxo')
         }
 
-        const instance = BSV20V1P2PKH.fromLockingScript(utxo.script) as T
+        const instance = BSV20P2PKH.fromLockingScript(utxo.script) as T
         instance.from = utxo
         return instance
     }
@@ -168,12 +168,12 @@ export class BSV20V1P2PKH extends BSV20V1 {
     static async fromOutPoint(
         outPoint: string,
         network?: bsv.Networks.Network
-    ): Promise<BSV20V1P2PKH> {
+    ): Promise<BSV20P2PKH> {
         const utxo = await OneSatApis.fetchUTXOByOutpoint(outPoint, network)
         if (utxo === null) {
             throw new Error(`no utxo found for outPoint: ${outPoint}`)
         }
-        return BSV20V1P2PKH.fromUTXO(utxo)
+        return BSV20P2PKH.fromUTXO(utxo)
     }
 
     /**
@@ -185,22 +185,22 @@ export class BSV20V1P2PKH extends BSV20V1 {
     static async getBSV20(
         tick: string,
         address: string
-    ): Promise<Array<BSV20V1P2PKH>> {
+    ): Promise<Array<BSV20P2PKH>> {
         const bsv20Utxos = await OneSatApis.fetchBSV20Utxos(address, tick)
-        return bsv20Utxos.map((utxo) => BSV20V1P2PKH.fromUTXO(utxo))
+        return bsv20Utxos.map((utxo) => BSV20P2PKH.fromUTXO(utxo))
     }
 
     /**
-     * Transfer BSV20 tokens which held by multiple BSV20V1P2PKH instances
-     * @param senders BSV20V1P2PKH instances
+     * Transfer BSV20 tokens which held by multiple BSV20P2PKH instances
+     * @param senders BSV20P2PKH instances
      * @param feeSigner used to sign UTXOs that pay transaction fees
      * @param receivers token receiving contract
      * @param tokenChangeAddress Token change address
-     * @param sendersPubkey The sender’s public key. By default, the default public key of the Signer connected to BSV20V1P2PKH is used.
+     * @param sendersPubkey The sender’s public key. By default, the default public key of the Signer connected to BSV20P2PKH is used.
      * @returns
      */
     static async transfer(
-        senders: Array<BSV20V1P2PKH>,
+        senders: Array<BSV20P2PKH>,
         feeSigner: Signer,
         receivers: Array<FTReceiver>,
         tokenChangeAddress: bsv.Address,
@@ -235,7 +235,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
         for (let i = 0; i < receivers.length; i++) {
             const receiver = receivers[i]
 
-            if (receiver.instance instanceof BSV20V1) {
+            if (receiver.instance instanceof BSV20) {
                 receiver.instance.setAmt(receiver.amt)
             } else {
                 throw new Error('unsupport receiver, only BSV20!')
@@ -291,8 +291,8 @@ export class BSV20V1P2PKH extends BSV20V1 {
             p2pkh.bindTxBuilder(
                 'unlock',
                 async (
-                    current: BSV20V1P2PKH,
-                    options: MethodCallOptions<BSV20V1P2PKH>
+                    current: BSV20P2PKH,
+                    options: MethodCallOptions<BSV20P2PKH>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx?.tx) {
                         const tx = options.partialContractTx.tx
@@ -323,7 +323,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
                     },
                     pubKeyOrAddrToSign: pubkey,
                     multiContractCall: true,
-                } as OrdiMethodCallOptions<BSV20V1P2PKH>
+                } as OrdiMethodCallOptions<BSV20P2PKH>
             )
         }
 
@@ -341,7 +341,7 @@ export class BSV20V1P2PKH extends BSV20V1 {
 const desc = {
     version: 9,
     compilerVersion: '1.19.0+commit.72eaeba',
-    contract: 'BSV20V1P2PKH',
+    contract: 'BSV20P2PKH',
     md5: '0c046dfb1f1a91cf72b9a852537bdfe1',
     structs: [],
     library: [],
@@ -379,4 +379,4 @@ const desc = {
     sourceMapFile: '',
 }
 
-BSV20V1P2PKH.loadArtifact(desc)
+BSV20P2PKH.loadArtifact(desc)

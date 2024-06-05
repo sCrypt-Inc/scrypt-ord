@@ -17,6 +17,6 @@ export function handlerApiError(e: Error) {
     throw new Error(message)
 }
 
-export function isBSV20v2(tick: string) {
+export function isBSV21(tick: string) {
     return /^[a-fA-F0-9]{64}_\d+$/.test(tick)
 }

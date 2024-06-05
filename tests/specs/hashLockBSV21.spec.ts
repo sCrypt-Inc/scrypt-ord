@@ -1,21 +1,21 @@
 import { expect, use } from 'chai'
 import { sha256, toByteString } from 'scrypt-ts'
-import { HashLockFTV2 } from '../contracts/hashLockFTV2'
+import { HashLockBSV21 } from '../contracts/hashLockBSV21'
 import { getDefaultSigner } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
-import { BSV20V2P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
+import { BSV21P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashLockFTV2`', () => {
+describe('Test SmartContract `HashLockBSV21`', () => {
     const max = 100000n
     const dec = 0n
     const sym = toByteString('MEME', true)
 
-    let hashLock: HashLockFTV2
+    let hashLock: HashLockBSV21
     let tokenId: string
     before(async () => {
-        HashLockFTV2.loadArtifact()
-        hashLock = new HashLockFTV2(
+        HashLockBSV21.loadArtifact()
+        hashLock = new HashLockBSV21(
             toByteString(''),
             sym,
             max,
@@ -31,7 +31,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
     it('transfer to an other hashLock.', async () => {
         const callContract = async () => {
             for (let i = 0; i < 3; i++) {
-                const receiver = new HashLockFTV2(
+                const receiver = new HashLockBSV21(
                     toByteString(tokenId, true),
                     sym,
                     max,
@@ -53,7 +53,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                     }
                 )
 
-                hashLock = recipients[0].instance as unknown as HashLockFTV2
+                hashLock = recipients[0].instance as unknown as HashLockBSV21
                 await hashLock.connect(getDefaultSigner())
 
                 console.log('transfer tx: ', tx.id)
@@ -65,7 +65,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
 
     it('transfer to an other hashLock with change.', async () => {
         const callContract = async () => {
-            const receiver = new HashLockFTV2(
+            const receiver = new HashLockBSV21(
                 toByteString(tokenId, true),
                 sym,
                 max,
@@ -84,18 +84,18 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                 toByteString(`hello, sCrypt!:3`, true),
                 {
                     transfer: recipients,
-                } as OrdiMethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockBSV21>
             )
 
             console.log('transfer tx: ', tx.id)
 
             expect(nexts.length === 2).to.be.true
 
-            const p2pkh = nexts[1].instance as BSV20V2P2PKH
+            const p2pkh = nexts[1].instance as BSV21P2PKH
 
             expect(p2pkh.getAmt()).to.be.equal(1n)
 
-            hashLock = recipients[0].instance as HashLockFTV2
+            hashLock = recipients[0].instance as HashLockBSV21
             await hashLock.connect(getDefaultSigner())
         }
 
@@ -104,7 +104,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
 
     it('transfer to an other hashLock without change.', async () => {
         const callContract = async () => {
-            const receiver = new HashLockFTV2(
+            const receiver = new HashLockBSV21(
                 toByteString(tokenId, true),
                 sym,
                 max,
@@ -124,7 +124,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                 {
                     transfer: recipients,
                     skipTokenChange: true,
-                } as OrdiMethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockBSV21>
             )
 
             console.log('transfer tx: ', tx.id)
@@ -136,7 +136,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
     })
 
     it('should fail when passing incorrect message', async () => {
-        const receiver = new HashLockFTV2(
+        const receiver = new HashLockBSV21(
             toByteString(tokenId, true),
             sym,
             max,
@@ -151,7 +151,7 @@ describe('Test SmartContract `HashLockFTV2`', () => {
                         instance: receiver,
                         amt: 9n,
                     },
-                } as OrdiMethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockBSV21>
             )
         await expect(call()).to.be.rejectedWith(/hashes are not equal/)
     })

@@ -16,10 +16,10 @@ import {
 } from 'scrypt-ts'
 import { Shift10 } from 'scrypt-ts-lib'
 import {
-    BSV20V1_JSON,
-    BSV20V2_JSON,
-    BSV20V2_TRANSFER_JSON,
     BSV20_JSON,
+    BSV21_JSON,
+    BSV21_TRANSFER_JSON,
+    FT_JSON,
     Inscription,
 } from '../types'
 import { fromByteString } from '../utils'
@@ -374,7 +374,7 @@ export class Ordinal extends SmartContractLib {
         )
     }
 
-    static getBsv20v1Json(content: string, contentType: string): BSV20V1_JSON {
+    static getBsv20v1Json(content: string, contentType: string): BSV20_JSON {
         if (contentType !== ContentType.BSV20) {
             throw new Error(`invalid bsv20 contentType: ${contentType}`)
         }
@@ -408,10 +408,10 @@ export class Ordinal extends SmartContractLib {
             return bsv20
         }
 
-        throw new Error(`invalid bsv20 v1 json, ${content}`)
+        throw new Error(`invalid bsv20 json, ${content}`)
     }
 
-    static getBsv20v2Json(content: string, contentType: string): BSV20V1_JSON {
+    static getBsv20v2Json(content: string, contentType: string): BSV20_JSON {
         if (contentType !== ContentType.BSV20) {
             throw new Error(`invalid bsv20 contentType: ${contentType}`)
         }
@@ -436,10 +436,10 @@ export class Ordinal extends SmartContractLib {
             return bsv20
         }
 
-        throw new Error(`invalid bsv20 v2 json, ${content}`)
+        throw new Error(`invalid bsv21 json, ${content}`)
     }
 
-    static getBsv20(script: bsv.Script, v1: boolean): BSV20_JSON {
+    static getBsv20(script: bsv.Script, v1: boolean): FT_JSON {
         const [content, contentType] = Ordinal.isOrdinalContract(script)
             ? [
                   fromByteString(toHex(script.chunks[6].buf)),
@@ -461,7 +461,7 @@ export class Ordinal extends SmartContractLib {
     }
 
     static getAmt(script: bsv.Script, tick?: string): bigint {
-        const bsv20 = Ordinal.getBsv20(script, true) as BSV20V1_JSON
+        const bsv20 = Ordinal.getBsv20(script, true) as BSV20_JSON
         if (typeof tick === 'string' && bsv20.tick !== tick) {
             throw new Error(`invalid bsv20 tick, expected ${tick}`)
         }
@@ -474,17 +474,17 @@ export class Ordinal extends SmartContractLib {
     }
 
     static getAmtV2(script: bsv.Script): bigint {
-        const bsv20 = Ordinal.getBsv20(script, false) as BSV20V2_JSON
+        const bsv20 = Ordinal.getBsv20(script, false) as BSV21_JSON
         return BigInt(bsv20.amt)
     }
 
     static getTokenId(script: bsv.Script): string {
-        const bsv20 = Ordinal.getBsv20(script, false) as BSV20V2_TRANSFER_JSON
+        const bsv20 = Ordinal.getBsv20(script, false) as BSV21_TRANSFER_JSON
         return bsv20.id
     }
 
     static getTick(script: bsv.Script): string {
-        const bsv20 = Ordinal.getBsv20(script, true) as BSV20V1_JSON
+        const bsv20 = Ordinal.getBsv20(script, true) as BSV20_JSON
 
         if (bsv20.op === 'mint' || bsv20.op === 'transfer') {
             return bsv20.tick

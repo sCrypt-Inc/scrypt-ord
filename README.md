@@ -232,8 +232,8 @@ const hash = sha256(message);
 const recipient = new HashLockFT(hash);
 
 // create p2pkh from a utxo
-// NOTE: You can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
-const p2pkh = BSV20V1P2PKH.fromUTXO(`your utxo`);
+// NOTE: You can not use BSV20P2PKH.getLatestInstance for bsv20, it only works for NFT
+const p2pkh = BSV20P2PKH.fromUTXO(`your utxo`);
 
 await p2pkh.connect(getDefaultSigner());
 
@@ -243,7 +243,7 @@ const { tx: transferTx } = await p2pkh.methods.unlock(
   {
     transfer: recipient,
     pubKeyOrAddrToSign: `yourPubKey`,
-  } as OrdiMethodCallOptions<BSV20V1P2PKH>
+  } as OrdiMethodCallOptions<BSV20P2PKH>
 );
 
 console.log("Transferred FT: ", transferTx.id);
@@ -261,13 +261,13 @@ const hash = sha256(message);
 const recipient = new HashLockFT(hash);
 
 // create p2pkh from a utxo
-// NOTE: you can not use BSV20V1P2PKH.getLatestInstance for bsv20, it only works for NFT
-const bsv20V1P2PKHs = await BSV20V1P2PKH.getBSV20(
+// NOTE: you can not use BSV20P2PKH.getLatestInstance for bsv20, it only works for NFT
+const bsv20P2PKHs = await BSV20P2PKH.getBSV20(
   "DOGE",
   `your ordinal address`
 );
 
-await Promise.all(bsv20V1P2PKHs.map((p) => p.connect(signer)));
+await Promise.all(bsv20P2PKHs.map((p) => p.connect(signer)));
 const recipients: Array<FTReceiver> = [
   {
     instance: new HashLockFT(tick, max, lim, dec, sha256(message)),
@@ -275,8 +275,8 @@ const recipients: Array<FTReceiver> = [
   },
 ];
 
-const { tx, nexts } = await BSV20V1P2PKH.transfer(
-  bsv20V1P2PKHs,
+const { tx, nexts } = await BSV20P2PKH.transfer(
+  bsv20P2PKHs,
   signer,
   recipients
 );

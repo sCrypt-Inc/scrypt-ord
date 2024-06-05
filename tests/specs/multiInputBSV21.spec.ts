@@ -11,28 +11,28 @@ import {
     sha256,
     toByteString,
 } from 'scrypt-ts'
-import { HashLockFTV2 } from '../contracts/hashLockFTV2'
+import { HashLockBSV21 } from '../contracts/hashLockBSV21'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import {
-    BSV20V2,
-    BSV20V2P2PKH,
+    BSV21,
+    BSV21P2PKH,
     FTReceiver,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
-import { dummyBSV20V2 } from './utils'
+import { dummyBSV21 } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
+describe('Test SmartContract `HashLockBSV21 multi inputs`', () => {
     const max = 100000n
     const dec = 0n
     const sym = toByteString('MEME', true)
 
-    let hashLock: HashLockFTV2
+    let hashLock: HashLockBSV21
     let tokenId: string
     before(async () => {
-        HashLockFTV2.loadArtifact()
-        hashLock = new HashLockFTV2(
+        HashLockBSV21.loadArtifact()
+        hashLock = new HashLockBSV21(
             toByteString(''),
             sym,
             max,
@@ -45,7 +45,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
         console.log('token id: ', tokenId)
     })
 
-    it('should transfer 2 BSV20V2P2PKH to 1 hashLock successfully: with different signer', async () => {
+    it('should transfer 2 BSV21P2PKH to 1 hashLock successfully: with different signer', async () => {
         const transferBSV20 = async () => {
             const feeSigner = getDefaultSigner()
 
@@ -56,19 +56,19 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
             const bobSigner = getDefaultSigner(bobPrivateKey)
 
             const address = await feeSigner.getDefaultAddress()
-            const bsv20V1P2PKHs = [
-                dummyBSV20V2(alicePrivateKey.toAddress(), tokenId, 4n),
-                dummyBSV20V2(bobPrivateKey.toAddress(), tokenId, 5n),
-            ].map((utxo) => BSV20V2P2PKH.fromUTXO(utxo))
+            const bsv20P2PKHs = [
+                dummyBSV21(alicePrivateKey.toAddress(), tokenId, 4n),
+                dummyBSV21(bobPrivateKey.toAddress(), tokenId, 5n),
+            ].map((utxo) => BSV21P2PKH.fromUTXO(utxo))
 
             const message = toByteString('hello, sCrypt!', true)
 
-            await bsv20V1P2PKHs[0].connect(aliceSigner)
-            await bsv20V1P2PKHs[1].connect(bobSigner)
+            await bsv20P2PKHs[0].connect(aliceSigner)
+            await bsv20P2PKHs[1].connect(bobSigner)
 
             const recipients: Array<FTReceiver> = [
                 {
-                    instance: new HashLockFTV2(
+                    instance: new HashLockBSV21(
                         toByteString(tokenId, true),
                         sym,
                         max,
@@ -79,8 +79,8 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                 },
             ]
 
-            const { tx } = await BSV20V2P2PKH.transfer(
-                bsv20V1P2PKHs,
+            const { tx } = await BSV21P2PKH.transfer(
+                bsv20P2PKHs,
                 feeSigner,
                 recipients,
                 address
@@ -94,7 +94,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
     it('transfer to an other hashLock with change.', async () => {
         const callContract = async () => {
-            const receiver = new HashLockFTV2(
+            const receiver = new HashLockBSV21(
                 toByteString(tokenId, true),
                 sym,
                 max,
@@ -113,14 +113,14 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                 toByteString(`hello, sCrypt!:0`, true),
                 {
                     transfer: recipients,
-                } as OrdiMethodCallOptions<HashLockFTV2>
+                } as OrdiMethodCallOptions<HashLockBSV21>
             )
 
             console.log('transfer tx: ', tx.id)
 
             expect(nexts.length === 2).to.be.true
 
-            const p2pkh = nexts[1].instance as BSV20V2P2PKH
+            const p2pkh = nexts[1].instance as BSV21P2PKH
 
             expect(p2pkh.getAmt()).to.be.equal(99000n)
 
@@ -144,14 +144,14 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
 
             sender0.bindTxBuilder(
                 'unlock',
-                async (current: HashLockFTV2): Promise<ContractTransaction> => {
+                async (current: HashLockBSV21): Promise<ContractTransaction> => {
                     const tx = new bsv.Transaction()
                     const nexts: StatefulNext<SmartContract>[] = []
 
                     for (let i = 0; i < recipients.length; i++) {
                         const receiver = recipients[i]
 
-                        if (receiver.instance instanceof BSV20V2) {
+                        if (receiver.instance instanceof BSV21) {
                             receiver.instance.setAmt(receiver.amt)
                         } else {
                             throw new Error('unsupport receiver, only BSV20!')
@@ -172,7 +172,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     }
 
                     if (tokenChangeAmt > 0n) {
-                        const p2pkh = new BSV20V2P2PKH(
+                        const p2pkh = new BSV21P2PKH(
                             toByteString(tokenId, true),
                             sym,
                             max,
@@ -219,14 +219,14 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     ],
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV21P2PKH>
             )
 
             sender1.bindTxBuilder(
                 'unlock',
                 async (
-                    current: HashLockFTV2,
-                    options: MethodCallOptions<HashLockFTV2>
+                    current: HashLockBSV21,
+                    options: MethodCallOptions<HashLockBSV21>
                 ): Promise<ContractTransaction> => {
                     if (options.partialContractTx) {
                         const tx = options.partialContractTx.tx
@@ -251,7 +251,7 @@ describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
                     transfer: recipients,
                     pubKeyOrAddrToSign: ordPubKey,
                     multiContractCall: true,
-                } as OrdiMethodCallOptions<BSV20V2P2PKH>
+                } as OrdiMethodCallOptions<BSV21P2PKH>
             )
 
             const { tx: finalTx } = await SmartContract.multiContractCall(

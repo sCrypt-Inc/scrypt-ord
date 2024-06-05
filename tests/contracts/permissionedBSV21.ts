@@ -12,9 +12,9 @@ import {
     toHex,
 } from 'scrypt-ts'
 
-import { BSV20V1, OrdiMethodCallOptions } from '../scrypt-ord'
+import { BSV21, OrdiMethodCallOptions } from '../scrypt-ord'
 
-export class PermissionedFT extends BSV20V1 {
+export class PermissionedBSV21 extends BSV21 {
     @prop()
     readonly issuer: PubKey
 
@@ -22,14 +22,14 @@ export class PermissionedFT extends BSV20V1 {
     owner: PubKey
 
     constructor(
-        tick: ByteString,
+        id: ByteString,
+        sym: ByteString,
         max: bigint,
-        lim: bigint,
         dec: bigint,
         issuer: PubKey,
         owner: PubKey
     ) {
-        super(tick, max, lim, dec)
+        super(id, sym, max, dec)
         this.init(...arguments)
         this.issuer = issuer
         this.owner = owner
@@ -80,8 +80,8 @@ export class PermissionedFT extends BSV20V1 {
     }
 
     static async buildTxForTransfer(
-        current: PermissionedFT,
-        options: OrdiMethodCallOptions<PermissionedFT>,
+        current: PermissionedBSV21,
+        options: OrdiMethodCallOptions<PermissionedBSV21>,
         recipient: PubKey,
         tokenTransferAmount: bigint,
         tokenChangeAmount: bigint
@@ -90,6 +90,7 @@ export class PermissionedFT extends BSV20V1 {
 
         const tokenTransferNext = current.next()
         tokenTransferNext.owner = PubKey(toHex(recipient))
+        tokenTransferNext.id = toByteString(current.getTokenId(), true)
         tokenTransferNext.setAmt(tokenTransferAmount)
 
         const nexts = [
@@ -107,6 +108,7 @@ export class PermissionedFT extends BSV20V1 {
 
         if (tokenChangeAmount > 0) {
             const tokenChangeNext = current.next()
+            tokenChangeNext.id = toByteString(current.getTokenId(), true)
             tokenChangeNext.setAmt(tokenChangeAmount)
 
             tx.addOutput(

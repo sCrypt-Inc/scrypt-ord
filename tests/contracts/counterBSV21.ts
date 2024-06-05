@@ -1,7 +1,7 @@
 import { method, prop, assert, SigHash, hash256, ByteString } from 'scrypt-ts'
-import { BSV20V2 } from '../scrypt-ord'
+import { BSV21 } from '../scrypt-ord'
 
-export class CounterFTV2 extends BSV20V2 {
+export class CounterBSV21 extends BSV21 {
     @prop(true)
     counter: bigint
 

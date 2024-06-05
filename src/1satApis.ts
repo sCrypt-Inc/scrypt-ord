@@ -1,7 +1,7 @@
 import { UTXO, bsv } from 'scrypt-ts'
 
 import superagent from 'superagent'
-import { handlerApiError, isBSV20v2 } from './utils'
+import { handlerApiError, isBSV21 } from './utils'
 
 export class OneSatApis {
     private static apiBase(network: bsv.Networks.Network) {
@@ -82,7 +82,7 @@ export class OneSatApis {
         tick: string
     ): Promise<Array<UTXO>> {
         const network = bsv.Address.fromString(address).network
-        const url = isBSV20v2(tick)
+        const url = isBSV21(tick)
             ? `${this.apiBase(
                   network || bsv.Networks.mainnet
               )}/bsv20/${address}/id/${tick}`

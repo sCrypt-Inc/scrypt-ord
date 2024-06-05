@@ -1,7 +1,7 @@
 import { TestWallet, toByteString, Addr, findSig, PubKey } from 'scrypt-ts'
 import { myPrivateKey, myPublicKey } from '../utils/privateKey'
 import {
-    BSV20V2P2PKH,
+    BSV21P2PKH,
     OrdiProvider,
     OrdiMethodCallOptions,
 } from '../scrypt-ord'
@@ -19,7 +19,7 @@ async function main() {
 
     await signer.connect()
     const address = await signer.getDefaultAddress()
-    const p2pkh = new BSV20V2P2PKH(
+    const p2pkh = new BSV21P2PKH(
         toByteString(''),
         sym,
         10000000n,
@@ -29,8 +29,8 @@ async function main() {
     await p2pkh.connect(signer)
     const tokenId = await p2pkh.deployToken()
     console.log(`tokenId: ${tokenId}`)
-    // const p2pkhs = await BSV20V2P2PKH.getBSV20(tokenId, address.toString())
-    // const {tx} = await BSV20V2P2PKH.transfer(p2pkhs, signer, [])
+    // const p2pkhs = await BSV21P2PKH.getBSV20(tokenId, address.toString())
+    // const {tx} = await BSV21P2PKH.transfer(p2pkhs, signer, [])
 
     const { tx } = await p2pkh.methods.unlock(
         (sigResponses) => findSig(sigResponses, myPublicKey),
@@ -38,7 +38,7 @@ async function main() {
         {
             transfer: [],
             pubKeyOrAddrToSign: myPublicKey,
-        } as OrdiMethodCallOptions<BSV20V2P2PKH>
+        } as OrdiMethodCallOptions<BSV21P2PKH>
     )
 
     console.log(`Transfer tx: ${tx.id}`)

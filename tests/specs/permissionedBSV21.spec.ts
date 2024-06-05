@@ -1,58 +1,59 @@
 import { expect, use } from 'chai'
-import { PubKey, findSig, toByteString } from 'scrypt-ts'
-import { PermissionedFT } from '../contracts/permissionedFT'
+import { PubKey, findSig, toByteString, toHex } from 'scrypt-ts'
+import { PermissionedBSV21 } from '../contracts/permissionedBSV21'
 import { getDefaultSigner, randomPrivateKey } from '../utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 import { myPublicKey, myPrivateKey } from '../utils/privateKey'
 import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `PermissionedFT`', () => {
-    const tick = 'DOGE'
+describe('Test SmartContract `PermissionedBSV21`', () => {
     const max = 1000n
-    const lim = max / 10n
+    const sym = toByteString('MEME', true)
     const dec = 0n
-    const amount = lim // 100
-    const tokenChangeAmount = amount / 10n // 10
-    const tokenTransferAmount = amount - tokenChangeAmount // 90
+    const amount = max
+    const tokenTransferAmount = 10n
+    const tokenChangeAmount = amount - tokenTransferAmount
 
-    let instance: PermissionedFT
+    let instance: PermissionedBSV21
 
     const issuerPublicKey = myPublicKey
     const [alicePrivateKey, alicePublicKey, ,] = randomPrivateKey()
     const [bobPrivateKey, bobPublicKey, ,] = randomPrivateKey()
 
     before(async () => {
-        PermissionedFT.loadArtifact()
+        PermissionedBSV21.loadArtifact()
 
-        instance = new PermissionedFT(
-            toByteString(tick, true),
+        instance = new PermissionedBSV21(
+            toByteString(''),
+            sym,
             max,
-            lim,
             dec,
-            PubKey(issuerPublicKey.toByteString()),
-            PubKey(alicePublicKey.toByteString())
+            PubKey(toHex(issuerPublicKey)),
+            PubKey(toHex(alicePublicKey))
         )
         await instance.connect(
             getDefaultSigner([myPrivateKey, alicePrivateKey, bobPrivateKey])
         )
 
         await instance.deployToken()
-        await instance.mint(amount)
     })
 
     it('should pass when calling `transfer`', async () => {
-        const call = async () =>
-            await instance.methods.transfer(
-                PubKey(bobPublicKey.toByteString()),
+        const call = async () => {
+            const { tx } = await instance.methods.transfer(
+                PubKey(toHex(bobPublicKey)),
                 tokenTransferAmount,
                 tokenChangeAmount,
                 (sigResps) => findSig(sigResps, alicePublicKey),
                 (sigResps) => findSig(sigResps, issuerPublicKey),
                 {
                     pubKeyOrAddrToSign: [alicePublicKey, issuerPublicKey],
-                } as OrdiMethodCallOptions<PermissionedFT>
+                } as OrdiMethodCallOptions<PermissionedBSV21>
             )
+
+            console.log('tranfer tx:', tx.id)
+        }
 
         await expect(call()).not.to.be.rejected
     })

@@ -3,7 +3,7 @@ import { ContentType, Ordinal } from '../scrypt-ord'
 import { randomBytes } from 'crypto'
 
 /**
- * generate a dummy utxo contains a bsv20 v1 transfer inscription
+ * generate a dummy utxo contains a bsv20 transfer inscription
  * @param addr
  * @param tick
  * @param amt
@@ -37,14 +37,14 @@ export function dummyBSV20(
 }
 
 /**
- * generate a dummy utxo contains a bsv20 v2 transfer inscription
+ * generate a dummy utxo contains a bsv21 transfer inscription
  * @param addr
  * @param id
  * @param amt
  * @param prepend put bsv20 inscription at the front of the locking script if true
  * @returns
  */
-export function dummyBSV20V2(
+export function dummyBSV21(
     addr: bsv.Address,
     id: string,
     amt: bigint,

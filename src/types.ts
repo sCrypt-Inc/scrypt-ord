@@ -8,7 +8,7 @@ export type Inscription = {
     contentType: string
 }
 
-export type BSV20V1_DEPLOY_JSON = {
+export type BSV20_DEPLOY_JSON = {
     p: 'bsv-20'
     op: 'deploy'
     tick: string
@@ -17,42 +17,42 @@ export type BSV20V1_DEPLOY_JSON = {
     dec?: string
 }
 
-export type BSV20V1_MINT_JSON = {
+export type BSV20_MINT_JSON = {
     p: 'bsv-20'
     op: 'mint'
     tick: string
     amt: string
 }
 
-export type BSV20V1_TRANSFER_JSON = {
+export type BSV20_TRANSFER_JSON = {
     p: 'bsv-20'
     op: 'transfer'
     tick: string
     amt: string
 }
 
-export type BSV20V1_JSON =
-    | BSV20V1_DEPLOY_JSON
-    | BSV20V1_MINT_JSON
-    | BSV20V1_TRANSFER_JSON
+export type BSV20_JSON =
+    | BSV20_DEPLOY_JSON
+    | BSV20_MINT_JSON
+    | BSV20_TRANSFER_JSON
 
-export type BSV20V2_DEPLOY_MINT_JSON = {
+export type BSV21_DEPLOY_MINT_JSON = {
     p: 'bsv-20'
     op: 'deploy+mint'
     amt: string
     dec?: string
 }
 
-export type BSV20V2_TRANSFER_JSON = {
+export type BSV21_TRANSFER_JSON = {
     p: 'bsv-20'
     op: 'transfer'
     id: string
     amt: string
 }
 
-export type BSV20V2_JSON = BSV20V2_DEPLOY_MINT_JSON | BSV20V2_TRANSFER_JSON
+export type BSV21_JSON = BSV21_DEPLOY_MINT_JSON | BSV21_TRANSFER_JSON
 
-export type BSV20_JSON = BSV20V1_JSON | BSV20V2_JSON
+export type FT_JSON = BSV20_JSON | BSV21_JSON
 
 export interface FTReceiver {
     instance: SmartContract
