@@ -12,7 +12,7 @@ import { CounterBSV20 } from '../contracts/counterBSV20'
 import { myAddress, myPublicKey } from '../utils/privateKey'
 use(chaiAsPromised)
 
-describe('Test SmartContract send FT to `CounterFT`', () => {
+describe('Test SmartContract send FT to `CounterBSV20`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n

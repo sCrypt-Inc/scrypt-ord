@@ -23,7 +23,7 @@ import {
 import { dummyBSV21 } from './utils'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashLockFTV2 multi inputs`', () => {
+describe('Test SmartContract `HashLockBSV21 multi inputs`', () => {
     const max = 100000n
     const dec = 0n
     const sym = toByteString('MEME', true)

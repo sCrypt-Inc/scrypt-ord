@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { BSV21P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashLockFTV2`', () => {
+describe('Test SmartContract `HashLockBSV21`', () => {
     const max = 100000n
     const dec = 0n
     const sym = toByteString('MEME', true)

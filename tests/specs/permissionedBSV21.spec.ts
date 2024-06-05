@@ -7,7 +7,7 @@ import { myPublicKey, myPrivateKey } from '../utils/privateKey'
 import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `PermissionedFTV2`', () => {
+describe('Test SmartContract `PermissionedBSV21`', () => {
     const max = 1000n
     const sym = toByteString('MEME', true)
     const dec = 0n

@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test fromTx for SmartContract `CounterFT`', () => {
+describe('Test fromTx for SmartContract `CounterBSV20`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n

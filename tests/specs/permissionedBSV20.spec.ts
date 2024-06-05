@@ -7,7 +7,7 @@ import { myPublicKey, myPrivateKey } from '../utils/privateKey'
 import { OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `PermissionedFT`', () => {
+describe('Test SmartContract `PermissionedBSV20`', () => {
     const tick = 'DOGE'
     const max = 1000n
     const lim = max / 10n

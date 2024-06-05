@@ -11,7 +11,7 @@ import { dummyBSV21 } from './utils'
 import { HashLockBSV21 } from '../contracts/hashLockBSV21'
 use(chaiAsPromised)
 
-describe('Test SmartContract send FT to `HashLockFTV2`', () => {
+describe('Test SmartContract send FT to `HashLockBSV21`', () => {
     describe('p2pkh with post FT', () => {
         const tokenId = toByteString(
             '71b08aff9e5017b71bffc66e57e858bb6225084142e36ff60ee40d6cf6d25cf3_0',

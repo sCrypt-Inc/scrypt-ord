@@ -11,7 +11,7 @@ import { dummyBSV20 } from './utils'
 import { HashLockBSV20 } from '../contracts/hashLockBSV20'
 use(chaiAsPromised)
 
-describe('Test SmartContract send FT to `HashLockFT`', () => {
+describe('Test SmartContract send FT to `HashLockBSV20`', () => {
     describe('p2pkh with post FT', () => {
         const tick = toByteString('DOGE', true)
         const max = 100000n

@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, FTReceiver, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `HashLockFT`', () => {
+describe('Test SmartContract `HashLockBSV20`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n

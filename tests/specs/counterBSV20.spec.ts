@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { BSV20P2PKH, OrdiMethodCallOptions } from '../scrypt-ord'
 use(chaiAsPromised)
 
-describe('Test SmartContract `CounterFT`', () => {
+describe('Test SmartContract `CounterBSV20`', () => {
     let instance: CounterBSV20
 
     before(async () => {

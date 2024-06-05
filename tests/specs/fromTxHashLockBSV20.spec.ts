@@ -7,7 +7,7 @@ import { BSV20P2PKH } from '../scrypt-ord'
 import { myAddress } from '../utils/privateKey'
 use(chaiAsPromised)
 
-describe('Test fromTx for SmartContract `HashLockFT`', () => {
+describe('Test fromTx for SmartContract `HashLockBSV20`', () => {
     const tick = toByteString('DOGE', true)
     const max = 100000n
     const lim = max / 10n
